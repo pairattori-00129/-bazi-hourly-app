@@ -44,7 +44,7 @@ body{min-height:100vh}
 .thumb{height:92px;display:grid;place-items:center;font-size:48px;border-radius:14px;background:linear-gradient(145deg,#fff,#fff8ee)}
 .product-img{width:100%;height:92px;object-fit:cover;border-radius:14px}
 .product h3{font-size:13px;line-height:1.3;margin:7px 0 7px;color:#3d2b24;white-space:normal;min-height:34px}
-.row-price{display:flex;flex-direction:column;gap:7px;margin-top:auto}.price{font-size:16px;font-weight:900;color:#4c6c3b}.plus{width:25px;height:25px;border:0;border-radius:50%;color:white;font-size:20px;line-height:22px;padding:0}
+.row-price{display:flex;flex-direction:column;gap:7px;margin-top:auto}.price-line{display:flex;align-items:center;justify-content:flex-start}.price{font-size:16px;font-weight:900;color:#4c6c3b;white-space:nowrap}.qty-label{font-size:12px;color:#7b6a60;font-weight:700;margin-top:2px}.plus{width:25px;height:25px;border:0;border-radius:50%;color:white;font-size:20px;line-height:22px;padding:0}
 .sec-green .plus{background:#82986b}.sec-peach .plus{background:#e37e5f}.sec-pink .plus{background:#db6766}.sec-gold .plus{background:#c99446}
 
 .qty{width:100%;display:grid;grid-template-columns:36px 1fr 36px;align-items:center;gap:6px;background:#f8f2e9;border:1px solid #eadfD4;border-radius:14px;padding:4px}
@@ -232,7 +232,7 @@ function renderCatalog(){
     const items=ps.map(p=>{
       const q=cart[p.id]||0;
       const pic=p.image_url?'<img class="product-img" src="'+p.image_url+'" alt="">':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
-      return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><span class="price">'+money(p.price)+'</span><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
+      return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><div class="price-line"><span class="price">'+money(p.price)+'</span></div><div class="qty-label">จำนวนชิ้น</div><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
     }).join("");
     return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+(catIcon[idx+1]||"🍴")+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
   }).join("");
