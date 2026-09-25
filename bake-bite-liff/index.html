@@ -46,6 +46,10 @@ body{min-height:100vh}
 .row-price{display:flex;justify-content:space-between;align-items:center}.price{font-size:15px;font-weight:900;color:#4c6c3b}.plus{width:25px;height:25px;border:0;border-radius:50%;color:white;font-size:20px;line-height:22px;padding:0}
 .sec-green .plus{background:#82986b}.sec-peach .plus{background:#e37e5f}.sec-pink .plus{background:#db6766}.sec-gold .plus{background:#c99446}
 
+.qty{display:flex;align-items:center;justify-content:flex-end;gap:5px}.qty button{width:24px;height:24px;border:0;border-radius:50%;font-size:16px;font-weight:900}.qty .minus{background:#eee4d7;color:#5a2f1f}.qty .plus2{background:#78996b;color:#fff}.qty span{min-width:18px;text-align:center;font-weight:900}
+#checkoutItems .checkout-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee0d3}.checkout-row:last-child{border-bottom:0}
+.product-img{width:100%;height:68px;object-fit:cover;border-radius:13px}
+.card{background:#fffdf8;border:1px solid #ead8c7;border-radius:22px;padding:16px;box-shadow:0 5px 18px rgba(90,55,30,.05)}
 /* points */
 .member-card{margin:10px 12px;background:linear-gradient(180deg,#fffaf1,#fff6ed);border:1px solid #f0dfcf;border-radius:26px;padding:18px;box-shadow:0 6px 18px rgba(90,55,30,.05)}
 .member-top{display:flex;align-items:center;gap:14px}.avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#d9b38f,#bd8d67);color:white;display:grid;place-items:center;font-size:34px;border:8px solid #faead9}
@@ -81,7 +85,15 @@ body{min-height:100vh}
 <header class="header"><img src="logo.svg" alt="Bake & Bite"></header>
 
 <section id="order" class="page">
-  <div class="title"><h1>สั่งอาหาร</h1><p>เมนูสดใหม่ อร่อยทุกวัน</p></div>
+  <div class="title"><h1>สั่งอาหาร</h1><p>เลือกจำนวนสินค้า แล้วกดยืนยันการสั่งซื้อ</p></div>
+  <div id="catalogRoot"></div>
+  <div class="card" id="cartBar" style="margin:12px;position:sticky;bottom:86px;z-index:15">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div><div style="font-size:13px;color:#7b6a60">ตะกร้าสินค้า</div><strong id="cartCount">0 รายการ</strong></div>
+      <div style="text-align:right"><div id="cartTotal" style="font-size:22px;font-weight:900">฿0</div><button class="btn" style="margin-top:5px;padding:10px 16px" onclick="openCheckout()">ยืนยันการสั่งซื้อ</button></div>
+    </div>
+  </div>
+  <div id="legacyOrder" style="display:none">
 
   <section class="section sec-green">
     <div class="section-head"><div class="sec-icon">🌿</div><div class="txt"><h2>สลัดโรล</h2><p>ผักสด กรอบ อร่อย ได้ประโยชน์</p></div><button class="viewall">ดูเมนูทั้งหมด ›</button></div>
@@ -122,6 +134,18 @@ body{min-height:100vh}
       <div class="product"><div class="thumb">🍵</div><h3>ชาเขียวเย็น</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
     </div>
   </section>
+</div></section>
+
+<section id="checkout" class="page">
+  <div class="title"><h1>สรุปยอดชำระเงิน</h1><p>ตรวจสอบรายการก่อนส่งคำสั่งซื้อ</p></div>
+  <div class="card" style="margin:12px" id="checkoutItems"></div>
+  <div class="card" style="margin:12px">
+    <div style="display:flex;justify-content:space-between;font-size:20px"><strong>ยอดรวม</strong><strong id="checkoutTotal">฿0</strong></div>
+    <input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
+    <select class="field" id="paymentMethod"><option value="cash">ชำระเงินที่ร้าน / เงินสด</option><option value="transfer">โอนเงิน</option></select>
+    <button class="btn" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
+    <button class="btn" style="background:#8f8178" onclick="showPage('order')">กลับไปแก้ไขรายการ</button>
+  </div>
 </section>
 
 <section id="points" class="page active">
@@ -170,7 +194,11 @@ body{min-height:100vh}
 </div></nav>
 <script>
 const LIFF_ID="2011741629-yEU5sjz8";
+const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
 let lineUserId="";
+let lineDisplayName="";
+let catalog={categories:[],products:[]};
+let cart={};
 function showPage(id){
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
@@ -178,12 +206,52 @@ function showPage(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+
+const catClass={1:"sec-green",2:"sec-peach",3:"sec-pink",4:"sec-gold"};
+const catIcon={1:"🌿",2:"🥪",3:"🍓",4:"🥤"};
+function money(n){return "฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2})}
+async function loadCatalog(){
+  try{
+    const r=await fetch(STORE_API+"?action=catalog");
+    const j=await r.json();
+    if(!j.ok) throw new Error(j.error||"catalog");
+    catalog=j;
+    renderCatalog();
+  }catch(e){console.error(e);document.getElementById("catalogRoot").innerHTML='<div class="card" style="margin:12px">โหลดเมนูไม่สำเร็จ กรุณาลองใหม่</div>'}
+}
+function renderCatalog(){
+  const root=document.getElementById("catalogRoot");
+  root.innerHTML=catalog.categories.map((c,idx)=>{
+    const ps=catalog.products.filter(p=>p.category_id===c.id);
+    const items=ps.map(p=>{
+      const q=cart[p.id]||0;
+      const pic=p.image_url?'<img class="product-img" src="'+p.image_url+'" alt="">':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
+      return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><span class="price">'+money(p.price)+'</span><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
+    }).join("");
+    return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+(catIcon[idx+1]||"🍴")+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
+  }).join("");
+  updateCart();
+}
+function changeQty(id,delta){cart[id]=Math.max(0,(cart[id]||0)+delta);if(cart[id]===0)delete cart[id];renderCatalog()}
+function cartItems(){return Object.entries(cart).map(([id,quantity])=>{const p=catalog.products.find(x=>x.id===id);return p?{...p,quantity}:null}).filter(Boolean)}
+function updateCart(){const items=cartItems();document.getElementById("cartCount").textContent=items.reduce((a,b)=>a+b.quantity,0)+" รายการ";document.getElementById("cartTotal").textContent=money(items.reduce((a,b)=>a+Number(b.price)*b.quantity,0))}
+function openCheckout(){const items=cartItems();if(!items.length){alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");return}document.getElementById("checkoutItems").innerHTML=items.map(i=>'<div class="checkout-row"><div><strong>'+i.name+'</strong><div style="font-size:13px;color:#7b6a60">'+money(i.price)+' × '+i.quantity+'</div></div><strong>'+money(Number(i.price)*i.quantity)+'</strong></div>').join("");document.getElementById("checkoutTotal").textContent=money(items.reduce((a,b)=>a+Number(b.price)*b.quantity,0));showPage("checkout")}
+async function submitOrder(){
+  const items=cartItems(); if(!items.length) return;
+  const payload={line_user_id:lineUserId||null,customer_name:lineDisplayName||null,payment_method:document.getElementById("paymentMethod").value,note:document.getElementById("customerNote").value,items:items.map(i=>({product_id:i.id,quantity:i.quantity}))};
+  try{
+    const r=await fetch(STORE_API+"?action=order",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+    const j=await r.json(); if(!j.ok) throw new Error(j.error||"order");
+    alert("รับคำสั่งซื้อแล้ว เลขที่ "+j.order.order_no+"\nยอดรวม "+money(j.order.total));
+    cart={}; renderCatalog(); showPage("order");
+  }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
+}
 async function init(){
   const h=location.hash.replace('#',''); if(h) showPage(h);
   try{
     await liff.init({liffId:LIFF_ID});
     if(!liff.isLoggedIn()){liff.login();return;}
-    const p=await liff.getProfile(); lineUserId=p.userId||"";
+    const p=await liff.getProfile(); lineUserId=p.userId||""; lineDisplayName=p.displayName||"";
     const n=document.getElementById('memberName'); if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
   }catch(e){console.error(e)}
 }
@@ -197,7 +265,7 @@ async function requestPoints(){
   alert('คำขอรับแต้ม '+points+' แต้ม พร้อมส่งตรวจสอบ');
 }
 function closeLiff(){if(window.liff&&liff.isInClient())liff.closeWindow();else history.back()}
-init();
+loadCatalog(); init();
 </script>
 </body>
 </html>
