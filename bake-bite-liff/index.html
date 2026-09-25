@@ -1,83 +1,107 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Bake & Bite</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    :root{--cream:#fbf6ec;--paper:#fffdf8;--brown:#5a4031;--green:#648d68;--green2:#e7f0e5;--line:#eadfce;--muted:#85766c}
-    *{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--brown);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
-    .wrap{max-width:720px;margin:auto;min-height:100vh;padding:16px 16px 96px;background:linear-gradient(#fffaf1,#fbf6ec)}
-    .brand{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:22px;padding:18px;text-align:center;box-shadow:0 8px 22px rgba(90,64,49,.06)}
-    .logo{font-size:28px;font-weight:800}.sub{font-size:12px;color:var(--muted)}.tag{font-size:13px;margin-top:4px}
-    .hero{margin:16px 0 12px}.hero h1{font-size:25px;margin:0 0 6px}.hero p{margin:0;color:var(--muted);line-height:1.55}
-    .card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0;box-shadow:0 6px 18px rgba(90,64,49,.05)}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tile{padding:15px;border-radius:16px;background:#fff;border:1px solid var(--line)}
-    .kpi{font-size:34px;font-weight:800;color:var(--green)}.small{font-size:13px;color:var(--muted)}
-    .badge{display:inline-block;background:var(--green2);color:var(--green);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
-    .btn{display:block;width:100%;border:0;border-radius:16px;padding:14px 16px;font-size:16px;font-weight:700;background:var(--green);color:white;text-align:center;text-decoration:none}
-    .note{padding:12px 14px;border-radius:14px;background:#f7edcf;color:#6a563d;font-size:13px;line-height:1.5}
-    .page{display:none}.page.active{display:block}
-    .nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,248,.96);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:9}
-    .navin{width:min(720px,100%);display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-    .nav button{border:0;background:transparent;font-size:11px;color:var(--muted);text-align:center;padding:7px 2px;border-radius:11px}.nav button b{display:block;font-size:20px;margin-bottom:2px}.nav button.active{color:var(--green);background:var(--green2)}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bake & Bite Rewards</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+:root{--bg:#fff9ef;--card:#fffdf8;--brown:#5a3423;--green:#78996b;--green2:#eaf2df;--peach:#fde6d8;--gold:#f3c467;--pink:#f7dedb;--line:#ead8c8;--muted:#8b766a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif;color:var(--brown)}
+.app{max-width:720px;margin:auto;min-height:100vh;padding:12px 14px 98px;background:linear-gradient(#fffdf7,#fff6e8)}
+.header{text-align:center;padding:8px 0 6px}.header img{width:170px;height:auto;display:block;margin:0 auto 4px}
+.page{display:none}.page.active{display:block}
+.hero{background:linear-gradient(135deg,#fff7eb,#fffdf8);border:1px solid var(--line);border-radius:26px;padding:18px;margin:8px 0 14px;box-shadow:0 8px 24px rgba(110,70,40,.07)}
+.hero h1{font-size:34px;line-height:1.05;margin:0;text-align:center}.hero p{text-align:center;color:var(--muted);margin:8px 0 0}
+.section{margin:14px 0}.section-title{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}.section-title h2{font-size:22px;margin:0}.pill{font-size:12px;background:var(--green2);padding:6px 10px;border-radius:999px;color:#58794f}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.product{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;box-shadow:0 5px 16px rgba(90,52,35,.05)}
+.product .pic{height:92px;border-radius:15px;background:linear-gradient(135deg,#f7ebd9,#fff);display:flex;align-items:center;justify-content:center;font-size:52px}
+.product h3{font-size:15px;margin:9px 0 2px}.product .price{font-weight:800;color:#6d4a2c}.add{float:right;border:0;background:var(--green);color:white;width:32px;height:32px;border-radius:50%;font-size:22px;line-height:28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin:12px 0;box-shadow:0 5px 18px rgba(90,52,35,.05)}
+.pointsbox{text-align:center;background:linear-gradient(135deg,#fff4df,#fde5db)}.pointsbox .name{font-size:18px;font-weight:700}.pointsbox .points{font-size:54px;font-weight:900;color:#b36d3c;margin:6px 0}.progress{height:15px;background:#eee4d7;border-radius:999px;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;width:60%;background:linear-gradient(90deg,#90aa72,#c7a96c)}
+.note{background:#f8efd4;padding:12px 14px;border-radius:14px;font-size:13px;color:#705c47}.channels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.channel{padding:14px 6px;text-align:center;border-radius:14px;color:white;font-weight:700}.shopee{background:#ff6b2d}.lineman{background:#31b96b}.grab{background:#179b50}
+input,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:white;font-size:16px;margin:6px 0 10px}.btn{display:block;width:100%;padding:14px;border:0;border-radius:16px;background:#a86b45;color:white;font-size:17px;font-weight:800;text-align:center;text-decoration:none}
+.reward{display:flex;gap:14px;align-items:center}.reward .icon{width:86px;height:86px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:48px;background:#fff3dc}.reward .meta{flex:1}.reward h3{margin:0 0 4px;font-size:20px}.cost{display:inline-block;background:#f3e8c2;padding:5px 10px;border-radius:999px;color:#82621f;font-weight:700}.reward button{border:0;border-radius:14px;background:var(--green);color:white;padding:10px 14px;font-weight:700}
+.contact{display:flex;align-items:center;gap:14px}.contact .ico{font-size:42px;width:58px;text-align:center}.contact h3{margin:0 0 4px}
+.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,248,.97);border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:20}
+.navin{max-width:720px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav button{border:0;background:transparent;color:#76685f;border-radius:14px;padding:7px 2px;font-size:12px}.nav button b{display:block;font-size:22px;margin-bottom:2px}.nav button.active{background:var(--green2);color:#557447;font-weight:800}
+</style>
 </head>
 <body>
-<div class="wrap">
-  <section class="brand">
-    <div class="logo">🏠 Bake & Bite</div>
-    <div class="sub">Fresh Rolls & Sweet Breads</div>
-    <div class="tag">อร่อยครบคำ ทั้งคาวและหวาน</div>
-  </section>
+<div class="app">
+<header class="header"><img src="logo.svg" alt="Bake & Bite"></header>
 
-  <section id="order" class="page">
-    <div class="hero"><h1>สั่งอาหาร</h1><p>เลือกหมวดอาหารของ Bake & Bite</p></div>
-    <div class="grid">
-      <div class="tile">🥗 <b>สลัดโรล</b><div class="small">ปูอัด โบโลน่า ไส้กรอก แซลมอน</div></div>
-      <div class="tile">🥪 <b>แซนด์วิช</b><div class="small">ไส้กรอก + ไข่ดาว / โบโลน่า + ไข่ดาว</div></div>
-      <div class="tile">🍓 <b>แซนด์วิชแยม</b><div class="small">ส้ม สตรอว์เบอร์รี บลูเบอร์รี</div></div>
-      <div class="tile">🥤 <b>เครื่องดื่ม</b><div class="small">น้ำเก๊กฮวย / น้ำรากบัว</div></div>
-    </div>
-    <div class="card"><div class="note">พร้อมเพิ่มราคา รูปสินค้า ตะกร้า และการชำระเงินในขั้นถัดไป</div></div>
-  </section>
+<section id="order" class="page">
+  <div class="hero"><h1>สั่งอาหาร</h1><p>เมนูสดใหม่ อร่อยทุกวัน</p></div>
+  <div class="section"><div class="section-title"><h2>สลัดโรล</h2><span class="pill">สดใหม่</span></div><div class="grid">
+    <div class="product"><div class="pic">🥗</div><button class="add">+</button><h3>สลัดโรลไส้ปูอัด</h3><div class="price">฿45</div></div>
+    <div class="product"><div class="pic">🌯</div><button class="add">+</button><h3>สลัดโรลไส้โบโลน่า</h3><div class="price">฿45</div></div>
+    <div class="product"><div class="pic">🌭</div><button class="add">+</button><h3>สลัดโรลไส้กรอก</h3><div class="price">฿45</div></div>
+    <div class="product"><div class="pic">🐟</div><button class="add">+</button><h3>สลัดโรลไส้แซลมอน</h3><div class="price">฿55</div></div>
+  </div></div>
+  <div class="section"><div class="section-title"><h2>แซนด์วิช</h2></div><div class="grid">
+    <div class="product"><div class="pic">🥪</div><button class="add">+</button><h3>ไส้กรอก + ไข่ดาว</h3><div class="price">฿35</div></div>
+    <div class="product"><div class="pic">🥪</div><button class="add">+</button><h3>โบโลน่า + ไข่ดาว</h3><div class="price">฿35</div></div>
+  </div></div>
+  <div class="section"><div class="section-title"><h2>แซนด์วิชแยม</h2></div><div class="grid">
+    <div class="product"><div class="pic">🍓</div><button class="add">+</button><h3>แยมสตรอว์เบอร์รี</h3><div class="price">฿30</div></div>
+    <div class="product"><div class="pic">🫐</div><button class="add">+</button><h3>แยมบลูเบอร์รี</h3><div class="price">฿30</div></div>
+    <div class="product"><div class="pic">🍊</div><button class="add">+</button><h3>แยมส้ม</h3><div class="price">฿30</div></div>
+  </div></div>
+  <div class="section"><div class="section-title"><h2>เครื่องดื่ม</h2></div><div class="grid">
+    <div class="product"><div class="pic">🌼</div><button class="add">+</button><h3>น้ำเก๊กฮวย</h3><div class="price">฿25</div></div>
+    <div class="product"><div class="pic">🥤</div><button class="add">+</button><h3>น้ำรากบัว</h3><div class="price">฿25</div></div>
+  </div></div>
+</section>
 
-  <section id="promo" class="page">
-    <div class="hero"><h1>โปรโมชั่น</h1><p>โปรใหม่และสิทธิพิเศษสำหรับสมาชิก</p></div>
-    <div class="card"><span class="badge">โปรโมชั่น</span><h3>โปรโมชั่นเปิดร้าน</h3><p>พื้นที่สำหรับโปรประจำเดือน คูปอง และแคมเปญพิเศษ</p></div>
-  </section>
+<section id="points" class="page active">
+  <div class="hero"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
+  <div class="card pointsbox">
+    <div class="name" id="memberName">สมาชิก Bake & Bite</div>
+    <div class="points">12 แต้ม</div>
+    <div class="progress"><span></span></div>
+    <div class="note">อีก 8 แต้ม รับแซนด์วิชฟรี 1 ชิ้น</div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">รับแต้มจาก Delivery</h2>
+    <div class="channels"><div class="channel shopee">ShopeeFood</div><div class="channel lineman">LINE MAN</div><div class="channel grab">GrabFood</div></div>
+    <select><option>เลือกแพลตฟอร์ม</option><option>ShopeeFood</option><option>LINE MAN</option><option>GrabFood</option></select>
+    <input placeholder="Order No. (เลขที่คำสั่งซื้อ)">
+    <input type="number" placeholder="ยอดสั่งซื้อ (บาท)">
+    <div class="note" style="margin-bottom:12px">ตัวอย่าง 120 บาท = 2 แต้ม และตัดเศษ 20 บาท</div>
+    <button class="btn">ส่งคำขอรับแต้ม</button>
+  </div>
+</section>
 
-  <section id="points" class="page active">
-    <div class="hero"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
-    <div class="card"><div class="small">สมาชิก</div><div id="memberName" style="font-size:18px;font-weight:700">สมาชิก</div><div class="kpi" id="pointsValue">0 แต้ม</div></div>
-    <div class="card"><b>รับแต้มจาก Delivery</b><p>ShopeeFood • LINE MAN • GrabFood</p><div class="note">ตัวอย่าง 120 บาท = 2 แต้ม และตัดเศษ 20 บาท</div></div>
-  </section>
+<section id="redeem" class="page">
+  <div class="hero"><h1>แลกแต้ม</h1><p>เลือกของรางวัลจากคะแนนสะสม</p></div>
+  <div class="card reward"><div class="icon">🌼</div><div class="meta"><h3>น้ำเก๊กฮวยฟรี 1 ขวด</h3><span class="cost">5 แต้ม</span></div><button>แลกรางวัล</button></div>
+  <div class="card reward"><div class="icon">🎟️</div><div class="meta"><h3>ส่วนลด 30 บาท</h3><span class="cost">10 แต้ม</span></div><button>แลกรางวัล</button></div>
+  <div class="card reward"><div class="icon">🥪</div><div class="meta"><h3>แซนด์วิชฟรี 1 ชิ้น</h3><span class="cost">20 แต้ม</span></div><button>แลกรางวัล</button></div>
+</section>
 
-  <section id="redeem" class="page">
-    <div class="hero"><h1>แลกแต้ม</h1><p>เลือกของรางวัลจากคะแนนสะสม</p></div>
-    <div class="card"><b>🥪 แซนด์วิชฟรี 1 ชิ้น</b><p>ใช้ 20 แต้ม</p><button class="btn">เลือกของรางวัล</button></div>
-  </section>
-
-  <section id="contact" class="page">
-    <div class="hero"><h1>ติดต่อร้าน</h1><p>สอบถามเมนู ออเดอร์ แต้ม และบริการ</p></div>
-    <div class="card"><b>💬 LINE Chat</b><p>กลับไปคุยกับ Bake & Bite ใน LINE Official Account</p><button class="btn" onclick="closeLiff()">กลับไปที่แชต LINE</button></div>
-  </section>
+<section id="contact" class="page">
+  <div class="hero"><h1>ติดต่อร้าน</h1><p>สอบถามเมนู ออเดอร์ แต้ม และบริการ</p></div>
+  <div class="card contact"><div class="ico">💬</div><div><h3>LINE Chat</h3><div>ทักแชตสอบถามร้านได้ทันที</div></div></div>
+  <div class="card contact"><div class="ico">📞</div><div><h3>โทรหาร้าน</h3><div>เพิ่มเบอร์โทรจริงภายหลัง</div></div></div>
+  <div class="card contact"><div class="ico">🕒</div><div><h3>เวลาทำการ</h3><div>กำหนดเวลาร้านได้ภายหลัง</div></div></div>
+  <button class="btn" onclick="closeLiff()">กลับไปแชต LINE</button>
+</section>
 </div>
 
 <nav class="nav"><div class="navin">
-  <button data-page="order"><b>🥪</b>สั่งอาหาร</button>
-  <button data-page="promo"><b>🎉</b>โปรโมชั่น</button>
-  <button data-page="points" class="active"><b>⭐</b>สะสมแต้ม</button>
-  <button data-page="redeem"><b>🎁</b>แลกแต้ม</button>
-  <button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
+<button data-page="order"><b>🍴</b>สั่งอาหาร</button>
+<button data-page="points" class="active"><b>☆</b>สะสมแต้ม</button>
+<button data-page="redeem"><b>🎁</b>แลกแต้ม</button>
+<button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
 </div></nav>
+
 <script>
-const LIFF_ID = "2011741629-yEU5sjz8";
+const LIFF_ID="2011741629-yEU5sjz8";
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));history.replaceState({},'',location.pathname+'#'+id)}
-document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-async function init(){const h=location.hash.replace('#',''); if(h) showPage(h); if(!LIFF_ID||LIFF_ID==='YOUR_LIFF_ID') return; try{await liff.init({liffId:LIFF_ID}); if(!liff.isLoggedIn()){liff.login();return;} const p=await liff.getProfile(); document.getElementById('memberName').textContent=p.displayName||'สมาชิก';}catch(e){console.error(e)}}
-function closeLiff(){if(window.liff&&liff.isInClient()) liff.closeWindow(); else history.back()}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+async function init(){const h=location.hash.replace('#','');if(h)showPage(h);try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();return;}const p=await liff.getProfile();document.getElementById('memberName').textContent=p.displayName||'สมาชิก Bake & Bite';}catch(e){console.error(e)}}
+function closeLiff(){if(window.liff&&liff.isInClient())liff.closeWindow();else history.back()}
 init();
 </script>
 </body></html>
