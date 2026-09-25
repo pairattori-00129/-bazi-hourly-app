@@ -6,88 +6,161 @@
 <title>Bake & Bite Rewards</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
-:root{--bg:#fff9ef;--card:#fffdf8;--brown:#5a3423;--green:#78996b;--green2:#eaf2df;--peach:#fde6d8;--gold:#f3c467;--pink:#f7dedb;--line:#ead8c8;--muted:#8b766a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif;color:var(--brown)}
-.app{max-width:720px;margin:auto;min-height:100vh;padding:12px 14px 98px;background:linear-gradient(#fffdf7,#fff6e8)}
-.header{text-align:center;padding:8px 0 6px}.header img{width:170px;height:auto;display:block;margin:0 auto 4px}
+:root{
+  --cream:#fff9ef;--paper:#fffdf8;--brown:#5a2f1f;--green:#718d5a;--greenSoft:#edf3e4;
+  --peach:#f4a986;--peachSoft:#fff0e7;--pink:#e87676;--pinkSoft:#fde9e7;
+  --gold:#d9a044;--goldSoft:#fff3d8;--ink:#402d27;--muted:#857166;--line:#ead8c7;
+}
+*{box-sizing:border-box}html,body{margin:0;background:#f6efe5;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+body{min-height:100vh}
+.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdfa 0%,#fff8ec 100%);position:relative;box-shadow:0 0 30px rgba(60,40,25,.08);overflow:hidden}
+.app{padding-bottom:82px}
+.header{position:relative;padding:28px 16px 12px;text-align:center;overflow:hidden;background:
+ radial-gradient(circle at 15% 65%,rgba(150,185,105,.18),transparent 28%),
+ radial-gradient(circle at 85% 65%,rgba(239,170,120,.18),transparent 28%),
+ linear-gradient(180deg,#fffefa,#fff9ef)}
+.header:before{content:"🥗";position:absolute;left:-12px;bottom:4px;font-size:80px;filter:saturate(.85)}
+.header:after{content:"🥐";position:absolute;right:-5px;bottom:6px;font-size:74px}
+.header img{width:178px;max-width:54%;display:block;margin:0 auto;position:relative;z-index:2}
 .page{display:none}.page.active{display:block}
-.hero{background:linear-gradient(135deg,#fff7eb,#fffdf8);border:1px solid var(--line);border-radius:26px;padding:18px;margin:8px 0 14px;box-shadow:0 8px 24px rgba(110,70,40,.07)}
-.hero h1{font-size:34px;line-height:1.05;margin:0;text-align:center}.hero p{text-align:center;color:var(--muted);margin:8px 0 0}
-.section{margin:14px 0}.section-title{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}.section-title h2{font-size:22px;margin:0}.pill{font-size:12px;background:var(--green2);padding:6px 10px;border-radius:999px;color:#58794f}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.product{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;box-shadow:0 5px 16px rgba(90,52,35,.05)}
-.product .pic{height:92px;border-radius:15px;background:linear-gradient(135deg,#f7ebd9,#fff);display:flex;align-items:center;justify-content:center;font-size:52px}
-.product h3{font-size:15px;margin:9px 0 2px}.product .price{font-weight:800;color:#6d4a2c}.add{float:right;border:0;background:var(--green);color:white;width:32px;height:32px;border-radius:50%;font-size:22px;line-height:28px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin:12px 0;box-shadow:0 5px 18px rgba(90,52,35,.05)}
-.pointsbox{text-align:center;background:linear-gradient(135deg,#fff4df,#fde5db)}.pointsbox .name{font-size:18px;font-weight:700}.pointsbox .points{font-size:54px;font-weight:900;color:#b36d3c;margin:6px 0}.progress{height:15px;background:#eee4d7;border-radius:999px;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;width:60%;background:linear-gradient(90deg,#90aa72,#c7a96c)}
-.note{background:#f8efd4;padding:12px 14px;border-radius:14px;font-size:13px;color:#705c47}.channels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.channel{padding:14px 6px;text-align:center;border-radius:14px;color:white;font-weight:700}.shopee{background:#ff6b2d}.lineman{background:#31b96b}.grab{background:#179b50}
-input,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:white;font-size:16px;margin:6px 0 10px}.btn{display:block;width:100%;padding:14px;border:0;border-radius:16px;background:#a86b45;color:white;font-size:17px;font-weight:800;text-align:center;text-decoration:none}
-.reward{display:flex;gap:14px;align-items:center}.reward .icon{width:86px;height:86px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:48px;background:#fff3dc}.reward .meta{flex:1}.reward h3{margin:0 0 4px;font-size:20px}.cost{display:inline-block;background:#f3e8c2;padding:5px 10px;border-radius:999px;color:#82621f;font-weight:700}.reward button{border:0;border-radius:14px;background:var(--green);color:white;padding:10px 14px;font-weight:700}
-.contact{display:flex;align-items:center;gap:14px}.contact .ico{font-size:42px;width:58px;text-align:center}.contact h3{margin:0 0 4px}
-.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,248,.97);border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:20}
-.navin{max-width:720px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav button{border:0;background:transparent;color:#76685f;border-radius:14px;padding:7px 2px;font-size:12px}.nav button b{display:block;font-size:22px;margin-bottom:2px}.nav button.active{background:var(--green2);color:#557447;font-weight:800}
+.title{position:relative;text-align:center;padding:10px 18px 14px}
+.title:before,.title:after{content:"";position:absolute;width:28px;height:14px;border-radius:50%;background:#a3b68c;opacity:.55;transform:rotate(-28deg)}
+.title:before{left:30px;top:18px}.title:after{right:34px;bottom:16px;transform:rotate(28deg)}
+.title h1{font-size:42px;line-height:1;margin:0;color:#5b2d1b;font-weight:900;letter-spacing:-1px}
+.title p{margin:8px 0 0;font-size:16px;color:#6f5c51}
+.section{margin:10px 12px 14px;border-radius:24px;padding:12px 10px 13px;border:1px solid rgba(0,0,0,.04);box-shadow:0 5px 12px rgba(90,60,35,.04)}
+.sec-green{background:linear-gradient(135deg,#eef4e5,#f7faef)}
+.sec-peach{background:linear-gradient(135deg,#fee9dd,#fff3ec)}
+.sec-pink{background:linear-gradient(135deg,#fde1df,#fff0ef)}
+.sec-gold{background:linear-gradient(135deg,#fff0d4,#fff8e8)}
+.section-head{display:flex;align-items:center;gap:10px;margin:0 5px 10px}
+.sec-icon{width:45px;height:45px;border-radius:50%;display:grid;place-items:center;font-size:24px;color:white;flex:0 0 auto}
+.sec-green .sec-icon{background:#7f9869}.sec-peach .sec-icon{background:#e9936a}.sec-pink .sec-icon{background:#d96060}.sec-gold .sec-icon{background:#d4a14b}
+.section-head .txt{flex:1}.section-head h2{font-size:26px;margin:0;color:#3c221a;line-height:1}.section-head p{margin:3px 0 0;color:#7b6a60;font-size:14px}
+.viewall{border:0;color:white;border-radius:999px;padding:9px 14px;font-weight:800;font-size:12px}
+.sec-green .viewall{background:#7f9869}.sec-peach .viewall{background:#e68e69}.sec-pink .viewall{background:#df6c6a}.sec-gold .viewall{background:#c89545}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.product{background:rgba(255,255,255,.9);border-radius:16px;padding:7px 6px 8px;min-width:0;box-shadow:0 2px 8px rgba(60,40,30,.04)}
+.thumb{height:68px;display:grid;place-items:center;font-size:42px;border-radius:13px;background:linear-gradient(145deg,#fff,#fff8ee)}
+.product h3{font-size:11px;line-height:1.25;margin:6px 0 2px;color:#3d2b24;white-space:normal}
+.row-price{display:flex;justify-content:space-between;align-items:center}.price{font-size:15px;font-weight:900;color:#4c6c3b}.plus{width:25px;height:25px;border:0;border-radius:50%;color:white;font-size:20px;line-height:22px;padding:0}
+.sec-green .plus{background:#82986b}.sec-peach .plus{background:#e37e5f}.sec-pink .plus{background:#db6766}.sec-gold .plus{background:#c99446}
+
+/* points */
+.member-card{margin:10px 12px;background:linear-gradient(180deg,#fffaf1,#fff6ed);border:1px solid #f0dfcf;border-radius:26px;padding:18px;box-shadow:0 6px 18px rgba(90,55,30,.05)}
+.member-top{display:flex;align-items:center;gap:14px}.avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#d9b38f,#bd8d67);color:white;display:grid;place-items:center;font-size:34px;border:8px solid #faead9}
+.member-name{font-size:20px;font-weight:900}.points-panel{margin:14px 0;background:linear-gradient(135deg,#ffe7d9,#fff2e5);border-radius:22px;padding:13px;text-align:center}
+.points-panel .coin{font-size:36px}.points-panel strong{font-size:56px;color:#a8522e}.points-panel span{font-size:28px;font-weight:900;color:#5a2f1f}
+.progress{height:14px;border-radius:999px;background:#f2e4d8;overflow:hidden;margin:12px 10px 8px}.progress i{display:block;height:100%;width:60%;background:linear-gradient(90deg,#79a35f,#b5bd7f)}
+.next{text-align:center;font-size:16px;font-weight:800;color:#c85545}.delivery{margin:12px;border-radius:24px;background:linear-gradient(135deg,#ffe2dc,#fff3ee);padding:14px;border:1px solid #f3d4cb}
+.delivery h2{font-size:25px;margin:0}.delivery p{margin:3px 0 12px;color:#7b6d65}
+.channels{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.channel{border-radius:14px;color:white;padding:13px 4px;text-align:center;font-weight:900;font-size:13px}.shopee{background:#ff6a2c}.lineman{background:#29b66a}.grab{background:#168f46}
+.field{width:100%;padding:14px;border:1px solid #e6d7cb;border-radius:15px;margin-top:10px;background:#fff;font-size:15px}.btn{width:100%;border:0;border-radius:16px;padding:14px 16px;font-size:17px;font-weight:900;color:#fff;background:#a96d48;margin-top:12px}
+
+/* redeem */
+.balance{margin:8px 12px 12px;background:linear-gradient(135deg,#fff0d8,#fff7e9);border-radius:26px;padding:18px;text-align:center}
+.balance .medal{font-size:54px}.balance .label{font-size:18px}.balance strong{font-size:58px;color:#c26134}.balance span{font-size:28px;font-weight:900}
+.reward{margin:10px 12px;padding:14px;border-radius:24px;background:#fff;border:1px solid #efdfcf;display:flex;align-items:center;gap:12px;box-shadow:0 5px 13px rgba(80,55,35,.04)}
+.reward.green{background:linear-gradient(135deg,#f5faef,#fff)}.reward.pink{background:linear-gradient(135deg,#fff0ed,#fff)}.reward.gold{background:linear-gradient(135deg,#fff8e7,#fff)}
+.reward .art{font-size:58px;width:92px;text-align:center}.reward .info{flex:1}.reward h3{margin:0 0 8px;font-size:20px}.cost{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:7px 11px;font-weight:900;background:#f3e8c9;color:#7d6022}.redeem-btn{border:0;border-radius:15px;padding:10px 12px;color:white;font-weight:900;background:#7b965f}
+
+/* contact */
+.contact-list{padding:0 12px}.contact-card{display:flex;align-items:center;gap:14px;margin:10px 0;padding:17px;border-radius:24px;border:1px solid #eddccf;background:#fff;box-shadow:0 4px 12px rgba(80,50,30,.04)}
+.contact-card.green{background:linear-gradient(135deg,#eef5e9,#fff)}.contact-card.peach{background:linear-gradient(135deg,#ffe9df,#fff)}.contact-card.gold{background:linear-gradient(135deg,#fff1d9,#fff)}.contact-card.pink{background:linear-gradient(135deg,#ffe6e4,#fff)}
+.cicon{font-size:52px;width:70px;text-align:center}.cbody{flex:1}.cbody h3{font-size:21px;margin:0 0 5px}.cbody p{margin:0;color:#75645c;line-height:1.35}.arrow{font-size:26px;color:#a9785b}
+.linebtn{margin:16px 32px 8px;width:calc(100% - 64px);background:#3a9b44;border-radius:999px;border:0;color:#fff;padding:15px;font-weight:900;font-size:18px}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30}.navin{width:min(100%,430px);margin:auto;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,253,248,.98);border-top:1px solid #eadbcf;padding:7px 7px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -3px 12px rgba(60,40,30,.05)}
+.nav button{border:0;background:transparent;border-radius:16px;padding:6px 2px;color:#5d5650;font-size:12px}.nav button b{display:block;font-size:23px;margin-bottom:1px}.nav button.active{background:#edf3df;color:#4f732f;font-weight:900}
+@media (min-width:700px){.shell{border-radius:26px;margin-top:14px;margin-bottom:14px;min-height:calc(100vh - 28px)}}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="shell"><main class="app">
 <header class="header"><img src="logo.svg" alt="Bake & Bite"></header>
 
 <section id="order" class="page">
-  <div class="hero"><h1>สั่งอาหาร</h1><p>เมนูสดใหม่ อร่อยทุกวัน</p></div>
-  <div class="section"><div class="section-title"><h2>สลัดโรล</h2><span class="pill">สดใหม่</span></div><div class="grid">
-    <div class="product"><div class="pic">🥗</div><button class="add">+</button><h3>สลัดโรลไส้ปูอัด</h3><div class="price">฿45</div></div>
-    <div class="product"><div class="pic">🌯</div><button class="add">+</button><h3>สลัดโรลไส้โบโลน่า</h3><div class="price">฿45</div></div>
-    <div class="product"><div class="pic">🌭</div><button class="add">+</button><h3>สลัดโรลไส้กรอก</h3><div class="price">฿45</div></div>
-    <div class="product"><div class="pic">🐟</div><button class="add">+</button><h3>สลัดโรลไส้แซลมอน</h3><div class="price">฿55</div></div>
-  </div></div>
-  <div class="section"><div class="section-title"><h2>แซนด์วิช</h2></div><div class="grid">
-    <div class="product"><div class="pic">🥪</div><button class="add">+</button><h3>ไส้กรอก + ไข่ดาว</h3><div class="price">฿35</div></div>
-    <div class="product"><div class="pic">🥪</div><button class="add">+</button><h3>โบโลน่า + ไข่ดาว</h3><div class="price">฿35</div></div>
-  </div></div>
-  <div class="section"><div class="section-title"><h2>แซนด์วิชแยม</h2></div><div class="grid">
-    <div class="product"><div class="pic">🍓</div><button class="add">+</button><h3>แยมสตรอว์เบอร์รี</h3><div class="price">฿30</div></div>
-    <div class="product"><div class="pic">🫐</div><button class="add">+</button><h3>แยมบลูเบอร์รี</h3><div class="price">฿30</div></div>
-    <div class="product"><div class="pic">🍊</div><button class="add">+</button><h3>แยมส้ม</h3><div class="price">฿30</div></div>
-  </div></div>
-  <div class="section"><div class="section-title"><h2>เครื่องดื่ม</h2></div><div class="grid">
-    <div class="product"><div class="pic">🌼</div><button class="add">+</button><h3>น้ำเก๊กฮวย</h3><div class="price">฿25</div></div>
-    <div class="product"><div class="pic">🥤</div><button class="add">+</button><h3>น้ำรากบัว</h3><div class="price">฿25</div></div>
-  </div></div>
+  <div class="title"><h1>สั่งอาหาร</h1><p>เมนูสดใหม่ อร่อยทุกวัน</p></div>
+
+  <section class="section sec-green">
+    <div class="section-head"><div class="sec-icon">🌿</div><div class="txt"><h2>สลัดโรล</h2><p>ผักสด กรอบ อร่อย ได้ประโยชน์</p></div><button class="viewall">ดูเมนูทั้งหมด ›</button></div>
+    <div class="products">
+      <div class="product"><div class="thumb">🥗</div><h3>สลัดโรลไส้ปูอัด</h3><div class="row-price"><span class="price">฿45</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🌯</div><h3>สลัดโรลไส้โบโลน่า</h3><div class="row-price"><span class="price">฿45</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🌭</div><h3>สลัดโรลไส้กรอก</h3><div class="row-price"><span class="price">฿45</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🐟</div><h3>สลัดโรลไส้แซลมอน</h3><div class="row-price"><span class="price">฿55</span><button class="plus">+</button></div></div>
+    </div>
+  </section>
+
+  <section class="section sec-peach">
+    <div class="section-head"><div class="sec-icon">🥪</div><div class="txt"><h2>แซนด์วิช</h2><p>นุ่ม สดใหม่ อิ่มอร่อยได้ทุกเวลา</p></div><button class="viewall">ดูเมนูทั้งหมด ›</button></div>
+    <div class="products">
+      <div class="product"><div class="thumb">🥪</div><h3>ไส้ปูอัด</h3><div class="row-price"><span class="price">฿35</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🥪</div><h3>ไส้โบโลน่า</h3><div class="row-price"><span class="price">฿35</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🥪</div><h3>ไส้กรอก</h3><div class="row-price"><span class="price">฿35</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🥪</div><h3>ไส้แซลมอน</h3><div class="row-price"><span class="price">฿45</span><button class="plus">+</button></div></div>
+    </div>
+  </section>
+
+  <section class="section sec-pink">
+    <div class="section-head"><div class="sec-icon">🍓</div><div class="txt"><h2>แซนด์วิชแยม</h2><p>หอมหวาน อร่อยละมุน</p></div><button class="viewall">ดูเมนูทั้งหมด ›</button></div>
+    <div class="products">
+      <div class="product"><div class="thumb">🍓</div><h3>แยมสตรอว์เบอร์รี</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🫐</div><h3>แยมบลูเบอร์รี</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🍊</div><h3>แยมส้ม</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🥥</div><h3>สังขยา</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
+    </div>
+  </section>
+
+  <section class="section sec-gold">
+    <div class="section-head"><div class="sec-icon">🥤</div><div class="txt"><h2>เครื่องดื่ม</h2><p>สดชื่น หอมละมุน เข้ากับทุกเมนู</p></div><button class="viewall">ดูเมนูทั้งหมด ›</button></div>
+    <div class="products">
+      <div class="product"><div class="thumb">🌼</div><h3>น้ำเก๊กฮวย</h3><div class="row-price"><span class="price">฿25</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🥤</div><h3>น้ำรากบัว</h3><div class="row-price"><span class="price">฿25</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🧋</div><h3>ชานมเย็น</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
+      <div class="product"><div class="thumb">🍵</div><h3>ชาเขียวเย็น</h3><div class="row-price"><span class="price">฿30</span><button class="plus">+</button></div></div>
+    </div>
+  </section>
 </section>
 
 <section id="points" class="page active">
-  <div class="hero"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
-  <div class="card pointsbox">
-    <div class="name" id="memberName">สมาชิก Bake & Bite</div>
-    <div class="points">12 แต้ม</div>
-    <div class="progress"><span></span></div>
-    <div class="note">อีก 8 แต้ม รับแซนด์วิชฟรี 1 ชิ้น</div>
-  </div>
-  <div class="card">
-    <h2 style="margin-top:0">รับแต้มจาก Delivery</h2>
+  <div class="title"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
+  <section class="member-card">
+    <div class="member-top"><div class="avatar">👤</div><div><div class="member-name" id="memberName">สมาชิก Bake & Bite</div><div style="color:#89756a">สมาชิกสะสมแต้ม</div></div></div>
+    <div class="points-panel"><span class="coin">⭐</span> <strong id="pointsValue">12</strong> <span>แต้ม</span></div>
+    <div class="progress"><i></i></div>
+    <div class="next">อีก 8 แต้ม รับแซนด์วิชฟรี 1 ชิ้น</div>
+  </section>
+  <section class="delivery">
+    <h2>🛵 รับแต้มจาก Delivery</h2><p>สั่งผ่านแอป แล้วมารับแต้มได้เลย</p>
     <div class="channels"><div class="channel shopee">ShopeeFood</div><div class="channel lineman">LINE MAN</div><div class="channel grab">GrabFood</div></div>
-    <select><option>เลือกแพลตฟอร์ม</option><option>ShopeeFood</option><option>LINE MAN</option><option>GrabFood</option></select>
-    <input placeholder="Order No. (เลขที่คำสั่งซื้อ)">
-    <input type="number" placeholder="ยอดสั่งซื้อ (บาท)">
-    <div class="note" style="margin-bottom:12px">ตัวอย่าง 120 บาท = 2 แต้ม และตัดเศษ 20 บาท</div>
-    <button class="btn">ส่งคำขอรับแต้ม</button>
-  </div>
+    <select class="field" id="platform"><option value="">เลือกแพลตฟอร์ม</option><option value="shopeefood">ShopeeFood</option><option value="lineman">LINE MAN</option><option value="grabfood">GrabFood</option></select>
+    <input class="field" id="orderNo" placeholder="Order No. (เลขที่คำสั่งซื้อ)">
+    <input class="field" id="amount" type="number" placeholder="ยอดสั่งซื้อ (บาท)">
+    <button class="btn" onclick="requestPoints()">ส่งคำขอรับแต้ม ›</button>
+  </section>
 </section>
 
 <section id="redeem" class="page">
-  <div class="hero"><h1>แลกแต้ม</h1><p>เลือกของรางวัลจากคะแนนสะสม</p></div>
-  <div class="card reward"><div class="icon">🌼</div><div class="meta"><h3>น้ำเก๊กฮวยฟรี 1 ขวด</h3><span class="cost">5 แต้ม</span></div><button>แลกรางวัล</button></div>
-  <div class="card reward"><div class="icon">🎟️</div><div class="meta"><h3>ส่วนลด 30 บาท</h3><span class="cost">10 แต้ม</span></div><button>แลกรางวัล</button></div>
-  <div class="card reward"><div class="icon">🥪</div><div class="meta"><h3>แซนด์วิชฟรี 1 ชิ้น</h3><span class="cost">20 แต้ม</span></div><button>แลกรางวัล</button></div>
+  <div class="title"><h1>แลกแต้ม</h1><p>เลือกของรางวัลจากคะแนนสะสม</p></div>
+  <section class="balance"><div class="medal">🏅</div><div class="label">คุณมี</div><strong>12</strong> <span>แต้ม</span></section>
+  <section class="reward green"><div class="art">🌼</div><div class="info"><h3>น้ำเก๊กฮวยฟรี 1 ขวด</h3><span class="cost">⭐ 5 แต้ม</span></div><button class="redeem-btn">แลกรางวัล ›</button></section>
+  <section class="reward pink"><div class="art">🎟️</div><div class="info"><h3>ส่วนลด 30 บาท</h3><span class="cost">⭐ 10 แต้ม</span></div><button class="redeem-btn" style="background:#d46b5c">แลกรางวัล ›</button></section>
+  <section class="reward gold"><div class="art">🥪</div><div class="info"><h3>แซนด์วิชฟรี 1 ชิ้น</h3><span class="cost">⭐ 20 แต้ม</span></div><button class="redeem-btn" style="background:#c99332">แลกรางวัล ›</button></section>
 </section>
 
 <section id="contact" class="page">
-  <div class="hero"><h1>ติดต่อร้าน</h1><p>สอบถามเมนู ออเดอร์ แต้ม และบริการ</p></div>
-  <div class="card contact"><div class="ico">💬</div><div><h3>LINE Chat</h3><div>ทักแชตสอบถามร้านได้ทันที</div></div></div>
-  <div class="card contact"><div class="ico">📞</div><div><h3>โทรหาร้าน</h3><div>เพิ่มเบอร์โทรจริงภายหลัง</div></div></div>
-  <div class="card contact"><div class="ico">🕒</div><div><h3>เวลาทำการ</h3><div>กำหนดเวลาร้านได้ภายหลัง</div></div></div>
-  <button class="btn" onclick="closeLiff()">กลับไปแชต LINE</button>
+  <div class="title"><h1>ติดต่อร้าน</h1><p>สอบถามเมนู ออเดอร์ แต้ม และบริการ</p></div>
+  <div class="contact-list">
+    <div class="contact-card green"><div class="cicon">💬</div><div class="cbody"><h3>LINE Chat</h3><p>ทักแชตสอบถามเมนู สั่งออเดอร์ เช็กแต้ม และข้อมูลอื่นๆ ได้เลย</p></div><div class="arrow">›</div></div>
+    <div class="contact-card peach"><div class="cicon">📞</div><div class="cbody"><h3>โทรหาร้าน</h3><p>ใส่เบอร์โทรร้านจริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
+    <div class="contact-card gold"><div class="cicon">🕒</div><div class="cbody"><h3>เวลาทำการ</h3><p>กำหนดเวลาทำการจริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
+    <div class="contact-card pink"><div class="cicon">📍</div><div class="cbody"><h3>ที่อยู่ / จุดรับสินค้า</h3><p>เพิ่มที่อยู่ร้านและแผนที่จริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
+  </div>
+  <button class="linebtn" onclick="closeLiff()">💬 กลับไปแชต LINE ›</button>
 </section>
-</div>
+</main></div>
 
 <nav class="nav"><div class="navin">
 <button data-page="order"><b>🍴</b>สั่งอาหาร</button>
@@ -95,13 +168,36 @@ input,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-ra
 <button data-page="redeem"><b>🎁</b>แลกแต้ม</button>
 <button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
 </div></nav>
-
 <script>
 const LIFF_ID="2011741629-yEU5sjz8";
-function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));history.replaceState({},'',location.pathname+'#'+id)}
+let lineUserId="";
+function showPage(id){
+  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
+  history.replaceState({},'',location.pathname+'#'+id);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
-async function init(){const h=location.hash.replace('#','');if(h)showPage(h);try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();return;}const p=await liff.getProfile();document.getElementById('memberName').textContent=p.displayName||'สมาชิก Bake & Bite';}catch(e){console.error(e)}}
+async function init(){
+  const h=location.hash.replace('#',''); if(h) showPage(h);
+  try{
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){liff.login();return;}
+    const p=await liff.getProfile(); lineUserId=p.userId||"";
+    const n=document.getElementById('memberName'); if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
+  }catch(e){console.error(e)}
+}
+async function requestPoints(){
+  if(!lineUserId){alert('กรุณาเปิดหน้านี้ผ่าน LINE ก่อน');return}
+  const platform=document.getElementById('platform').value;
+  const orderNo=document.getElementById('orderNo').value.trim();
+  const amount=Number(document.getElementById('amount').value||0);
+  if(!platform||!orderNo||amount<=0){alert('กรุณากรอกข้อมูลให้ครบ');return}
+  const points=Math.floor(amount/50);
+  alert('คำขอรับแต้ม '+points+' แต้ม พร้อมส่งตรวจสอบ');
+}
 function closeLiff(){if(window.liff&&liff.isInClient())liff.closeWindow();else history.back()}
 init();
 </script>
-</body></html>
+</body>
+</html>
