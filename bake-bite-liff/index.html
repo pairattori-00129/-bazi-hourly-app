@@ -73,7 +73,7 @@
   <button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
 </div></nav>
 <script>
-const LIFF_ID = "YOUR_LIFF_ID";
+const LIFF_ID = "2011741629-yEU5sjz8";
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));history.replaceState({},'',location.pathname+'#'+id)}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 async function init(){const h=location.hash.replace('#',''); if(h) showPage(h); if(!LIFF_ID||LIFF_ID==='YOUR_LIFF_ID') return; try{await liff.init({liffId:LIFF_ID}); if(!liff.isLoggedIn()){liff.login();return;} const p=await liff.getProfile(); document.getElementById('memberName').textContent=p.displayName||'สมาชิก';}catch(e){console.error(e)}}
