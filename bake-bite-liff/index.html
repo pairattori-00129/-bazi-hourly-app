@@ -15,13 +15,9 @@
 body{min-height:100vh}
 .shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdfa 0%,#fff8ec 100%);position:relative;box-shadow:0 0 30px rgba(60,40,25,.08);overflow:hidden}
 .app{padding-bottom:82px}
-.header{position:relative;padding:28px 16px 12px;text-align:center;overflow:hidden;background:
- radial-gradient(circle at 15% 65%,rgba(150,185,105,.18),transparent 28%),
- radial-gradient(circle at 85% 65%,rgba(239,170,120,.18),transparent 28%),
- linear-gradient(180deg,#fffefa,#fff9ef)}
-.header:before{content:"🥗";position:absolute;left:-12px;bottom:4px;font-size:80px;filter:saturate(.85)}
-.header:after{content:"🥐";position:absolute;right:-5px;bottom:6px;font-size:74px}
-.header img{width:178px;max-width:54%;display:block;margin:0 auto;position:relative;z-index:2}
+.header{position:relative;padding:0;text-align:center;overflow:hidden;background:#fff;border-bottom:1px solid rgba(90,47,31,.08)}
+.header:before,.header:after{display:none!important}
+.header img{width:100%;max-width:none;height:auto;display:block;margin:0;position:relative;z-index:2}
 .page{display:none}.page.active{display:block}
 .title{position:relative;text-align:center;padding:10px 18px 14px}
 .title:before,.title:after{content:"";position:absolute;width:28px;height:14px;border-radius:50%;background:#a3b68c;opacity:.55;transform:rotate(-28deg)}
@@ -88,7 +84,7 @@ body{min-height:100vh}
 </head>
 <body>
 <div class="shell"><main class="app">
-<header class="header"><img src="logo.svg" alt="Bake & Bite"></header>
+<header class="header"><img src="bake-bite-header.jpg" alt="Bake & Bite"></header>
 
 <section id="order" class="page">
   <div class="title"><h1>สั่งอาหาร</h1><p>เลือกจำนวนสินค้า แล้วกดยืนยันการสั่งซื้อ</p></div>
