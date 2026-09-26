@@ -20,14 +20,16 @@
 </div>
 
 <section id="ordersTab">
-<div class="stats"><div class="stat">รอรับออเดอร์<b>2</b></div><div class="stat">ยืนยันแล้ว<b>1</b></div><div class="stat">กำลังทำ<b>1</b></div><div class="stat">พร้อมรับ<b>1</b></div><div class="stat">เสร็จสิ้น<b>3</b></div></div>
-<div class="board">
-<div class="card list"><h2>ออเดอร์วันนี้</h2>
-<div class="order"><div class="head"><div><b>BB26092501</b><div class="sub">17:12 · คุณนิด</div></div><span class="badge">รอรับออเดอร์</span></div><div class="items">สลัดโรลไส้ปูอัด × 2<br>น้ำเก๊กฮวย × 1</div><div class="actions"><button class="btn soft" onclick="show1()">ดูรายละเอียด</button><button class="btn dark" onclick="show1();setTimeout(()=>print(),100)">พิมพ์ใบออเดอร์</button></div></div>
-<div class="order"><div class="head"><div><b>BB26092502</b><div class="sub">17:18 · คุณเอก</div></div><span class="badge">รอรับออเดอร์</span></div><div class="items">แซนด์วิชไส้กรอก + ไข่ดาว × 3</div><div class="actions"><button class="btn soft" onclick="show2()">ดูรายละเอียด</button><button class="btn dark" onclick="show2();setTimeout(()=>print(),100)">พิมพ์ใบออเดอร์</button></div></div>
-<div class="order"><div class="head"><div><b>BB26092503</b><div class="sub">16:55 · คุณเมย์</div></div><span class="badge" style="background:#dfeeda">ยืนยันแล้ว</span></div><div class="items">แซนด์วิชแยมสตรอว์เบอร์รี × 2<br>น้ำรากบัว × 2</div><div class="actions"><button class="btn soft" onclick="show3()">ดูรายละเอียด</button><button class="btn dark" onclick="show3();setTimeout(()=>print(),100)">พิมพ์ใบออเดอร์</button></div></div>
+<div class="stats">
+  <div class="stat">รอรับออเดอร์<b id="statPending">0</b></div>
+  <div class="stat">ยืนยันแล้ว<b id="statConfirmed">0</b></div>
+  <div class="stat">กำลังทำ<b id="statPreparing">0</b></div>
+  <div class="stat">พร้อมรับ<b id="statReady">0</b></div>
+  <div class="stat">เสร็จสิ้น<b id="statCompleted">0</b></div>
 </div>
-<div class="card detail"><h2>รายละเอียดออเดอร์</h2><div id="detail"><div class="sub">เลือกออเดอร์จากด้านซ้าย</div></div></div>
+<div class="board">
+  <div class="card list"><div class="toolbar"><h2>ออเดอร์</h2><button class="btn soft" onclick="loadOrders()">รีเฟรช</button></div><div id="orderList"><div class="sub">กำลังโหลดออเดอร์...</div></div></div>
+  <div class="card detail"><h2>รายละเอียดออเดอร์</h2><div id="detail"><div class="sub">เลือกออเดอร์จากด้านซ้าย</div></div></div>
 </div></section>
 
 <section id="productsTab" class="hidden">
@@ -72,10 +74,65 @@
 
 <script>
 function showTab(tab,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');ordersTab.classList.toggle('hidden',tab!=='orders');productsTab.classList.toggle('hidden',tab!=='products')}
-function draw(no,name,time,status,items,total,note){detail.innerHTML='<div><b style="font-size:20px">'+no+'</b><div class="sub">'+time+' · '+name+'</div></div><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th></tr>'+items.map(x=>'<tr><td>'+x[0]+'</td><td>'+x[1]+'</td><td>฿'+x[2]+'</td></tr>').join('')+'</table><div class="total">รวม ฿'+total+'</div><p><b>สถานะ:</b> '+status+'</p><p><b>หมายเหตุ:</b> '+note+'</p><div class="actions"><button class="btn green">ยืนยันออเดอร์</button><button class="btn dark" onclick="print()">พิมพ์ใบออเดอร์</button><button class="btn danger">ยกเลิกออเดอร์</button></div>'}
-function show1(){draw('BB26092501','คุณนิด','17:12','รอรับออเดอร์',[['สลัดโรลไส้ปูอัด',2,90],['น้ำเก๊กฮวย',1,25]],115,'ไม่ใส่ผักชี')}
-function show2(){draw('BB26092502','คุณเอก','17:18','รอรับออเดอร์',[['แซนด์วิชไส้กรอก + ไข่ดาว',3,105]],105,'-')}
-function show3(){draw('BB26092503','คุณเมย์','16:55','ยืนยันแล้ว',[['แซนด์วิชแยมสตรอว์เบอร์รี',2,60],['น้ำรากบัว',2,50]],110,'-')}
+const STATUS_LABEL={pending:'รอรับออเดอร์',confirmed:'ยืนยันแล้ว',preparing:'กำลังทำ',ready:'พร้อมรับ',completed:'เสร็จสิ้น',cancelled:'ยกเลิก'};
+const PAY_LABEL={unpaid:'ยังไม่ชำระ',pending:'รอตรวจสอบชำระเงิน',paid:'ชำระแล้ว',failed:'ชำระไม่สำเร็จ',refunded:'คืนเงิน'};
+const DEL_LABEL={waiting_payment:'รอชำระเงิน',waiting_lineman:'รอเรียก LINE MAN',driver_called:'เรียก LINE MAN แล้ว',driver_picked_up:'ไรเดอร์รับอาหารแล้ว',delivered:'จัดส่งสำเร็จ',cancelled:'ยกเลิกการจัดส่ง'};
+let orders=[]; let currentOrder=null;
+
+function fmtTime(v){try{return new Date(v).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}catch(e){return v||''}}
+async function loadOrders(){
+  if(!ADMIN_TOKEN)return;
+  try{
+    orders=await rpc('bb_admin_orders',{p_token:ADMIN_TOKEN})||[];
+    renderOrderList();
+  }catch(e){console.error(e);orderList.innerHTML='<div class="sub">โหลดออเดอร์ไม่สำเร็จ</div>'}
+}
+function renderOrderList(){
+  const counts={pending:0,confirmed:0,preparing:0,ready:0,completed:0};
+  orders.forEach(o=>{if(counts[o.status]!==undefined)counts[o.status]++});
+  statPending.textContent=counts.pending;statConfirmed.textContent=counts.confirmed;statPreparing.textContent=counts.preparing;statReady.textContent=counts.ready;statCompleted.textContent=counts.completed;
+  orderList.innerHTML=orders.map(o=>{
+    const delivery=o.fulfillment_method==='lineman'?'<div class="sub">🛵 LINE MAN · '+(DEL_LABEL[o.delivery_status]||'-')+'</div>':'<div class="sub">🏪 รับเองที่ร้าน</div>';
+    return '<div class="order"><div class="head"><div><b>'+o.order_no+'</b><div class="sub">'+fmtTime(o.created_at)+' · '+(o.customer_name||'ลูกค้า LINE')+'</div></div><span class="badge">'+(STATUS_LABEL[o.status]||o.status)+'</span></div>'+delivery+'<div class="items">ยอดรวม ฿'+Number(o.total||0).toLocaleString()+' · '+(PAY_LABEL[o.payment_status]||o.payment_status)+'</div><div class="actions"><button class="btn soft" onclick="openOrder(\''+o.id+'\')">ดูรายละเอียด</button><button class="btn dark" onclick="openOrder(\''+o.id+'\').then(()=>setTimeout(()=>print(),100))">พิมพ์ใบออเดอร์</button></div></div>'
+  }).join('')||'<div class="sub">ยังไม่มีออเดอร์</div>';
+}
+async function openOrder(id){
+  try{
+    const data=await rpc('bb_admin_order_detail',{p_token:ADMIN_TOKEN,p_order_id:id});
+    currentOrder=data.order;
+    const items=data.items||[];
+    renderOrderDetail(currentOrder,items);
+  }catch(e){alert('โหลดรายละเอียดออเดอร์ไม่สำเร็จ')}
+}
+function renderOrderDetail(o,items){
+  const deliveryBlock=o.fulfillment_method==='lineman'
+   ? '<div class="card" style="margin:12px 0;background:#f0f8eb"><b>จัดส่งด้วย LINE MAN</b><div>ผู้รับ: '+(o.recipient_name||'-')+'</div><div>โทร: '+(o.recipient_phone||'-')+'</div><div>ที่อยู่: '+(o.delivery_address||'-')+'</div><div>สถานะจัดส่ง: <b>'+(DEL_LABEL[o.delivery_status]||'-')+'</b></div></div>'
+   : '<div class="card" style="margin:12px 0;background:#fff8ef"><b>รับเองที่ร้าน</b></div>';
+  const next={pending:'confirmed',confirmed:'preparing',preparing:'ready',ready:'completed'}[o.status];
+  let actions='';
+  if(o.payment_status!=='paid') actions+='<button class="btn green" onclick="markPaid()">ยืนยันชำระเงิน</button>';
+  if(next) actions+='<button class="btn green" onclick="advanceOrder(\''+next+'\')">เปลี่ยนเป็น '+STATUS_LABEL[next]+'</button>';
+  if(o.fulfillment_method==='lineman' && o.payment_status==='paid' && o.delivery_status==='waiting_lineman') actions+='<button class="btn dark" onclick="callLineman()">เรียก LINE MAN</button>';
+  if(o.fulfillment_method==='lineman' && o.delivery_status==='driver_called') actions+='<button class="btn dark" onclick="setDelivery(\'driver_picked_up\')">ไรเดอร์รับอาหารแล้ว</button>';
+  if(o.fulfillment_method==='lineman' && o.delivery_status==='driver_picked_up') actions+='<button class="btn dark" onclick="setDelivery(\'delivered\')">จัดส่งสำเร็จ</button>';
+  actions+='<button class="btn dark" onclick="print()">พิมพ์ใบออเดอร์</button>';
+  detail.innerHTML='<div><b style="font-size:20px">'+o.order_no+'</b><div class="sub">'+fmtTime(o.created_at)+' · '+(o.customer_name||'ลูกค้า LINE')+'</div></div><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th></tr>'+items.map(i=>'<tr><td>'+i.product_name+'</td><td>'+i.quantity+'</td><td>฿'+Number(i.line_total).toLocaleString()+'</td></tr>').join('')+'</table><div class="total">รวม ฿'+Number(o.total||0).toLocaleString()+'</div><p><b>สถานะอาหาร:</b> '+(STATUS_LABEL[o.status]||o.status)+'</p><p><b>การชำระเงิน:</b> '+(PAY_LABEL[o.payment_status]||o.payment_status)+'</p>'+deliveryBlock+'<p><b>หมายเหตุ:</b> '+(o.note||'-')+'</p><div class="actions">'+actions+'</div>';
+}
+async function updateOrder(status,payment,delivery){
+  if(!currentOrder)return;
+  try{
+    const o=await rpc('bb_admin_update_order',{p_token:ADMIN_TOKEN,p_order_id:currentOrder.id,p_status:status||null,p_payment_status:payment||null,p_delivery_status:delivery||null});
+    await loadOrders();await openOrder(o.id);
+  }catch(e){alert('อัปเดตออเดอร์ไม่สำเร็จ')}
+}
+function markPaid(){updateOrder(null,'paid',null)}
+function advanceOrder(s){updateOrder(s,null,null)}
+function setDelivery(s){updateOrder(null,null,s)}
+function callLineman(){
+  if(!currentOrder||currentOrder.payment_status!=='paid')return alert('ต้องยืนยันการชำระเงินก่อน');
+  updateOrder(null,null,'driver_called');
+  alert('บันทึกสถานะเรียก LINE MAN แล้ว\nขั้นเชื่อม API เรียกไรเดอร์จริงจะต่อเมื่อมีสิทธิ์ LINE MAN integration');
+}
 
 const SUPABASE_URL='https://oplwrlljqwgxnrqrdufp.supabase.co';
 const SUPABASE_KEY='sb_publishable_Qjzm-LdsvvOZPYMxBfoKyg_iGCUpo5N';
@@ -100,7 +157,7 @@ async function ensureLogin(){
     if(!ADMIN_TOKEN) return false;
   }
   try{
-    await loadAdminCatalog();
+    await Promise.all([loadAdminCatalog(),loadOrders()]);
     sessionStorage.setItem('bb_admin_token',ADMIN_TOKEN);
     return true;
   }catch(e){
@@ -199,5 +256,5 @@ async function moveProduct(id,dir){
     await loadAdminCatalog();
   }catch(e){alert('เรียงลำดับไม่สำเร็จ')}
 }
-ensureLogin();show1();
+ensureLogin();
 </script></body></html>
