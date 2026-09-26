@@ -147,8 +147,20 @@ body{min-height:100vh}
   <div class="card" style="margin:12px" id="checkoutItems"></div>
   <div class="card" style="margin:12px">
     <div style="display:flex;justify-content:space-between;font-size:20px"><strong>ยอดรวม</strong><strong id="checkoutTotal">฿0</strong></div>
+    <div class="card" style="margin-top:12px;background:#fff8ef">
+      <strong>วิธีรับสินค้า</strong>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="radio" name="fulfillment" value="pickup" checked onchange="toggleDelivery()"> รับเองที่ร้าน</label>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="radio" name="fulfillment" value="lineman" onchange="toggleDelivery()"> จัดส่งด้วย LINE MAN</label>
+    </div>
+    <div id="deliveryFields" style="display:none">
+      <input class="field" id="recipientName" placeholder="ชื่อผู้รับ">
+      <input class="field" id="recipientPhone" placeholder="เบอร์โทรผู้รับ">
+      <textarea class="field" id="deliveryAddress" rows="3" placeholder="ที่อยู่จัดส่ง"></textarea>
+      <input class="field" id="deliveryNote" placeholder="จุดสังเกต / หมายเหตุการจัดส่ง">
+    </div>
     <input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
-    <select class="field" id="paymentMethod"><option value="cash">ชำระเงินที่ร้าน / เงินสด</option><option value="transfer">โอนเงิน</option></select>
+    <select class="field" id="paymentMethod"><option value="transfer">โอนเงิน / QR</option><option value="cash">เงินสดที่ร้าน (เฉพาะรับเอง)</option></select>
+    <div class="note" style="margin-top:10px">ถ้าเลือก LINE MAN ระบบจะรอให้ร้านยืนยันการชำระเงินก่อน แล้วจึงเข้าสถานะ “รอเรียก LINE MAN”</div>
     <button class="btn" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
     <button class="btn" style="background:#8f8178" onclick="showPage('order')">กลับไปแก้ไขรายการ</button>
   </div>
@@ -201,6 +213,8 @@ body{min-height:100vh}
 <script>
 const LIFF_ID="2011741629-yEU5sjz8";
 const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
+const SUPABASE_URL="https://oplwrlljqwgxnrqrdufp.supabase.co";
+const SUPABASE_KEY="sb_publishable_Qjzm-LdsvvOZPYMxBfoKyg_iGCUpo5N";
 let lineUserId="";
 let lineDisplayName="";
 let catalog={categories:[],products:[]};
@@ -242,13 +256,41 @@ function changeQty(id,delta){cart[id]=Math.max(0,(cart[id]||0)+delta);if(cart[id
 function cartItems(){return Object.entries(cart).map(([id,quantity])=>{const p=catalog.products.find(x=>x.id===id);return p?{...p,quantity}:null}).filter(Boolean)}
 function updateCart(){const items=cartItems();document.getElementById("cartCount").textContent=items.reduce((a,b)=>a+b.quantity,0)+" รายการ";document.getElementById("cartTotal").textContent=money(items.reduce((a,b)=>a+Number(b.price)*b.quantity,0))}
 function openCheckout(){const items=cartItems();if(!items.length){alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");return}document.getElementById("checkoutItems").innerHTML=items.map(i=>'<div class="checkout-row"><div><strong>'+i.name+'</strong><div style="font-size:13px;color:#7b6a60">'+money(i.price)+' × '+i.quantity+'</div></div><strong>'+money(Number(i.price)*i.quantity)+'</strong></div>').join("");document.getElementById("checkoutTotal").textContent=money(items.reduce((a,b)=>a+Number(b.price)*b.quantity,0));showPage("checkout")}
+function toggleDelivery(){
+  const v=document.querySelector('input[name="fulfillment"]:checked').value;
+  document.getElementById("deliveryFields").style.display=v==="lineman"?"block":"none";
+  if(v==="lineman" && document.getElementById("paymentMethod").value==="cash") document.getElementById("paymentMethod").value="transfer";
+}
 async function submitOrder(){
   const items=cartItems(); if(!items.length) return;
-  const payload={line_user_id:lineUserId||null,customer_name:lineDisplayName||null,payment_method:document.getElementById("paymentMethod").value,note:document.getElementById("customerNote").value,items:items.map(i=>({product_id:i.id,quantity:i.quantity}))};
+  const fulfillment=document.querySelector('input[name="fulfillment"]:checked').value;
+  const recipientName=document.getElementById("recipientName").value.trim();
+  const recipientPhone=document.getElementById("recipientPhone").value.trim();
+  const deliveryAddress=document.getElementById("deliveryAddress").value.trim();
+  const deliveryNote=document.getElementById("deliveryNote").value.trim();
+  if(fulfillment==="lineman" && (!recipientName||!recipientPhone||!deliveryAddress)){
+    alert("กรุณากรอกชื่อผู้รับ เบอร์โทร และที่อยู่จัดส่งให้ครบ"); return;
+  }
+  if(fulfillment==="lineman" && document.getElementById("paymentMethod").value==="cash"){
+    alert("การจัดส่งด้วย LINE MAN กรุณาเลือกโอนเงิน / QR"); return;
+  }
+  const body={
+    p_line_user_id:lineUserId||null,
+    p_customer_name:lineDisplayName||null,
+    p_payment_method:document.getElementById("paymentMethod").value,
+    p_note:document.getElementById("customerNote").value,
+    p_fulfillment_method:fulfillment,
+    p_recipient_name:fulfillment==="lineman"?recipientName:null,
+    p_recipient_phone:fulfillment==="lineman"?recipientPhone:null,
+    p_delivery_address:fulfillment==="lineman"?deliveryAddress:null,
+    p_delivery_note:fulfillment==="lineman"?deliveryNote:null,
+    p_items:items.map(i=>({product_id:i.id,quantity:i.quantity}))
+  };
   try{
-    const r=await fetch(STORE_API+"?action=order",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
-    const j=await r.json(); if(!j.ok) throw new Error(j.error||"order");
-    alert("รับคำสั่งซื้อแล้ว เลขที่ "+j.order.order_no+"\nยอดรวม "+money(j.order.total));
+    const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/bb_create_order",{method:"POST",headers:{"apikey":SUPABASE_KEY,"authorization":"Bearer "+SUPABASE_KEY,"content-type":"application/json"},body:JSON.stringify(body)});
+    const order=await r.json(); if(!r.ok) throw new Error(order.message||"order");
+    const deliveryText=fulfillment==="lineman"?"\nจัดส่ง: LINE MAN\nสถานะ: รอยืนยันการชำระเงิน":"\nรับสินค้า: รับเองที่ร้าน";
+    alert("รับคำสั่งซื้อแล้ว\nเลขที่ "+order.order_no+"\nยอดรวม "+money(order.total)+deliveryText);
     cart={}; renderCatalog(); showPage("order");
   }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
 }
