@@ -77,61 +77,127 @@ function show1(){draw('BB26092501','คุณนิด','17:12','รอรับ
 function show2(){draw('BB26092502','คุณเอก','17:18','รอรับออเดอร์',[['แซนด์วิชไส้กรอก + ไข่ดาว',3,105]],105,'-')}
 function show3(){draw('BB26092503','คุณเมย์','16:55','ยืนยันแล้ว',[['แซนด์วิชแยมสตรอว์เบอร์รี',2,60],['น้ำรากบัว',2,50]],110,'-')}
 
-const MENU_VERSION='2026-09-26-v2';
-const defaultCategories=['สลัดโรล','แซนด์วิช','แซนด์วิชแยม','เครื่องดื่ม'];
-const defaultProducts=[
-{id:1,cat:'สลัดโรล',name:'สลัดโรลไส้ปูอัด',price:45,active:true,img:''},
-{id:2,cat:'สลัดโรล',name:'สลัดโรลไส้โบโลน่า',price:45,active:true,img:''},
-{id:3,cat:'สลัดโรล',name:'สลัดโรลไส้กรอก',price:45,active:true,img:''},
-{id:4,cat:'สลัดโรล',name:'สลัดโรลไส้แซลมอน',price:55,active:true,img:''},
-{id:5,cat:'แซนด์วิช',name:'แซนด์วิชไส้กรอก + ไข่ดาว',price:35,active:true,img:''},
-{id:6,cat:'แซนด์วิช',name:'แซนด์วิชโบโลน่า + ไข่ดาว',price:35,active:true,img:''},
-{id:7,cat:'แซนด์วิชแยม',name:'แซนด์วิชแยมสตรอว์เบอร์รี',price:30,active:true,img:''},
-{id:8,cat:'แซนด์วิชแยม',name:'แซนด์วิชแยมบลูเบอร์รี',price:30,active:true,img:''},
-{id:9,cat:'แซนด์วิชแยม',name:'แซนด์วิชแยมส้ม',price:30,active:true,img:''},
-{id:10,cat:'เครื่องดื่ม',name:'น้ำเก๊กฮวย',price:25,active:true,img:''},
-{id:11,cat:'เครื่องดื่ม',name:'น้ำรากบัว',price:25,active:true,img:''}
-];
-if(localStorage.getItem('bb_menu_version')!==MENU_VERSION){
-  localStorage.setItem('bb_categories',JSON.stringify(defaultCategories));
-  localStorage.setItem('bb_products',JSON.stringify(defaultProducts));
-  localStorage.setItem('bb_menu_version',MENU_VERSION);
-}
-let categories=JSON.parse(localStorage.getItem('bb_categories')||'null')||defaultCategories;
-let products=JSON.parse(localStorage.getItem('bb_products')||'null')||defaultProducts;
+const SUPABASE_URL='https://oplwrlljqwgxnrqrdufp.supabase.co';
+const SUPABASE_KEY='sb_publishable_Qjzm-LdsvvOZPYMxBfoKyg_iGCUpo5N';
+let ADMIN_TOKEN=sessionStorage.getItem('bb_admin_token')||'';
+let categories=[];
+let products=[];
 let currentCat='ทั้งหมด';
-function persist(){localStorage.setItem('bb_categories',JSON.stringify(categories));localStorage.setItem('bb_products',JSON.stringify(products))}
+
+async function rpc(fn,body){
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+fn,{
+    method:'POST',
+    headers:{'apikey':SUPABASE_KEY,'authorization':'Bearer '+SUPABASE_KEY,'content-type':'application/json'},
+    body:JSON.stringify(body||{})
+  });
+  const txt=await r.text();
+  if(!r.ok) throw new Error(txt||('HTTP '+r.status));
+  return txt?JSON.parse(txt):null;
+}
+async function ensureLogin(){
+  while(!ADMIN_TOKEN){
+    ADMIN_TOKEN=prompt('รหัสผ่านผู้ดูแล Bake & Bite')||'';
+    if(!ADMIN_TOKEN) return false;
+  }
+  try{
+    await loadAdminCatalog();
+    sessionStorage.setItem('bb_admin_token',ADMIN_TOKEN);
+    return true;
+  }catch(e){
+    sessionStorage.removeItem('bb_admin_token');ADMIN_TOKEN='';
+    alert('รหัสผ่านไม่ถูกต้อง');
+    return ensureLogin();
+  }
+}
+async function loadAdminCatalog(){
+  const data=await rpc('bb_admin_catalog',{p_token:ADMIN_TOKEN});
+  categories=data.categories||[];
+  products=data.products||[];
+  renderCategories();renderProducts();
+}
+function categoryName(id){return (categories.find(c=>c.id===id)||{}).name||'ไม่ทราบหมวด'}
 function renderCategories(){
-  catBar.innerHTML=['ทั้งหมด',...categories].map(c=>'<button class="catbtn '+(currentCat===c?'active':'')+'" onclick="filterCat(\''+c.replace(/'/g,"\'")+'\')">'+c+'</button>').join('');
-  categoryList.innerHTML=categories.map(c=>'<span class="category-chip">'+c+' <button onclick="deleteCategory(\''+c.replace(/'/g,"\'")+'\')">×</button></span>').join('');
-  pCategory.innerHTML=categories.map(c=>'<option>'+c+'</option>').join('');
+  catBar.innerHTML=['ทั้งหมด',...categories.map(c=>c.name)].map(c=>'<button class="catbtn '+(currentCat===c?'active':'')+'" onclick="filterCat(\''+c.replace(/'/g,"\\'")+'\')">'+c+'</button>').join('');
+  categoryList.innerHTML=categories.map(c=>'<span class="category-chip">'+c.name+' <button onclick="deleteCategory(\''+c.id+'\')">×</button></span>').join('');
+  pCategory.innerHTML=categories.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
 }
 function productCard(p){
-  const realIdx=products.findIndex(x=>x.id===p.id);
-  return '<div class="product-card"><div>'+(p.img?'<img src="'+p.img+'">':'<div class="ph">🍽️</div>')+'</div><div class="product-name">'+p.name+'</div><div class="meta">'+p.cat+'</div><div class="price">฿'+Number(p.price).toLocaleString()+'</div><div class="switchrow"><div class="switch '+(p.active?'on':'')+'" onclick="toggleActive('+p.id+')"></div><span>'+(p.active?'เปิดขาย':'ปิดขาย')+'</span></div><div class="actions"><button class="mini edit" onclick="editProduct('+p.id+')">แก้ไข</button><button class="mini move" onclick="moveProduct('+realIdx+',-1)">↑</button><button class="mini move" onclick="moveProduct('+realIdx+',1)">↓</button><button class="mini del" onclick="deleteProduct('+p.id+')">ลบ</button></div></div>';
+  const list=products.filter(x=>x.category_id===p.category_id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const pos=list.findIndex(x=>x.id===p.id);
+  return '<div class="product-card"><div>'+(p.image_url?'<img src="'+p.image_url+'">':'<div class="ph">🍽️</div>')+'</div><div class="product-name">'+p.name+'</div><div class="meta">'+categoryName(p.category_id)+'</div><div class="price">฿'+Number(p.price).toLocaleString()+'</div><div class="switchrow"><div class="switch '+(p.is_active?'on':'')+'" onclick="toggleActive(\''+p.id+'\')"></div><span>'+(p.is_active?'เปิดขาย':'ปิดขาย')+'</span></div><div class="actions"><button class="mini edit" onclick="editProduct(\''+p.id+'\')">แก้ไข</button><button class="mini move" onclick="moveProduct(\''+p.id+'\',-1)">↑</button><button class="mini move" onclick="moveProduct(\''+p.id+'\',1)">↓</button><button class="mini del" onclick="deleteProduct(\''+p.id+'\')">ลบ</button></div></div>';
 }
 function renderProducts(){
-  if(currentCat==='ทั้งหมด'){
-    productList.innerHTML=categories.map(c=>{
-      const list=products.filter(p=>p.cat===c);
-      return '<section class="category-section"><div class="category-title"><h3>'+c+'</h3><span class="category-count">'+list.length+' รายการ</span></div><div class="category-grid">'+(list.map(productCard).join('')||'<div class="sub">ยังไม่มีรายการอาหารในหมวดนี้</div>')+'</div></section>';
-    }).join('');
-  }else{
-    const list=products.filter(p=>p.cat===currentCat);
-    productList.innerHTML='<section class="category-section"><div class="category-title"><h3>'+currentCat+'</h3><span class="category-count">'+list.length+' รายการ</span></div><div class="category-grid">'+(list.map(productCard).join('')||'<div class="sub">ยังไม่มีรายการอาหารในหมวดนี้</div>')+'</div></section>';
-  }
+  const cats=currentCat==='ทั้งหมด'?categories:categories.filter(c=>c.name===currentCat);
+  productList.innerHTML=cats.map(c=>{
+    const list=products.filter(p=>p.category_id===c.id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+    return '<section class="category-section"><div class="category-title"><h3>'+c.name+'</h3><span class="category-count">'+list.length+' รายการ</span></div><div class="category-grid">'+(list.map(productCard).join('')||'<div class="sub">ยังไม่มีรายการอาหารในหมวดนี้</div>')+'</div></section>';
+  }).join('');
 }
 function filterCat(c){currentCat=c;renderCategories();renderProducts()}
 function toggleCategoryBox(){categoryBox.classList.toggle('hidden');renderCategories()}
-function addCategory(){const v=newCategory.value.trim();if(!v)return;if(categories.includes(v))return alert('มีหมวดนี้แล้ว');categories.push(v);newCategory.value='';persist();renderCategories();renderProducts()}
-function deleteCategory(c){if(products.some(p=>p.cat===c))return alert('ยังมีสินค้าอยู่ในหมวดนี้ กรุณาย้ายสินค้าก่อน');if(!confirm('ลบหมวด '+c+' ?'))return;categories=categories.filter(x=>x!==c);if(currentCat===c)currentCat='ทั้งหมด';persist();renderCategories();renderProducts()}
-function openAdd(){formTitle.textContent='เพิ่มรายการอาหาร';editId.value='';pName.value='';pPrice.value='';pActive.value='1';imgPreview.src='';formCard.classList.remove('hidden');renderCategories();formCard.scrollIntoView({behavior:'smooth'})}
+async function addCategory(){
+  const v=newCategory.value.trim();if(!v)return;
+  const slug='cat-'+Date.now();
+  try{
+    await rpc('bb_admin_save_category',{p_token:ADMIN_TOKEN,p_id:null,p_name:v,p_slug:slug,p_sort_order:categories.length+1,p_is_active:true});
+    newCategory.value='';await loadAdminCatalog();
+  }catch(e){alert('เพิ่มหมวดไม่สำเร็จ')}
+}
+async function deleteCategory(id){
+  if(products.some(p=>p.category_id===id))return alert('ยังมีสินค้าอยู่ในหมวดนี้ กรุณาย้ายสินค้าก่อน');
+  if(!confirm('ต้องการลบหมวดนี้หรือไม่?'))return;
+  try{await rpc('bb_admin_delete_category',{p_token:ADMIN_TOKEN,p_id:id});await loadAdminCatalog()}catch(e){alert('ลบหมวดไม่สำเร็จ')}
+}
+function openAdd(){
+  formTitle.textContent='เพิ่มรายการอาหาร';editId.value='';pName.value='';pPrice.value='';pActive.value='1';imgPreview.removeAttribute('src');formCard.classList.remove('hidden');renderCategories();formCard.scrollIntoView({behavior:'smooth'})
+}
 function closeForm(){formCard.classList.add('hidden')}
-function previewImage(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>imgPreview.src=r.result;r.readAsDataURL(f)}
-function saveProduct(){const name=pName.value.trim(),price=Number(pPrice.value);if(!name||isNaN(price))return alert('กรุณากรอกชื่ออาหารและราคา');const id=Number(editId.value||0);const old=products.find(x=>x.id===id);const data={id:id||Date.now(),cat:pCategory.value,name,price,active:pActive.value==='1',img:imgPreview.src||old?.img||''};if(id){products=products.map(x=>x.id===id?data:x)}else products.push(data);persist();renderProducts();closeForm()}
-function editProduct(id){const p=products.find(x=>x.id===id);if(!p)return;editId.value=p.id;formTitle.textContent='แก้ไขรายการอาหาร';pCategory.value=p.cat;pName.value=p.name;pPrice.value=p.price;pActive.value=p.active?'1':'0';imgPreview.src=p.img||'';formCard.classList.remove('hidden');formCard.scrollIntoView({behavior:'smooth'})}
-function toggleActive(id){const p=products.find(x=>x.id===id);if(!p)return;p.active=!p.active;persist();renderProducts()}
-function deleteProduct(id){const p=products.find(x=>x.id===id);if(!p||!confirm('ลบ '+p.name+' ?'))return;products=products.filter(x=>x.id!==id);persist();renderProducts()}
-function moveProduct(i,dir){const j=i+dir;if(j<0||j>=products.length)return;[products[i],products[j]]=[products[j],products[i]];persist();renderProducts()}
-renderCategories();renderProducts();show1();
+function previewImage(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const img=new Image();const reader=new FileReader();
+  reader.onload=()=>{img.onload=()=>{
+    const max=700,scale=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);imgPreview.src=c.toDataURL('image/jpeg',.76)
+  };img.src=reader.result};reader.readAsDataURL(f)
+}
+async function saveProduct(){
+  const name=pName.value.trim(),price=Number(pPrice.value);if(!name||isNaN(price))return alert('กรุณากรอกชื่ออาหารและราคา');
+  const id=editId.value||null;
+  const old=products.find(x=>x.id===id);
+  const sort=id?(old?.sort_order||0):(products.filter(x=>x.category_id===pCategory.value).length+1);
+  try{
+    await rpc('bb_admin_save_product',{
+      p_token:ADMIN_TOKEN,p_id:id,p_category_id:pCategory.value,p_name:name,p_price:price,
+      p_image_url:(imgPreview.getAttribute('src')||old?.image_url||null),p_is_active:pActive.value==='1',p_sort_order:sort
+    });
+    await loadAdminCatalog();closeForm();alert('บันทึกแล้ว หน้าสั่งอาหารจะใช้ข้อมูลนี้');
+  }catch(e){alert('บันทึกไม่สำเร็จ')}
+}
+function editProduct(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  editId.value=p.id;formTitle.textContent='แก้ไขรายการอาหาร';pCategory.value=p.category_id;pName.value=p.name;pPrice.value=p.price;pActive.value=p.is_active?'1':'0';
+  if(p.image_url)imgPreview.src=p.image_url;else imgPreview.removeAttribute('src');
+  formCard.classList.remove('hidden');formCard.scrollIntoView({behavior:'smooth'})
+}
+async function toggleActive(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  try{await rpc('bb_admin_save_product',{p_token:ADMIN_TOKEN,p_id:p.id,p_category_id:p.category_id,p_name:p.name,p_price:Number(p.price),p_image_url:p.image_url||null,p_is_active:!p.is_active,p_sort_order:p.sort_order||0});await loadAdminCatalog()}catch(e){alert('อัปเดตสถานะไม่สำเร็จ')}
+}
+async function deleteProduct(id){
+  const p=products.find(x=>x.id===id);if(!p||!confirm('ลบ '+p.name+' ?'))return;
+  try{await rpc('bb_admin_delete_product',{p_token:ADMIN_TOKEN,p_id:id});await loadAdminCatalog()}catch(e){alert('ลบสินค้าไม่สำเร็จ')}
+}
+async function moveProduct(id,dir){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const list=products.filter(x=>x.category_id===p.category_id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const i=list.findIndex(x=>x.id===id),j=i+dir;if(j<0||j>=list.length)return;
+  const q=list[j],a=p.sort_order||i+1,b=q.sort_order||j+1;
+  try{
+    await rpc('bb_admin_save_product',{p_token:ADMIN_TOKEN,p_id:p.id,p_category_id:p.category_id,p_name:p.name,p_price:Number(p.price),p_image_url:p.image_url||null,p_is_active:p.is_active,p_sort_order:b});
+    await rpc('bb_admin_save_product',{p_token:ADMIN_TOKEN,p_id:q.id,p_category_id:q.category_id,p_name:q.name,p_price:Number(q.price),p_image_url:q.image_url||null,p_is_active:q.is_active,p_sort_order:a});
+    await loadAdminCatalog();
+  }catch(e){alert('เรียงลำดับไม่สำเร็จ')}
+}
+ensureLogin();show1();
 </script></body></html>
