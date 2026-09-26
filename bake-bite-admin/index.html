@@ -1,10 +1,25 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bake & Bite Admin</title><style>
-body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;background:#f7f2ea;color:#3f2d25}.wrap{max-width:1180px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.top img{width:90px}.brand{display:flex;align-items:center;gap:12px}.brand h1{margin:0;font-size:26px}.sub{color:#8a776b;font-size:14px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}.stat{background:white;border:1px solid #eadfd5;border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:26px;margin-top:4px}.board{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.card{background:#fff;border:1px solid #eadfd5;border-radius:20px;padding:16px;box-shadow:0 5px 15px rgba(70,45,25,.05)}.order{border:1px solid #eee0d6;border-radius:16px;padding:13px;margin-bottom:10px}.head{display:flex;justify-content:space-between;gap:10px}.badge{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#fff0bf}.items{color:#6d5b50;font-size:14px;margin:8px 0}.btn{border:0;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer}.green{background:#738e5e;color:#fff}.dark{background:#4d4a47;color:#fff}.soft{background:#efe5db;color:#4f3b30}.danger{background:#f4dbd7;color:#9d413b}.actions{display:flex;gap:7px;flex-wrap:wrap}.detail h2{margin-top:0}.detail table{width:100%;border-collapse:collapse}.detail td,.detail th{padding:9px;border-bottom:1px solid #eee;text-align:left}.total{text-align:right;font-size:24px;font-weight:900;margin-top:12px}.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{border:0;border-radius:12px;padding:10px 14px;font-weight:800}.tab.active{background:#738e5e;color:#fff}.hidden{display:none}
-@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.board{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+:root{--bg:#f7f2ea;--card:#fff;--brown:#5a3525;--green:#748f60;--green2:#e8f0df;--peach:#f5e4d8;--line:#eadfd5;--muted:#8a776b;--red:#b9574e}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;background:var(--bg);color:#3f2d25}.wrap{max-width:1180px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.top img{width:90px}.brand{display:flex;align-items:center;gap:12px}.brand h1{margin:0;font-size:26px}.sub{color:var(--muted);font-size:14px}.btn{border:0;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}.green{background:var(--green);color:#fff}.dark{background:#4d4a47;color:#fff}.soft{background:#efe5db;color:#4f3b30}.danger{background:#f3d8d5;color:#9d413b}.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.tab{border:0;border-radius:12px;padding:10px 14px;font-weight:800;background:#fff;color:#604b3f}.tab.active{background:var(--green);color:#fff}.hidden{display:none}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 5px 15px rgba(70,45,25,.05)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}.stat{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:26px;margin-top:4px}.board{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.order{border:1px solid #eee0d6;border-radius:16px;padding:13px;margin-bottom:10px}.head{display:flex;justify-content:space-between;gap:10px}.badge{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#fff0bf}.items{color:#6d5b50;font-size:14px;margin:8px 0}.actions{display:flex;gap:7px;flex-wrap:wrap}.detail h2{margin-top:0}.detail table{width:100%;border-collapse:collapse}.detail td,.detail th{padding:9px;border-bottom:1px solid #eee;text-align:left}.total{text-align:right;font-size:24px;font-weight:900;margin-top:12px}
+
+/* products */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}.toolbar h2{margin:0}.toolbar .right{display:flex;gap:8px;flex-wrap:wrap}
+.catbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.catbtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}.catbtn.active{background:var(--green2);border-color:#c9d9bd;color:#4f6a42}
+.product-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product-card{border:1px solid var(--line);border-radius:18px;padding:12px;background:#fff;display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start}.product-card img,.ph{width:92px;height:92px;border-radius:14px;object-fit:cover;background:#f3ece5;display:grid;place-items:center;font-size:40px}.product-name{font-size:17px;font-weight:900;margin-bottom:4px}.meta{font-size:13px;color:var(--muted);margin-bottom:8px}.price{font-size:22px;font-weight:900;color:#577347}.switchrow{display:flex;align-items:center;gap:8px;margin:8px 0}.switch{position:relative;width:46px;height:26px;background:#d7d0ca;border-radius:999px;cursor:pointer}.switch.on{background:#7b9a64}.switch:after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:white;top:3px;left:3px;transition:.2s}.switch.on:after{left:23px}.mini{padding:7px 9px;border-radius:10px;border:0;font-weight:800;cursor:pointer}.edit{background:#efe5db}.move{background:#edf1ea}.del{background:#f5dfdd;color:#9b453e}
+.form-card{margin-top:14px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:15px}.uploadbox{border:2px dashed #d8c8ba;border-radius:16px;padding:14px;text-align:center;background:#fffaf5}.preview{width:120px;height:120px;object-fit:cover;border-radius:16px;background:#f1e9e2;margin:8px auto;display:block}.row{display:flex;gap:8px;flex-wrap:wrap}.category-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.category-chip{background:#f3eee8;border:1px solid var(--line);border-radius:999px;padding:8px 11px;display:flex;gap:8px;align-items:center}.category-chip button{border:0;background:transparent;color:var(--red);font-weight:900;cursor:pointer}
+
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.board{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.product-list{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}}
 @media print{.wrap>.top,.stats,.list,.tabs{display:none!important}.board{display:block}.detail{border:0;box-shadow:none}.actions{display:none}}
 </style></head><body><div class="wrap">
-<div class="top"><div class="brand"><img src="../bake-bite-liff/logo.svg"><div><h1>Bake & Bite Admin</h1><div class="sub">Order Dashboard สำหรับร้าน</div></div></div><a class="btn soft" href="../bake-bite-liff/#order">เปิดหน้าร้าน</a></div>
-<div class="tabs"><button class="tab active">ออเดอร์</button><button class="tab">สินค้า/ราคา</button></div>
+<div class="top"><div class="brand"><img src="../bake-bite-liff/logo.svg"><div><h1>Bake & Bite Admin</h1><div class="sub">ระบบหลังร้าน</div></div></div><a class="btn soft" href="../bake-bite-liff/#order">เปิดหน้าร้าน</a></div>
+
+<div class="tabs">
+<button class="tab active" onclick="showTab('orders',this)">ออเดอร์</button>
+<button class="tab" onclick="showTab('products',this)">จัดการรายการอาหาร</button>
+</div>
+
+<section id="ordersTab">
 <div class="stats"><div class="stat">รอรับออเดอร์<b>2</b></div><div class="stat">ยืนยันแล้ว<b>1</b></div><div class="stat">กำลังทำ<b>1</b></div><div class="stat">พร้อมรับ<b>1</b></div><div class="stat">เสร็จสิ้น<b>3</b></div></div>
 <div class="board">
 <div class="card list"><h2>ออเดอร์วันนี้</h2>
@@ -13,10 +28,88 @@ body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;ba
 <div class="order"><div class="head"><div><b>BB26092503</b><div class="sub">16:55 · คุณเมย์</div></div><span class="badge" style="background:#dfeeda">ยืนยันแล้ว</span></div><div class="items">แซนด์วิชแยมสตรอว์เบอร์รี × 2<br>น้ำรากบัว × 2</div><div class="actions"><button class="btn soft" onclick="show3()">ดูรายละเอียด</button><button class="btn dark" onclick="show3();setTimeout(()=>print(),100)">พิมพ์ใบออเดอร์</button></div></div>
 </div>
 <div class="card detail"><h2>รายละเอียดออเดอร์</h2><div id="detail"><div class="sub">เลือกออเดอร์จากด้านซ้าย</div></div></div>
-</div></div><script>
+</div></section>
+
+<section id="productsTab" class="hidden">
+<div class="card">
+  <div class="toolbar"><h2>จัดการรายการอาหาร</h2><div class="right"><button class="btn soft" onclick="toggleCategoryBox()">+ เพิ่มหมวดอาหาร</button><button class="btn green" onclick="openAdd()">+ เพิ่มรายการอาหาร</button></div></div>
+  <div id="categoryBox" class="hidden" style="margin-bottom:14px"><div class="row"><input id="newCategory" class="field" style="max-width:320px" placeholder="ชื่อหมวดอาหาร"><button class="btn green" onclick="addCategory()">บันทึกหมวด</button></div><div id="categoryList" class="category-list"></div></div>
+  <div id="catBar" class="catbar"></div>
+  <div id="productList" class="product-list"></div>
+</div>
+
+<div id="formCard" class="card form-card hidden">
+  <div class="toolbar"><h2 id="formTitle">เพิ่มรายการอาหาร</h2><button class="btn soft" onclick="closeForm()">ปิด</button></div>
+  <input type="hidden" id="editId">
+  <div class="formgrid">
+    <div>
+      <label>หมวดอาหาร</label>
+      <select id="pCategory" class="field"></select>
+    </div>
+    <div>
+      <label>ชื่ออาหาร</label>
+      <input id="pName" class="field" placeholder="เช่น สลัดโรลไส้ปูอัด">
+    </div>
+    <div>
+      <label>ราคา</label>
+      <input id="pPrice" class="field" type="number" min="0" placeholder="45">
+    </div>
+    <div>
+      <label>สถานะสินค้า</label>
+      <select id="pActive" class="field"><option value="1">เปิดขาย</option><option value="0">ปิดขาย</option></select>
+    </div>
+  </div>
+  <div class="uploadbox" style="margin-top:12px">
+    <b>รูปภาพอาหาร</b>
+    <input id="pImage" type="file" accept="image/*" class="field" style="margin-top:8px" onchange="previewImage(this)">
+    <img id="imgPreview" class="preview" alt="">
+    <div class="sub">เลือกรูปจากเครื่องเพื่อใช้กับเมนูนี้</div>
+  </div>
+  <button class="btn green" style="margin-top:12px" onclick="saveProduct()">บันทึกรายการอาหาร</button>
+</div>
+</section>
+</div>
+
+<script>
+function showTab(tab,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');ordersTab.classList.toggle('hidden',tab!=='orders');productsTab.classList.toggle('hidden',tab!=='products')}
 function draw(no,name,time,status,items,total,note){detail.innerHTML='<div><b style="font-size:20px">'+no+'</b><div class="sub">'+time+' · '+name+'</div></div><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th></tr>'+items.map(x=>'<tr><td>'+x[0]+'</td><td>'+x[1]+'</td><td>฿'+x[2]+'</td></tr>').join('')+'</table><div class="total">รวม ฿'+total+'</div><p><b>สถานะ:</b> '+status+'</p><p><b>หมายเหตุ:</b> '+note+'</p><div class="actions"><button class="btn green">ยืนยันออเดอร์</button><button class="btn dark" onclick="print()">พิมพ์ใบออเดอร์</button><button class="btn danger">ยกเลิกออเดอร์</button></div>'}
 function show1(){draw('BB26092501','คุณนิด','17:12','รอรับออเดอร์',[['สลัดโรลไส้ปูอัด',2,90],['น้ำเก๊กฮวย',1,25]],115,'ไม่ใส่ผักชี')}
 function show2(){draw('BB26092502','คุณเอก','17:18','รอรับออเดอร์',[['แซนด์วิชไส้กรอก + ไข่ดาว',3,105]],105,'-')}
 function show3(){draw('BB26092503','คุณเมย์','16:55','ยืนยันแล้ว',[['แซนด์วิชแยมสตรอว์เบอร์รี',2,60],['น้ำรากบัว',2,50]],110,'-')}
-show1();
+
+let categories=JSON.parse(localStorage.getItem('bb_categories')||'null')||['สลัดโรล','แซนด์วิช','แซนด์วิชแยม','เครื่องดื่ม'];
+let products=JSON.parse(localStorage.getItem('bb_products')||'null')||[
+{id:1,cat:'สลัดโรล',name:'สลัดโรลไส้ปูอัด',price:45,active:true,img:''},
+{id:2,cat:'สลัดโรล',name:'สลัดโรลไส้โบโลน่า',price:45,active:true,img:''},
+{id:3,cat:'แซนด์วิช',name:'แซนด์วิชไส้กรอก + ไข่ดาว',price:35,active:true,img:''},
+{id:4,cat:'แซนด์วิชแยม',name:'แยมสตรอว์เบอร์รี',price:30,active:true,img:''},
+{id:5,cat:'เครื่องดื่ม',name:'น้ำเก๊กฮวย',price:25,active:true,img:''}
+];
+let currentCat='ทั้งหมด';
+function persist(){localStorage.setItem('bb_categories',JSON.stringify(categories));localStorage.setItem('bb_products',JSON.stringify(products))}
+function renderCategories(){
+  catBar.innerHTML=['ทั้งหมด',...categories].map(c=>'<button class="catbtn '+(currentCat===c?'active':'')+'" onclick="filterCat(\''+c.replace(/'/g,"\'")+'\')">'+c+'</button>').join('');
+  categoryList.innerHTML=categories.map(c=>'<span class="category-chip">'+c+' <button onclick="deleteCategory(\''+c.replace(/'/g,"\'")+'\')">×</button></span>').join('');
+  pCategory.innerHTML=categories.map(c=>'<option>'+c+'</option>').join('');
+}
+function renderProducts(){
+  const list=currentCat==='ทั้งหมด'?products:products.filter(p=>p.cat===currentCat);
+  productList.innerHTML=list.map((p,idx)=>{
+    const realIdx=products.findIndex(x=>x.id===p.id);
+    return '<div class="product-card"><div>'+(p.img?'<img src="'+p.img+'">':'<div class="ph">🍽️</div>')+'</div><div><div class="product-name">'+p.name+'</div><div class="meta">'+p.cat+'</div><div class="price">฿'+Number(p.price).toLocaleString()+'</div><div class="switchrow"><div class="switch '+(p.active?'on':'')+'" onclick="toggleActive('+p.id+')"></div><span>'+(p.active?'เปิดขาย':'ปิดขาย')+'</span></div><div class="actions"><button class="mini edit" onclick="editProduct('+p.id+')">แก้ไข</button><button class="mini move" onclick="moveProduct('+realIdx+',-1)">↑</button><button class="mini move" onclick="moveProduct('+realIdx+',1)">↓</button><button class="mini del" onclick="deleteProduct('+p.id+')">ลบ</button></div></div></div>'
+  }).join('') || '<div class="sub">ยังไม่มีรายการอาหารในหมวดนี้</div>';
+}
+function filterCat(c){currentCat=c;renderCategories();renderProducts()}
+function toggleCategoryBox(){categoryBox.classList.toggle('hidden');renderCategories()}
+function addCategory(){const v=newCategory.value.trim();if(!v)return;if(categories.includes(v))return alert('มีหมวดนี้แล้ว');categories.push(v);newCategory.value='';persist();renderCategories();renderProducts()}
+function deleteCategory(c){if(products.some(p=>p.cat===c))return alert('ยังมีสินค้าอยู่ในหมวดนี้ กรุณาย้ายสินค้าก่อน');if(!confirm('ลบหมวด '+c+' ?'))return;categories=categories.filter(x=>x!==c);if(currentCat===c)currentCat='ทั้งหมด';persist();renderCategories();renderProducts()}
+function openAdd(){formTitle.textContent='เพิ่มรายการอาหาร';editId.value='';pName.value='';pPrice.value='';pActive.value='1';imgPreview.src='';formCard.classList.remove('hidden');renderCategories();formCard.scrollIntoView({behavior:'smooth'})}
+function closeForm(){formCard.classList.add('hidden')}
+function previewImage(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>imgPreview.src=r.result;r.readAsDataURL(f)}
+function saveProduct(){const name=pName.value.trim(),price=Number(pPrice.value);if(!name||isNaN(price))return alert('กรุณากรอกชื่ออาหารและราคา');const id=Number(editId.value||0);const old=products.find(x=>x.id===id);const data={id:id||Date.now(),cat:pCategory.value,name,price,active:pActive.value==='1',img:imgPreview.src||old?.img||''};if(id){products=products.map(x=>x.id===id?data:x)}else products.push(data);persist();renderProducts();closeForm()}
+function editProduct(id){const p=products.find(x=>x.id===id);if(!p)return;editId.value=p.id;formTitle.textContent='แก้ไขรายการอาหาร';pCategory.value=p.cat;pName.value=p.name;pPrice.value=p.price;pActive.value=p.active?'1':'0';imgPreview.src=p.img||'';formCard.classList.remove('hidden');formCard.scrollIntoView({behavior:'smooth'})}
+function toggleActive(id){const p=products.find(x=>x.id===id);if(!p)return;p.active=!p.active;persist();renderProducts()}
+function deleteProduct(id){const p=products.find(x=>x.id===id);if(!p||!confirm('ลบ '+p.name+' ?'))return;products=products.filter(x=>x.id!==id);persist();renderProducts()}
+function moveProduct(i,dir){const j=i+dir;if(j<0||j>=products.length)return;[products[i],products[j]]=[products[j],products[i]];persist();renderProducts()}
+renderCategories();renderProducts();show1();
 </script></body></html>
