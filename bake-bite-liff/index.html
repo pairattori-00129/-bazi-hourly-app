@@ -156,6 +156,13 @@ body{min-height:100vh}
       <input class="field" id="recipientName" placeholder="ชื่อผู้รับ">
       <input class="field" id="recipientPhone" placeholder="เบอร์โทรผู้รับ">
       <textarea class="field" id="deliveryAddress" rows="3" placeholder="ที่อยู่จัดส่ง"></textarea>
+      <div class="card" style="margin-top:10px;background:#f7fbf2">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+          <div><strong>ตำแหน่งบนแผนที่</strong><div class="sub">เก็บพิกัดไว้สำหรับเชื่อม LINE MAN ภายหลัง</div></div>
+          <button class="btn" style="width:auto;margin:0;padding:9px 12px;background:#6f8f5d" onclick="useCurrentLocation()">ใช้ตำแหน่งปัจจุบัน</button>
+        </div>
+        <div id="locationText" class="sub" style="margin-top:8px">ยังไม่ได้ระบุตำแหน่ง</div>
+      </div>
       <input class="field" id="deliveryNote" placeholder="จุดสังเกต / หมายเหตุการจัดส่ง">
     </div>
     <input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
@@ -219,6 +226,7 @@ let lineUserId="";
 let lineDisplayName="";
 let catalog={categories:[],products:[]};
 let cart={};
+let deliveryLat=null, deliveryLng=null;
 function showPage(id){
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
@@ -261,6 +269,15 @@ function toggleDelivery(){
   document.getElementById("deliveryFields").style.display=v==="lineman"?"block":"none";
   if(v==="lineman" && document.getElementById("paymentMethod").value==="cash") document.getElementById("paymentMethod").value="transfer";
 }
+function useCurrentLocation(){
+  if(!navigator.geolocation){alert("อุปกรณ์นี้ไม่รองรับการระบุตำแหน่ง");return}
+  const el=document.getElementById("locationText"); el.textContent="กำลังค้นหาตำแหน่ง...";
+  navigator.geolocation.getCurrentPosition(
+    p=>{deliveryLat=p.coords.latitude;deliveryLng=p.coords.longitude;el.textContent="พิกัด: "+deliveryLat.toFixed(6)+", "+deliveryLng.toFixed(6);},
+    ()=>{el.textContent="ไม่สามารถอ่านตำแหน่งได้";alert("กรุณาอนุญาตการเข้าถึงตำแหน่ง หรือกรอกที่อยู่จัดส่งแทน");},
+    {enableHighAccuracy:true,timeout:10000,maximumAge:60000}
+  );
+}
 async function submitOrder(){
   const items=cartItems(); if(!items.length) return;
   const fulfillment=document.querySelector('input[name="fulfillment"]:checked').value;
@@ -284,6 +301,8 @@ async function submitOrder(){
     p_recipient_phone:fulfillment==="lineman"?recipientPhone:null,
     p_delivery_address:fulfillment==="lineman"?deliveryAddress:null,
     p_delivery_note:fulfillment==="lineman"?deliveryNote:null,
+    p_delivery_latitude:fulfillment==="lineman"?deliveryLat:null,
+    p_delivery_longitude:fulfillment==="lineman"?deliveryLng:null,
     p_items:items.map(i=>({product_id:i.id,quantity:i.quantity}))
   };
   try{
