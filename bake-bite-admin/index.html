@@ -77,14 +77,28 @@ function show1(){draw('BB26092501','คุณนิด','17:12','รอรับ
 function show2(){draw('BB26092502','คุณเอก','17:18','รอรับออเดอร์',[['แซนด์วิชไส้กรอก + ไข่ดาว',3,105]],105,'-')}
 function show3(){draw('BB26092503','คุณเมย์','16:55','ยืนยันแล้ว',[['แซนด์วิชแยมสตรอว์เบอร์รี',2,60],['น้ำรากบัว',2,50]],110,'-')}
 
-let categories=JSON.parse(localStorage.getItem('bb_categories')||'null')||['สลัดโรล','แซนด์วิช','แซนด์วิชแยม','เครื่องดื่ม'];
-let products=JSON.parse(localStorage.getItem('bb_products')||'null')||[
+const MENU_VERSION='2026-09-26-v2';
+const defaultCategories=['สลัดโรล','แซนด์วิช','แซนด์วิชแยม','เครื่องดื่ม'];
+const defaultProducts=[
 {id:1,cat:'สลัดโรล',name:'สลัดโรลไส้ปูอัด',price:45,active:true,img:''},
 {id:2,cat:'สลัดโรล',name:'สลัดโรลไส้โบโลน่า',price:45,active:true,img:''},
-{id:3,cat:'แซนด์วิช',name:'แซนด์วิชไส้กรอก + ไข่ดาว',price:35,active:true,img:''},
-{id:4,cat:'แซนด์วิชแยม',name:'แยมสตรอว์เบอร์รี',price:30,active:true,img:''},
-{id:5,cat:'เครื่องดื่ม',name:'น้ำเก๊กฮวย',price:25,active:true,img:''}
+{id:3,cat:'สลัดโรล',name:'สลัดโรลไส้กรอก',price:45,active:true,img:''},
+{id:4,cat:'สลัดโรล',name:'สลัดโรลไส้แซลมอน',price:55,active:true,img:''},
+{id:5,cat:'แซนด์วิช',name:'แซนด์วิชไส้กรอก + ไข่ดาว',price:35,active:true,img:''},
+{id:6,cat:'แซนด์วิช',name:'แซนด์วิชโบโลน่า + ไข่ดาว',price:35,active:true,img:''},
+{id:7,cat:'แซนด์วิชแยม',name:'แซนด์วิชแยมสตรอว์เบอร์รี',price:30,active:true,img:''},
+{id:8,cat:'แซนด์วิชแยม',name:'แซนด์วิชแยมบลูเบอร์รี',price:30,active:true,img:''},
+{id:9,cat:'แซนด์วิชแยม',name:'แซนด์วิชแยมส้ม',price:30,active:true,img:''},
+{id:10,cat:'เครื่องดื่ม',name:'น้ำเก๊กฮวย',price:25,active:true,img:''},
+{id:11,cat:'เครื่องดื่ม',name:'น้ำรากบัว',price:25,active:true,img:''}
 ];
+if(localStorage.getItem('bb_menu_version')!==MENU_VERSION){
+  localStorage.setItem('bb_categories',JSON.stringify(defaultCategories));
+  localStorage.setItem('bb_products',JSON.stringify(defaultProducts));
+  localStorage.setItem('bb_menu_version',MENU_VERSION);
+}
+let categories=JSON.parse(localStorage.getItem('bb_categories')||'null')||defaultCategories;
+let products=JSON.parse(localStorage.getItem('bb_products')||'null')||defaultProducts;
 let currentCat='ทั้งหมด';
 function persist(){localStorage.setItem('bb_categories',JSON.stringify(categories));localStorage.setItem('bb_products',JSON.stringify(products))}
 function renderCategories(){
