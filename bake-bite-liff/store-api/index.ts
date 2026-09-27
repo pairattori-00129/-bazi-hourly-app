@@ -422,10 +422,21 @@ Deno.serve(async(req)=>{
     if(action==="admin-save-category" && (req.method==="POST"||req.method==="PUT")){
       if(!await okAdmin(req)) return json({ok:false,error:"unauthorized"},401);
       const p=await req.json();
-      const payload={name:p.name,slug:p.slug||String(p.name||"").toLowerCase().replace(/\s+/g,"-"),sort_order:Number(p.sort_order||0),is_active:p.is_active!==false};
+      const name=shortText(p.name,100);
+      if(!name) return json({ok:false,error:"invalid_category_name"},400);
+      const {data:duplicate,error:dupeError}=await supabase.from("product_categories").select("id").eq("name",name).maybeSingle();
+      if(dupeError) throw dupeError;
+      if(duplicate&&duplicate.id!==p.id) return json({ok:false,error:"category_already_exists"},409);
       let q;
-      if(p.id) q=await supabase.from("product_categories").update(payload).eq("id",p.id).select().single();
-      else q=await supabase.from("product_categories").insert(payload).select().single();
+      if(p.id){
+        q=await supabase.from("product_categories").update({name,is_active:p.is_active!==false}).eq("id",p.id).select().single();
+      }else{
+        const {data:last,error:sortError}=await supabase.from("product_categories").select("sort_order").order("sort_order",{ascending:false}).limit(1);
+        if(sortError) throw sortError;
+        const asciiSlug=name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+        const slug=(asciiSlug||"category")+"-"+crypto.randomUUID().slice(0,8);
+        q=await supabase.from("product_categories").insert({name,slug,sort_order:(last?.[0]?.sort_order||0)+1,is_active:true}).select().single();
+      }
       if(q.error) throw q.error;
       return json({ok:true,category:q.data});
     }
