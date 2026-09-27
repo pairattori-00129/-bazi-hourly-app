@@ -32,7 +32,7 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
   <div class="step-pill ">3 เครื่องดื่ม</div>
   <div class="step-pill ">4 สรุป</div>
   </div><section class="card"><h2>เลือกหมวดอาหาร</h2><div class="sub">เลือกหมวดที่ต้องการ</div><div id="categoryLoading" class="sub">กำลังโหลดหมวดอาหาร...</div><div id="categories" class="categories"></div></section>
-  <section class="card"><h2>รายการอาหาร</h2><div class="sub">เลือกได้ 1 อย่างต่อกล่อง</div><div id="items" class="items"></div></section>
+  <section class="card"><h2>รายการอาหาร</h2><div class="sub">เลือกได้หลายเมนู และกำหนดจำนวนแยกแต่ละเมนู</div><div id="items" class="items"></div></section>
   <div class="footer-cta"><div class="summary-pill" id="picked">เลือกแล้ว 0 รายการ</div><button class="nextbtn" id="next" disabled>ถัดไป: เลือกของหวาน ›</button></div></div><nav class="nav"><div class="navin">
 <a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
 <a class="active" href="snack-box-step1.html?preview=1&v=20260927-1925"><b><svg class="snack-nav-svg" viewBox="0 0 32 24" width="30" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b><span>Snack Box</span></a>
@@ -59,8 +59,7 @@ const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api
 let catalog={categories:[],products:[]};
 let foodCategories=[];
 let currentCategoryId="";
-let choice=null;
-let qty=0;
+const selections=new Map();
 
 const categoryRoot=document.getElementById('categories');
 const categoryLoading=document.getElementById('categoryLoading');
@@ -93,15 +92,21 @@ function isFoodCategory(c){
   const n=String(c.name||'');
   return !/เครื่องดื่ม|drink|แยม|ของหวาน|dessert|sweet/i.test(n);
 }
+function restoreSelections(){
+  let old=[];
+  try{old=JSON.parse(sessionStorage.getItem('snackFood')||'[]')}catch(_){}
+  if(!Array.isArray(old) && old && old.name) old=[old];
+  (old||[]).forEach(x=>{if(x&&x.id&&Number(x.qty)>0)selections.set(String(x.id),{...x,qty:Number(x.qty)})});
+}
 function renderCategories(){
   categoryRoot.innerHTML=foodCategories.map(c=>{
     const icon=safeUrl(c.icon_url)
       ? '<span class="ico"><img src="'+esc(c.icon_url)+'" alt=""></span>'
       : '<span class="ico">'+categoryFallback(c.name)+'</span>';
-    return '<button type="button" class="cat '+(c.id===currentCategoryId?'active':'')+'" data-id="'+esc(c.id)+'">'+icon+'<span>'+esc(c.name)+'</span></button>';
+    return '<button type="button" class="cat '+(String(c.id)===String(currentCategoryId)?'active':'')+'" data-id="'+esc(c.id)+'">'+icon+'<span>'+esc(c.name)+'</span></button>';
   }).join('');
   categoryLoading.style.display=foodCategories.length?'none':'block';
-  if(!foodCategories.length) categoryLoading.textContent='ยังไม่มีหมวดอาหารในหลังร้าน';
+  if(!foodCategories.length)categoryLoading.textContent='ยังไม่มีหมวดอาหารในหลังร้าน';
 }
 function productsForCurrentCategory(){
   return catalog.products.filter(p=>String(p.category_id)===String(currentCategoryId));
@@ -113,100 +118,90 @@ function renderItems(){
     return;
   }
   items.innerHTML=ps.map(p=>{
-    const selected=choice&&String(choice.id)===String(p.id);
-    const image=safeUrl(p.image_url)
-      ? '<img src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'">'
-      : productFallback(p.name);
-    return '<div class="item '+(selected?'selected':'')+'" data-id="'+esc(p.id)+'">'+
-      '<span class="check">✓</span>'+
-      '<div class="photo">'+image+'</div>'+
+    const sel=selections.get(String(p.id));
+    const q=Number(sel?.qty||0);
+    const image=safeUrl(p.image_url)?'<img src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'">':productFallback(p.name);
+    return '<div class="item '+(q>0?'selected':'')+'" data-id="'+esc(p.id)+'">'+
+      '<span class="check">✓</span><div class="photo">'+image+'</div>'+
       '<h3>'+esc(p.name)+'</h3>'+
       '<p>'+esc(catalog.categories.find(c=>String(c.id)===String(p.category_id))?.name||'')+'</p>'+
-      '<div class="qty"><button type="button" class="minus" data-d="-1">−</button><input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+(selected?qty:0)+'" aria-label="จำนวน"><button type="button" class="plus" data-d="1">+</button></div>'+
-      '</div>';
+      '<div class="qty"><button type="button" class="minus" data-d="-1">−</button>'+
+      '<input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+q+'" aria-label="จำนวน '+esc(p.name)+'">'+
+      '<button type="button" class="plus" data-d="1">+</button></div></div>';
   }).join('');
 }
+function setProductQty(p,n){
+  n=Math.max(0,Math.min(999,Math.floor(Number(n)||0)));
+  if(n===0) selections.delete(String(p.id));
+  else selections.set(String(p.id),{
+    id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',
+    icon:productFallback(p.name),qty:n
+  });
+  return n;
+}
+function totals(){
+  const arr=[...selections.values()].filter(x=>Number(x.qty)>0);
+  return {arr,total:arr.reduce((s,x)=>s+Number(x.qty||0),0),menus:arr.length};
+}
 function update(){
-  picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';
-  next.disabled=!choice;
+  const t=totals();
+  picked.textContent='รวม '+t.total+' ชิ้น • '+t.menus+' เมนู';
+  next.disabled=t.total<=0;
 }
 categoryRoot.addEventListener('click',e=>{
-  const b=e.target.closest('.cat');
-  if(!b)return;
+  const b=e.target.closest('.cat');if(!b)return;
   currentCategoryId=b.dataset.id;
-  choice=null;
-  qty=0;
-  renderCategories();
-  renderItems();
-  update();
+  renderCategories();renderItems();update();
 });
 items.addEventListener('click',e=>{
-  if(e.target.classList.contains('qty-input')) return;
-  const item=e.target.closest('.item');
-  if(!item)return;
-  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));
-  if(!p)return;
+  if(e.target.classList.contains('qty-input'))return;
+  const item=e.target.closest('.item');if(!item)return;
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));if(!p)return;
+  const old=Number(selections.get(String(p.id))?.qty||0);
   const d=Number(e.target.dataset.d||0);
-  const same=choice&&String(choice.id)===String(p.id);
-  if(d){
-    const newQty=Math.max(0,(same?qty:0)+d);
-    if(newQty===0){
-      choice=null;qty=0;
-    }else{
-      choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
-      qty=newQty;
-    }
-  }else{
-    choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
-    qty=1;
-  }
-  renderItems();
-  update();
+  setProductQty(p,d?old+d:(old||1));
+  renderItems();update();
 });
 items.addEventListener('input',e=>{
-  const input=e.target.closest('.qty-input');
-  if(!input)return;
+  const input=e.target.closest('.qty-input');if(!input)return;
   const item=input.closest('.item');
-  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));
-  if(!p)return;
-  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
-  items.querySelectorAll('.item').forEach(card=>{
-    const other=card.querySelector('.qty-input');
-    const same=card===item;
-    card.classList.toggle('selected',same&&n>0);
-    if(!same&&other) other.value='0';
-  });
-  if(n===0){
-    choice=null;qty=0;
-  }else{
-    choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
-    qty=n;
-  }
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));if(!p)return;
+  const n=setProductQty(p,input.value);
+  item.classList.toggle('selected',n>0);
   update();
 });
 items.addEventListener('change',e=>{
-  const input=e.target.closest('.qty-input');
-  if(!input)return;
-  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
-  input.value=String(n);
+  const input=e.target.closest('.qty-input');if(!input)return;
+  const item=input.closest('.item');
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));if(!p)return;
+  input.value=String(setProductQty(p,input.value));
+  update();
 });
 next.onclick=()=>{
-  if(!choice)return;
-  sessionStorage.setItem('snackFood',JSON.stringify({...choice,qty}));
+  const t=totals();if(t.total<=0)return;
+  sessionStorage.setItem('snackFood',JSON.stringify(t.arr));
+  sessionStorage.setItem('snackBoxTarget',String(t.total));
+  sessionStorage.setItem('snackQty',String(t.total));
+  for(const key of ['snackDessert','snackDrink']){
+    try{
+      const a=JSON.parse(sessionStorage.getItem(key)||'[]');
+      const arr=Array.isArray(a)?a:(a&&a.name?[a]:[]);
+      const sum=arr.reduce((s,x)=>s+Number(x.qty||0),0);
+      if(sum!==t.total)sessionStorage.removeItem(key);
+    }catch(_){sessionStorage.removeItem(key)}
+  }
   snackGo('snack-box-step2.html');
 };
-
 async function loadCatalog(){
   try{
     const r=await fetch(STORE_API+'?action=catalog');
     const j=await r.json();
-    if(!r.ok||!j.ok) throw new Error(j.error||'catalog');
+    if(!r.ok||!j.ok)throw new Error(j.error||'catalog');
     catalog=j;
     foodCategories=(j.categories||[]).filter(isFoodCategory);
     currentCategoryId=foodCategories[0]?.id||'';
-    renderCategories();
-    renderItems();
-    update();
+    restoreSelections();
+    renderCategories();renderItems();update();
   }catch(error){
     console.error(error);
     categoryLoading.style.display='block';
