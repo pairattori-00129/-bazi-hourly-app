@@ -445,6 +445,23 @@ Deno.serve(async(req)=>{
       return json({ok:true,image_url:data.publicUrl});
     }
 
+    if(action==="admin-move-category" && req.method==="POST"){
+      if(!await okAdmin(req)) return json({ok:false,error:"unauthorized"},401);
+      const p=await req.json();
+      if(typeof p.id!=="string"||!["up","down"].includes(p.direction)) return json({ok:false,error:"invalid_input"},400);
+      const {data:ordered,error:listError}=await supabase.from("product_categories").select("id,sort_order").order("sort_order").order("id");
+      if(listError) throw listError;
+      const position=ordered.findIndex(c=>c.id===p.id);
+      const next=position+(p.direction==="up"?-1:1);
+      if(position<0||next<0||next>=ordered.length) return json({ok:false,error:"invalid_category_position"},400);
+      const current=ordered[position],neighbor=ordered[next];
+      const {error:firstError}=await supabase.from("product_categories").update({sort_order:neighbor.sort_order}).eq("id",current.id);
+      if(firstError) throw firstError;
+      const {error:secondError}=await supabase.from("product_categories").update({sort_order:current.sort_order}).eq("id",neighbor.id);
+      if(secondError){await supabase.from("product_categories").update({sort_order:current.sort_order}).eq("id",current.id);throw secondError}
+      return json({ok:true});
+    }
+
     if(action==="admin-save-category" && (req.method==="POST"||req.method==="PUT")){
       if(!await okAdmin(req)) return json({ok:false,error:"unauthorized"},401);
       const p=await req.json();
