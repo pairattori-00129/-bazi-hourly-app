@@ -29,6 +29,21 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
 <a href="index.html#redeem"><b>🎁</b><span>แลกแต้ม</span></a>
 <a href="index.html#contact"><b>💬</b><span>ติดต่อร้าน</span></a>
 </div></nav><script>
+const TEST_PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
+function snackTestUrl(url){
+  if(!TEST_PREVIEW) return url;
+  const parts=url.split('#');
+  const p=parts[0], hash=parts[1]?'#'+parts[1]:'';
+  return p+(p.includes('?')?'&':'?')+'preview=1'+hash;
+}
+if(TEST_PREVIEW){
+  document.querySelectorAll('a[href]').forEach(a=>{
+    const h=a.getAttribute('href')||'';
+    if(h && !/^https?:/i.test(h) && !h.startsWith('#')) a.setAttribute('href',snackTestUrl(h));
+  });
+}
+function snackGo(url){ location.href=snackTestUrl(url); }
+
 const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
 let catalog={categories:[],products:[]};
 let foodCategories=[];
@@ -139,7 +154,7 @@ items.addEventListener('click',e=>{
 next.onclick=()=>{
   if(!choice)return;
   sessionStorage.setItem('snackFood',JSON.stringify({...choice,qty}));
-  location.href='snack-box-step2.html';
+  snackGo('snack-box-step2.html');
 };
 
 async function loadCatalog(){
