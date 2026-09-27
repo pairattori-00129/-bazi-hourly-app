@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Snack Box · Bake & Bite</title>
+<style>
+:root{--brown:#5b2d1b;--green:#78966a;--cream:#fff8ee;--paper:#fffdf9;--line:#ead9ca;--muted:#7b685d}
+*{box-sizing:border-box}html,body{margin:0;background:#f6efe5;color:#402d27;font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+.shell{width:min(100%,430px);min-height:100vh;margin:auto;background:linear-gradient(180deg,#fffdfa,#fff8ec);padding-bottom:40px}
+.hero{padding:28px 20px 22px;background:linear-gradient(145deg,#eef5e8,#fff4e9);border-bottom:1px solid #eadfd4}
+.back{display:inline-block;text-decoration:none;color:var(--brown);font-weight:900;margin-bottom:14px}
+.hero h1{margin:0;color:var(--brown);font-size:38px;line-height:1.05}
+.hero p{margin:10px 0 0;color:#725f54;line-height:1.5}
+.badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.badge{padding:7px 10px;border-radius:999px;background:#fff;color:#58724b;font-size:13px;font-weight:800;border:1px solid #dae7d1}
+.card{margin:14px 12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 5px 16px rgba(80,50,30,.05)}
+.card h2{margin:0 0 6px;color:#4c3024;font-size:22px}.sub{color:var(--muted);font-size:14px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.option{border:1px solid #e7dbcf;border-radius:16px;padding:12px 8px;text-align:center;background:#fff}.option .icon{font-size:35px}.option b{display:block;margin-top:7px;font-size:14px}.option span{font-size:12px;color:#7d6d64}
+.field{width:100%;border:1px solid #dfd2c6;background:#fff;border-radius:14px;padding:13px;font:inherit;margin-top:9px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn{width:100%;border:0;border-radius:16px;padding:14px;font:inherit;font-weight:900;background:var(--green);color:#fff;margin-top:12px}
+.btn.secondary{background:var(--brown);text-decoration:none;text-align:center;display:block}
+.note{padding:12px;border-radius:14px;background:#fff2de;color:#745633;font-size:13px;line-height:1.5;margin-top:12px}
+.summary{display:none;white-space:pre-line;background:#f5f8f1;border:1px solid #dfe8d7;border-radius:15px;padding:13px;margin-top:12px;line-height:1.6}
+@media(max-width:360px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body><div class="shell">
+<section class="hero">
+<a class="back" href="index.html#order">‹ กลับหน้าสั่งอาหาร</a>
+<h1>Snack Box</h1>
+<p>บริการจัดชุดอาหารว่างสำหรับประชุม อบรม งานสัมมนา งานเลี้ยง และกิจกรรมต่าง ๆ</p>
+<div class="badges"><span class="badge">🥪 จัดชุดได้</span><span class="badge">🥤 เพิ่มเครื่องดื่มได้</span><span class="badge">📦 สั่งหลายชุดได้</span></div>
+</section>
+
+<section class="card">
+<h2>รูปแบบบริการ</h2><div class="sub">เลือกแนวชุดที่ต้องการ แล้วระบุรายละเอียดให้ร้านจัดให้เหมาะกับงาน</div>
+<div class="grid">
+<div class="option"><div class="icon">🥪</div><b>ชุดแซนด์วิช</b><span>เหมาะกับประชุมและอบรม</span></div>
+<div class="option"><div class="icon">🥗</div><b>ชุดเบา ๆ</b><span>สลัดโรล + เครื่องดื่ม</span></div>
+<div class="option"><div class="icon">🎁</div><b>จัดชุดตามงบ</b><span>ระบุงบต่อกล่องได้</span></div>
+</div>
+</section>
+
+<section class="card">
+<h2>ขอใบเสนอราคา / จอง Snack Box</h2>
+<div class="sub">กรอกข้อมูลเบื้องต้น ร้านจะติดต่อกลับเพื่อยืนยันเมนู ราคา และเวลาจัดส่ง</div>
+<form id="snackForm">
+<div class="row">
+<div><input class="field" id="name" required maxlength="100" placeholder="ชื่อผู้ติดต่อ"></div>
+<div><input class="field" id="phone" required maxlength="25" inputmode="tel" placeholder="เบอร์โทร"></div>
+</div>
+<div class="row">
+<div><input class="field" id="date" required type="date"></div>
+<div><input class="field" id="qty" required type="number" min="1" max="9999" placeholder="จำนวนชุด"></div>
+</div>
+<input class="field" id="budget" type="number" min="0" step="1" placeholder="งบประมาณต่อชุด (ถ้ามี)">
+<select class="field" id="type">
+<option value="ชุดแซนด์วิช">ชุดแซนด์วิช</option>
+<option value="ชุดสลัดโรล / เบา ๆ">ชุดสลัดโรล / เบา ๆ</option>
+<option value="จัดชุดตามงบ">จัดชุดตามงบ</option>
+<option value="ให้ร้านแนะนำ">ให้ร้านแนะนำ</option>
+</select>
+<textarea class="field" id="note" rows="4" maxlength="500" placeholder="รายละเอียดเพิ่มเติม เช่น เวลาใช้งาน สถานที่จัดส่ง เมนูที่สนใจ หรือข้อจำกัดด้านอาหาร"></textarea>
+<button class="btn" type="submit">สรุปคำขอ Snack Box</button>
+</form>
+<div id="summary" class="summary"></div>
+<div class="note">ราคาจะแจ้งหลังร้านตรวจจำนวนชุด เมนู วันที่ และเงื่อนไขการจัดส่ง</div>
+<a class="btn secondary" href="index.html#contact">ติดต่อร้านผ่าน LINE</a>
+</section>
+</div>
+<script>
+const form=document.getElementById('snackForm');
+form.addEventListener('submit',e=>{
+ e.preventDefault();
+ const text='คำขอ Snack Box\\n'
+ +'ชื่อ: '+document.getElementById('name').value.trim()+'\\n'
+ +'โทร: '+document.getElementById('phone').value.trim()+'\\n'
+ +'วันที่: '+document.getElementById('date').value+'\\n'
+ +'จำนวน: '+document.getElementById('qty').value+' ชุด\\n'
+ +'รูปแบบ: '+document.getElementById('type').value+'\\n'
+ +'งบ/ชุด: '+(document.getElementById('budget').value||'ไม่ระบุ')+'\\n'
+ +'รายละเอียด: '+(document.getElementById('note').value.trim()||'-');
+ const box=document.getElementById('summary');
+ box.textContent=text;box.style.display='block';
+ box.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+</script>
+</body>
+</html>
