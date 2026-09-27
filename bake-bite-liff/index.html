@@ -244,7 +244,7 @@ body{min-height:100vh}
     <div class="contact-card peach"><div class="cicon">📞</div><div class="cbody"><h3>โทรหาร้าน</h3><p>ใส่เบอร์โทรร้านจริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
     <div class="contact-card gold"><div class="cicon">🕒</div><div class="cbody"><h3>เวลาทำการ</h3><p>กำหนดเวลาทำการจริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
     <div class="contact-card pink"><div class="cicon">📍</div><div class="cbody"><h3>ที่อยู่ / จุดรับสินค้า</h3><p>เพิ่มที่อยู่ร้านและแผนที่จริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
-    <button id="shareShopButton" class="contact-card share" type="button" onclick="shareShop()"><div class="cicon">🎁</div><div class="cbody"><h3>แชร์ร้านให้เพื่อน</h3><p>เพื่อนเปิดลิงก์รับ 1 แต้ม · เพื่อนสั่งซื้อครั้งแรกสำเร็จ รับเพิ่ม 5 แต้ม</p></div><div class="arrow">›</div></button>
+    <button id="shareShopButton" class="contact-card share" type="button" onclick="shareShop()"><div class="cicon">🎁</div><div class="cbody"><h3>แชร์ร้านให้เพื่อน</h3><p id="shareRewardText">เพื่อนเปิดลิงก์รับ 1 แต้ม · เพื่อนสั่งซื้อครั้งแรกสำเร็จ รับเพิ่ม 5 แต้ม</p></div><div class="arrow">›</div></button>
     <p class="referral-note" id="referralStats">แต้มจะเข้าเมื่อเพื่อนเปิดลิงก์ด้วยบัญชี LINE ของตนเอง และเมื่อออเดอร์แรกชำระเงินพร้อมเสร็จสิ้น</p>
   </div>
   <button class="linebtn" onclick="closeLiff()">💬 กลับไปแชต LINE ›</button>
@@ -281,6 +281,17 @@ let cart={};
 let deliveryLat=null, deliveryLng=null;
 let savedAddresses=[];
 let referralCode="";
+let referralSettings={share_points:1,first_purchase_points:5};
+function renderReferralSettings(){
+  document.getElementById('shareRewardText').textContent='เพื่อนเปิดลิงก์รับ '+referralSettings.share_points+' แต้ม · เพื่อนสั่งซื้อครั้งแรกสำเร็จ รับเพิ่ม '+referralSettings.first_purchase_points+' แต้ม';
+}
+async function loadReferralSettings(){
+  try{
+    const r=await fetch(STORE_API+'?action=referral-settings');
+    const j=await r.json();
+    if(r.ok&&j.ok){referralSettings=j.settings;renderReferralSettings()}
+  }catch(e){console.error('referral settings',e)}
+}
 function lineToken(){return window.liff&&liff.isLoggedIn()?liff.getAccessToken():null}
 async function memberApi(action,method="GET",body){
   const token=lineToken();
@@ -301,7 +312,8 @@ async function loadMember(){
     const m=result.member;
     referralCode=m.referral_code||"";
     const stats=result.referral_stats;
-    if(stats) document.getElementById("referralStats").textContent="ชวนสำเร็จ "+stats.friends+" คน · เพื่อนสั่งซื้อครั้งแรกแล้ว "+stats.first_purchases+" คน — รับ 1 แต้มเมื่อเพื่อนเปิดลิงก์ และอีก 5 แต้มเมื่อออเดอร์แรกชำระเงินและเสร็จสิ้น";
+    if(result.referral_settings){referralSettings=result.referral_settings;renderReferralSettings()}
+    if(stats) document.getElementById("referralStats").textContent="ชวนสำเร็จ "+stats.friends+" คน · เพื่อนสั่งซื้อครั้งแรกแล้ว "+stats.first_purchases+" คน — รับ "+referralSettings.share_points+" แต้มเมื่อเพื่อนเปิดลิงก์ และอีก "+referralSettings.first_purchase_points+" แต้มเมื่อออเดอร์แรกชำระเงินและเสร็จสิ้น";
     document.getElementById("memberName").textContent=m.display_name||"สมาชิก Bake & Bite";
     document.getElementById("pointsValue").textContent=m.points;
     document.getElementById("redeemPoints").textContent=m.points;
@@ -591,7 +603,7 @@ async function shareShop(){
   }catch(e){if(e?.name!=="AbortError")alert("แชร์ไม่สำเร็จ กรุณาลองอีกครั้ง")}
   finally{button.disabled=false}
 }
-loadCatalog(); init();
+loadCatalog(); loadReferralSettings(); init();
 </script>
 </body>
 </html>
