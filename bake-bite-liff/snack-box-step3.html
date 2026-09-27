@@ -33,8 +33,23 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
 <a href="index.html#points"><b>☆</b><span>สะสมแต้ม</span></a>
 <a href="index.html#redeem"><b>🎁</b><span>แลกแต้ม</span></a>
 <a href="index.html#contact"><b>💬</b><span>ติดต่อร้าน</span></a>
-</div></nav><script>const data={herb:[['🌼','น้ำเก๊กฮวย','เครื่องดื่มสมุนไพร'],['🥤','น้ำรากบัว','เครื่องดื่มสมุนไพร'],['🟣','น้ำอัญชันมะนาว','สดชื่น เปรี้ยวอมหวาน']],water:[['💧','น้ำเปล่า','สะอาด สดชื่น']],tea:[['🍵','ชา','ชาอุ่น/เย็น']],coffee:[['☕','กาแฟ','กาแฟหอม'] ]};let cat='herb',choice=null,qty=0;
+</div></nav><script>
+const TEST_PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
+function snackTestUrl(url){
+  if(!TEST_PREVIEW) return url;
+  const parts=url.split('#');
+  const p=parts[0], hash=parts[1]?'#'+parts[1]:'';
+  return p+(p.includes('?')?'&':'?')+'preview=1'+hash;
+}
+if(TEST_PREVIEW){
+  document.querySelectorAll('a[href]').forEach(a=>{
+    const h=a.getAttribute('href')||'';
+    if(h && !/^https?:/i.test(h) && !h.startsWith('#')) a.setAttribute('href',snackTestUrl(h));
+  });
+}
+function snackGo(url){ location.href=snackTestUrl(url); }
+const data={herb:[['🌼','น้ำเก๊กฮวย','เครื่องดื่มสมุนไพร'],['🥤','น้ำรากบัว','เครื่องดื่มสมุนไพร'],['🟣','น้ำอัญชันมะนาว','สดชื่น เปรี้ยวอมหวาน']],water:[['💧','น้ำเปล่า','สะอาด สดชื่น']],tea:[['🍵','ชา','ชาอุ่น/เย็น']],coffee:[['☕','กาแฟ','กาแฟหอม'] ]};let cat='herb',choice=null,qty=0;
 function render(){items.innerHTML=data[cat].map((x,i)=>'<div class="item '+(choice&&choice.name===x[1]?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><span>'+(choice&&choice.name===x[1]?qty:0)+'</span><button class="plus" data-d="1">+</button></div></div>').join('')}
 document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));b.classList.add('active');cat=b.dataset.cat;choice=null;qty=0;update();render()});
 items.onclick=e=>{const item=e.target.closest('.item');if(!item)return;const i=Number(item.dataset.i),d=Number(e.target.dataset.d||0),x=data[cat][i];if(d){choice={cat,name:x[1],icon:x[0]};qty=Math.max(0,(choice.name===x[1]?qty:0)+d);if(qty===0)choice=null}else{choice={cat,name:x[1],icon:x[0]};qty=1}update();render()};
-function update(){picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';next.disabled=!choice}next.onclick=()=>{sessionStorage.setItem('snackDrink',JSON.stringify({...choice,qty}));if(!sessionStorage.getItem('snackQty'))sessionStorage.setItem('snackQty','20');location.href='snack-box-summary.html'};render();</script></body></html>
+function update(){picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';next.disabled=!choice}next.onclick=()=>{sessionStorage.setItem('snackDrink',JSON.stringify({...choice,qty}));if(!sessionStorage.getItem('snackQty'))sessionStorage.setItem('snackQty','20');snackGo('snack-box-summary.html')};render();</script></body></html>
