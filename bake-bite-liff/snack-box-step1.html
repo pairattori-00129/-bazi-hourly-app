@@ -8,7 +8,7 @@ body{min-height:100vh}.shell{width:min(100%,430px);min-height:100vh;margin:auto;
 .card{margin:12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 5px 16px rgba(80,50,30,.05)}.card h2{margin:0 0 4px;font-size:24px;color:#4c3024}.sub{font-size:13px;color:var(--muted);margin-bottom:12px}
 .categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:7px}.cat{border:1px solid #e7dbcf;border-radius:15px;background:#fff;padding:9px 5px;text-align:center;font-weight:800;font-size:11px;color:#4a3329;min-height:88px}.cat .ico{display:flex;width:44px;height:44px;margin:0 auto 5px;align-items:center;justify-content:center;font-size:28px}.cat .ico img{width:44px;height:44px;object-fit:contain;border-radius:10px}.cat.active{border:2px solid var(--brown);background:#fff8f2;color:var(--brown)}
 .items{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{position:relative;border:1px solid #e5d7ca;background:#fff;border-radius:18px;padding:10px;min-height:148px}.item.selected{border:2px solid var(--brown);background:#fffaf5}.item .photo{height:82px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff7e9,#f2eee7);font-size:44px;overflow:hidden}.item .photo img{width:100%;height:100%;object-fit:cover;display:block}.item h3{margin:7px 0 3px;font-size:14px}.item p{margin:0 0 8px;font-size:11px;color:#7b6a60;min-height:30px}.check{display:none;position:absolute;right:8px;top:8px;width:23px;height:23px;border-radius:50%;background:var(--brown);color:#fff;place-items:center;font-weight:900}.item.selected .check{display:grid}
-.qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty span{text-align:center;font-weight:900}
+.qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty input{width:100%;height:32px;border:1px solid #e6d8ca;border-radius:10px;background:#fffdf9;text-align:center;font-weight:900;font-size:16px;color:#402d27;padding:0 3px;-moz-appearance:textfield}.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .footer-cta{position:sticky;bottom:92px;margin:12px;display:grid;grid-template-columns:1fr 1.6fr;gap:8px;z-index:10}.summary-pill,.nextbtn{border-radius:18px;padding:14px 10px;font-weight:900;border:0}.summary-pill{background:#f5ecdf;color:#51352a;text-align:center}.nextbtn{background:var(--brown);color:white;font-size:16px}
 .qtybox{display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:center}.qtybox button{height:48px;border:0;border-radius:14px;font-size:23px;font-weight:900}.qtybox input{height:48px;border:1px solid #d8c7ba;border-radius:14px;text-align:center;font-size:22px;font-weight:900;background:#fff}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.summary-item{border:1px solid #e5d7ca;border-radius:16px;padding:10px;background:#fff;text-align:center}.summary-item .photo{font-size:42px}.summary-item b{display:block;font-size:12px;margin-top:5px}
@@ -122,7 +122,7 @@ function renderItems(){
       '<div class="photo">'+image+'</div>'+
       '<h3>'+esc(p.name)+'</h3>'+
       '<p>'+esc(catalog.categories.find(c=>String(c.id)===String(p.category_id))?.name||'')+'</p>'+
-      '<div class="qty"><button type="button" class="minus" data-d="-1">−</button><span>'+(selected?qty:0)+'</span><button type="button" class="plus" data-d="1">+</button></div>'+
+      '<div class="qty"><button type="button" class="minus" data-d="-1">−</button><input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+(selected?qty:0)+'" aria-label="จำนวน"><button type="button" class="plus" data-d="1">+</button></div>'+
       '</div>';
   }).join('');
 }
@@ -141,6 +141,7 @@ categoryRoot.addEventListener('click',e=>{
   update();
 });
 items.addEventListener('click',e=>{
+  if(e.target.classList.contains('qty-input')) return;
   const item=e.target.closest('.item');
   if(!item)return;
   const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));
@@ -158,6 +159,22 @@ items.addEventListener('click',e=>{
   }else{
     choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
     qty=1;
+  }
+  renderItems();
+  update();
+});
+items.addEventListener('input',e=>{
+  const input=e.target.closest('.qty-input');
+  if(!input)return;
+  const item=input.closest('.item');
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));
+  if(!p)return;
+  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
+  if(n===0){
+    if(choice&&String(choice.id)===String(p.id)){choice=null;qty=0;}
+  }else{
+    choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
+    qty=n;
   }
   renderItems();
   update();
