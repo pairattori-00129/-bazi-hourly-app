@@ -247,6 +247,7 @@ body{min-height:100vh}
 
 <script>
 const LIFF_ID="2011741629-yEU5sjz8";
+const LIFF_URL="https://liff.line.me/"+LIFF_ID+"/";
 const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
 const SUPABASE_URL="https://oplwrlljqwgxnrqrdufp.supabase.co";
 const SUPABASE_KEY="sb_publishable_Qjzm-LdsvvOZPYMxBfoKyg_iGCUpo5N";
@@ -394,13 +395,44 @@ async function submitOrder(){
   }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
 }
 async function init(){
-  const h=location.hash.replace('#',''); if(h) showPage(h);
+  const validPages=['order','points','redeem','contact','checkout'];
+  const previewMode=new URLSearchParams(location.search).get('preview')==='1';
   try{
     await liff.init({liffId:LIFF_ID});
-    if(!liff.isLoggedIn()){liff.login();return;}
-    const p=await liff.getProfile(); lineUserId=p.userId||""; lineDisplayName=p.displayName||"";
-    const n=document.getElementById('memberName'); if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
-  }catch(e){console.error(e)}
+
+    // อ่าน hash หลัง liff.init() เพื่อให้ LIFF restore liff.state เสร็จก่อน
+    let page=location.hash.replace('#','');
+    if(!validPages.includes(page)) page='order';
+
+    // ถ้าเปิด URL เว็บตรง ๆ จาก LINE in-app browser / Safari ให้พากลับเข้า LIFF browser
+    // แทนการเรียก liff.login() ทันที ซึ่งเป็นสาเหตุที่ผู้ใช้ถูกส่งไปหน้า LINE Login
+    if(!previewMode && !liff.isInClient() && !liff.isLoggedIn()){
+      location.replace(LIFF_URL+'#'+page);
+      return;
+    }
+
+    showPage(page);
+
+    if(liff.isLoggedIn()){
+      const p=await liff.getProfile();
+      lineUserId=p.userId||"";
+      lineDisplayName=p.displayName||"";
+      const n=document.getElementById('memberName');
+      if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
+    }else if(previewMode){
+      const n=document.getElementById('memberName');
+      if(n) n.textContent='โหมดทดสอบ';
+    }
+  }catch(e){
+    console.error('LIFF init error',e);
+    // ถ้าเข้าจาก URL เว็บตรงและ LIFF init ไม่สำเร็จ ให้ลองเปิดผ่าน LIFF URL
+    if(!previewMode){
+      const page=(location.hash.replace('#','')||'order');
+      location.replace(LIFF_URL+'#'+page);
+    }else{
+      showPage('order');
+    }
+  }
 }
 async function requestPoints(){
   if(!lineUserId){alert('กรุณาเปิดหน้านี้ผ่าน LINE ก่อน');return}
