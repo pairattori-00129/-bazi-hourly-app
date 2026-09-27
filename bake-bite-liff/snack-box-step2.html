@@ -8,7 +8,7 @@ body{min-height:100vh}.shell{width:min(100%,430px);min-height:100vh;margin:auto;
 .card{margin:12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 5px 16px rgba(80,50,30,.05)}.card h2{margin:0 0 4px;font-size:24px;color:#4c3024}.sub{font-size:13px;color:var(--muted);margin-bottom:12px}
 .categories{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.cat{border:1px solid #e7dbcf;border-radius:15px;background:#fff;padding:9px 5px;text-align:center;font-weight:800;font-size:11px;color:#4a3329}.cat .ico{display:block;font-size:28px;margin-bottom:4px}.cat.active{border:2px solid var(--brown);background:#fff8f2;color:var(--brown)}
 .items{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{position:relative;border:1px solid #e5d7ca;background:#fff;border-radius:18px;padding:10px;min-height:148px}.item.selected{border:2px solid var(--brown);background:#fffaf5}.item .photo{height:70px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff7e9,#f2eee7);font-size:44px}.item h3{margin:7px 0 3px;font-size:14px}.item p{margin:0 0 8px;font-size:11px;color:#7b6a60;min-height:30px}.check{display:none;position:absolute;right:8px;top:8px;width:23px;height:23px;border-radius:50%;background:var(--brown);color:#fff;place-items:center;font-weight:900}.item.selected .check{display:grid}
-.qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty span{text-align:center;font-weight:900}
+.qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty input{width:100%;height:32px;border:1px solid #e6d8ca;border-radius:10px;background:#fffdf9;text-align:center;font-weight:900;font-size:16px;color:#402d27;padding:0 3px;-moz-appearance:textfield}.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .footer-cta{position:sticky;bottom:92px;margin:12px;display:grid;grid-template-columns:1fr 1.6fr;gap:8px;z-index:10}.summary-pill,.nextbtn{border-radius:18px;padding:14px 10px;font-weight:900;border:0}.summary-pill{background:#f5ecdf;color:#51352a;text-align:center}.nextbtn{background:var(--brown);color:white;font-size:16px}
 .qtybox{display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:center}.qtybox button{height:48px;border:0;border-radius:14px;font-size:23px;font-weight:900}.qtybox input{height:48px;border:1px solid #d8c7ba;border-radius:14px;text-align:center;font-size:22px;font-weight:900;background:#fff}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.summary-item{border:1px solid #e5d7ca;border-radius:16px;padding:10px;background:#fff;text-align:center}.summary-item .photo{font-size:42px}.summary-item b{display:block;font-size:12px;margin-top:5px}
@@ -60,7 +60,19 @@ if(TEST_PREVIEW){
 }
 function snackGo(url){ location.href=snackTestUrl(url); }
 const data={sweet:[['🍓','แยมสตรอว์เบอร์รี','แซนด์วิชหวานรสผลไม้'],['🫐','แยมบลูเบอร์รี','แซนด์วิชหวานรสผลไม้'],['🍊','แยมส้ม','แซนด์วิชหวานรสผลไม้'],['🍞','สังขยา','กลิ่นหอมละมุน']],bakery:[['🥐','ครัวซองต์หวาน','เบเกอรี่'],['🧁','คัพเค้ก','เบเกอรี่']],fruit:[['🍎','ผลไม้รวม','ผลไม้สด'],['🍉','แตงโม','ผลไม้สด']],snack:[['🍪','คุกกี้','ของทานเล่น'],['🍫','บราวนี่','ของทานเล่น']]};let cat='sweet',choice=null,qty=0;
-function render(){items.innerHTML=data[cat].map((x,i)=>'<div class="item '+(choice&&choice.name===x[1]?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><span>'+(choice&&choice.name===x[1]?qty:0)+'</span><button class="plus" data-d="1">+</button></div></div>').join('')}
+function render(){items.innerHTML=data[cat].map((x,i)=>'<div class="item '+(choice&&choice.name===x[1]?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+(choice&&choice.name===x[1]?qty:0)+'" aria-label="จำนวน"><button class="plus" data-d="1">+</button></div></div>').join('')}
 document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));b.classList.add('active');cat=b.dataset.cat;choice=null;qty=0;update();render()});
-items.onclick=e=>{const item=e.target.closest('.item');if(!item)return;const i=Number(item.dataset.i),d=Number(e.target.dataset.d||0),x=data[cat][i];if(d){choice={cat,name:x[1],icon:x[0]};qty=Math.max(0,(choice.name===x[1]?qty:0)+d);if(qty===0)choice=null}else{choice={cat,name:x[1],icon:x[0]};qty=1}update();render()};
+items.onclick=e=>{if(e.target.classList.contains('qty-input'))return;const item=e.target.closest('.item');if(!item)return;const i=Number(item.dataset.i),d=Number(e.target.dataset.d||0),x=data[cat][i];if(d){choice={cat,name:x[1],icon:x[0]};qty=Math.max(0,(choice.name===x[1]?qty:0)+d);if(qty===0)choice=null}else{choice={cat,name:x[1],icon:x[0]};qty=1}update();render()};
+items.addEventListener('input',e=>{
+  const input=e.target.closest('.qty-input');if(!input)return;
+  const item=input.closest('.item');if(!item)return;
+  const i=Number(item.dataset.i),x=data[cat][i];
+  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
+  if(n===0){
+    if(choice&&choice.name===x[1]){choice=null;qty=0;}
+  }else{
+    choice={cat,name:x[1],icon:x[0]};qty=n;
+  }
+  update();render();
+});
 function update(){picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';next.disabled=!choice}next.onclick=()=>{sessionStorage.setItem('snackDessert',JSON.stringify({...choice,qty}));snackGo('snack-box-step3.html')};render();</script></body></html>
