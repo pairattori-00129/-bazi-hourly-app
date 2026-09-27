@@ -7,6 +7,7 @@ create table if not exists public.referral_point_settings (
 );
 insert into public.referral_point_settings(id) values(1) on conflict(id) do nothing;
 alter table public.referral_point_settings enable row level security;
+revoke all on public.referral_point_settings from public,anon,authenticated;
 
 create or replace function public.accept_member_referral(p_friend_id uuid, p_code text)
 returns text language plpgsql security invoker set search_path = '' as $$
