@@ -29,6 +29,9 @@ body{min-height:100vh}
 .sec-peach{background:linear-gradient(135deg,#fee9dd,#fff3ec)}
 .sec-pink{background:linear-gradient(135deg,#fde1df,#fff0ef)}
 .sec-gold{background:linear-gradient(135deg,#fff0d4,#fff8e8)}
+.section[data-category-icon]{background:linear-gradient(135deg,var(--category-tint,#eef4e5),#fffdf8);border-color:var(--category-border,rgba(0,0,0,.04))}
+.section[data-category-icon] .sec-icon{background:var(--category-accent,#7f9869)}
+.sec-bakery{background:linear-gradient(135deg,#fae8cf,#fff7e9)}.sec-bakery .sec-icon{background:#b9844f}
 .section-head{display:flex;align-items:center;gap:10px;margin:0 5px 10px}
 .sec-icon{width:45px;height:45px;border-radius:50%;display:grid;place-items:center;font-size:24px;color:white;flex:0 0 auto}
 .sec-green .sec-icon{background:#7f9869}.sec-peach .sec-icon{background:#e9936a}.sec-pink .sec-icon{background:#d96060}.sec-gold .sec-icon{background:#d4a14b}
@@ -420,6 +423,37 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImagePreview()}
 
 const catClass={1:"sec-green",2:"sec-peach",3:"sec-pink",4:"sec-gold"};
 const catIcon={1:"🌿",2:"🥪",3:"🍓",4:"🥤"};
+const categoryColorCache=new Map();
+function paintCategoryIcons(){
+  document.querySelectorAll('.section[data-category-icon]').forEach(section=>{
+    const url=section.dataset.categoryIcon;
+    if(categoryColorCache.has(url)){setCategoryColor(section,categoryColorCache.get(url));return}
+    const image=new Image();image.crossOrigin='anonymous';
+    image.onload=()=>{
+      try{
+        const canvas=document.createElement('canvas');canvas.width=24;canvas.height=24;
+        const context=canvas.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0,24,24);
+        const data=context.getImageData(0,0,24,24).data;let red=0,green=0,blue=0,count=0;
+        for(let y=0;y<24;y++)for(let x=0;x<24;x++){
+          if(x>5&&x<18&&y>5&&y<18)continue;
+          const i=(y*24+x)*4;if(data[i+3]<160)continue;
+          red+=data[i];green+=data[i+1];blue+=data[i+2];count++;
+        }
+        if(!count)return;
+        const rgb=[red/count,green/count,blue/count].map(v=>Math.round(v));
+        categoryColorCache.set(url,rgb);
+        document.querySelectorAll('.section[data-category-icon]').forEach(el=>{if(el.dataset.categoryIcon===url)setCategoryColor(el,rgb)});
+      }catch(error){console.debug('ใช้สีพื้นฐานของหมวด',error)}
+    };image.src=url;
+  });
+}
+function setCategoryColor(section,[red,green,blue]){
+  const tint=[red,green,blue].map(v=>Math.round(v*.22+255*.78));
+  const accent=[red,green,blue].map(v=>Math.round(v*.55+90*.45));
+  section.style.setProperty('--category-tint',`rgb(${tint.join(',')})`);
+  section.style.setProperty('--category-border',`rgba(${accent.join(',')},.23)`);
+  section.style.setProperty('--category-accent',`rgb(${accent.join(',')})`);
+}
 function categoryIcon(c,idx){if(c.icon_url){const url=String(c.icon_url);if(/^https:\/\//i.test(url))return '<img src="'+url.replace(/[&"<>]/g,ch=>({"&":"&amp;",'"':"&quot;","<":"&lt;",">":"&gt;"}[ch]))+'" alt="" style="width:31px;height:31px;object-fit:contain">'}return /เบเกอรี่|bakery/i.test(c.name)?"🍞":(catIcon[idx+1]||"🍴")}
 function money(n){return "฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2})}
 async function loadCatalog(){
@@ -441,8 +475,11 @@ function renderCatalog(){
       const pic=p.image_url?'<div class="product-media"><img class="product-img" src="'+p.image_url+'" alt="'+safeName+'" data-preview-name="'+safeName+'" draggable="false"><span class="zoom-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6"></circle><path d="M16 16l4 4"></path><path d="M8 11h6M11 8v6"></path></svg>แตะดู</span></div>':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
       return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><div class="price-line"><span class="price">'+money(p.price)+'</span></div><div class="qty-label">จำนวนชิ้น</div><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
     }).join("");
-    return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+categoryIcon(c,idx)+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
+    const iconUrl=typeof c.icon_url==='string'&&/^https:\/\//i.test(c.icon_url)?c.icon_url:'';
+    const iconAttribute=iconUrl?' data-category-icon="'+iconUrl.replace(/[&"<>]/g,ch=>({'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;'}[ch]))+'"':'';
+    return '<section class="section '+(/เบเกอรี่|bakery/i.test(c.name)?'sec-bakery':(catClass[idx+1]||"sec-green"))+'"'+iconAttribute+'><div class="section-head"><div class="sec-icon">'+categoryIcon(c,idx)+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
   }).join("");
+  paintCategoryIcons();
   updateCart();
 }
 function changeQty(id,delta){cart[id]=Math.max(0,(cart[id]||0)+delta);if(cart[id]===0)delete cart[id];renderCatalog()}
