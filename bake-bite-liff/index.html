@@ -50,7 +50,12 @@ body{min-height:100vh}
 .qty span{min-width:0;text-align:center;font-weight:900;font-size:16px;color:#4b372e}
 @media (max-width:360px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.product h3{min-height:auto}}
 #checkoutItems .checkout-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee0d3}.checkout-row:last-child{border-bottom:0}
-.product-img{width:100%;height:68px;object-fit:cover;border-radius:13px;cursor:zoom-in;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.product-media{position:relative;width:100%;border-radius:13px;overflow:hidden;background:#fff8ee}
+.product-img{width:100%;height:68px;object-fit:cover;border-radius:13px;cursor:zoom-in;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;display:block}
+.zoom-badge{position:absolute;right:5px;top:5px;display:flex;align-items:center;gap:3px;border:0;border-radius:999px;padding:4px 6px;background:rgba(74,40,27,.88);color:#fff;font-family:inherit;font-size:9.5px;font-weight:800;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none}
+.zoom-badge svg{width:12px;height:12px;stroke:currentColor}
+.product-media:active .product-img{transform:scale(.985)}
+.product-media .product-img{transition:transform .15s ease}
 .image-preview{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(35,22,16,.82);backdrop-filter:blur(4px)}
 .image-preview.open{display:flex}
 .image-preview-box{position:relative;width:min(94vw,520px);max-height:86vh;display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -300,6 +305,12 @@ document.getElementById('catalogRoot').addEventListener('pointermove',e=>{
 });
 ['pointerup','pointercancel','pointerleave'].forEach(type=>document.getElementById('catalogRoot').addEventListener(type,clearImagePress));
 document.getElementById('catalogRoot').addEventListener('contextmenu',e=>{if(e.target.closest('.product-img'))e.preventDefault()});
+document.getElementById('catalogRoot').addEventListener('click',e=>{
+  const media=e.target.closest('.product-media');
+  if(!media)return;
+  const img=media.querySelector('.product-img');
+  if(img)openImagePreview(img);
+});
 document.getElementById('imagePreview').addEventListener('click',closeImagePreview);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImagePreview()});
 
@@ -322,7 +333,7 @@ function renderCatalog(){
     const items=ps.map(p=>{
       const q=cart[p.id]||0;
       const safeName=String(p.name||'').replace(/"/g,'&quot;');
-      const pic=p.image_url?'<img class="product-img" src="'+p.image_url+'" alt="'+safeName+'" data-preview-name="'+safeName+'" draggable="false">':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
+      const pic=p.image_url?'<div class="product-media"><img class="product-img" src="'+p.image_url+'" alt="'+safeName+'" data-preview-name="'+safeName+'" draggable="false"><span class="zoom-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6"></circle><path d="M16 16l4 4"></path><path d="M8 11h6M11 8v6"></path></svg>แตะดู</span></div>':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
       return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><div class="price-line"><span class="price">'+money(p.price)+'</span></div><div class="qty-label">จำนวนชิ้น</div><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
     }).join("");
     return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+(catIcon[idx+1]||"🍴")+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
