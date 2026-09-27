@@ -510,11 +510,11 @@ async function submitOrder(){
 }
 async function init(){
   const validPages=['order','points','redeem','contact','checkout'];
-  const params=new URLSearchParams(location.search);
-  const previewMode=params.get('preview')==='1';
-  const invite=params.get('ref');
+  const previewMode=new URLSearchParams(location.search).get('preview')==='1';
   try{
     await liff.init({liffId:LIFF_ID});
+    // LINE restores referral query parameters from liff.state during init.
+    const invite=new URLSearchParams(location.search).get('ref');
 
     // อ่าน hash หลัง liff.init() เพื่อให้ LIFF restore liff.state เสร็จก่อน
     let page=location.hash.replace('#','');
@@ -551,6 +551,7 @@ async function init(){
     // ถ้าเข้าจาก URL เว็บตรงและ LIFF init ไม่สำเร็จ ให้ลองเปิดผ่าน LIFF URL
     if(!previewMode){
       const page=(location.hash.replace('#','')||'order');
+      const invite=new URLSearchParams(location.search).get('ref');
       location.replace(LIFF_URL+(invite?'?ref='+encodeURIComponent(invite):'')+'#'+page);
     }else{
       showPage('order');
