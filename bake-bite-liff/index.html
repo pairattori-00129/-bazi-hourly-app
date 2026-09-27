@@ -50,7 +50,14 @@ body{min-height:100vh}
 .qty span{min-width:0;text-align:center;font-weight:900;font-size:16px;color:#4b372e}
 @media (max-width:360px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.product h3{min-height:auto}}
 #checkoutItems .checkout-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee0d3}.checkout-row:last-child{border-bottom:0}
-.product-img{width:100%;height:68px;object-fit:cover;border-radius:13px}
+.product-img{width:100%;height:68px;object-fit:cover;border-radius:13px;cursor:zoom-in;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.image-preview{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(35,22,16,.82);backdrop-filter:blur(4px)}
+.image-preview.open{display:flex}
+.image-preview-box{position:relative;width:min(94vw,520px);max-height:86vh;display:flex;flex-direction:column;align-items:center;gap:10px}
+.image-preview img{display:block;max-width:100%;max-height:76vh;width:auto;height:auto;object-fit:contain;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.38);background:#fff}
+.image-preview .preview-name{color:#fff;font-weight:800;font-size:16px;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.35)}
+.image-preview .preview-close{position:absolute;right:-6px;top:-12px;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:#5b2d1b;color:#fff;font-size:23px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 14px rgba(0,0,0,.24)}
+.image-preview .preview-hint{color:rgba(255,255,255,.8);font-size:12px}
 .card{background:#fffdf8;border:1px solid #ead8c7;border-radius:22px;padding:16px;box-shadow:0 5px 18px rgba(90,55,30,.05)}
 /* points */
 .member-card{margin:10px 12px;background:linear-gradient(180deg,#fffaf1,#fff6ed);border:1px solid #f0dfcf;border-radius:26px;padding:18px;box-shadow:0 6px 18px rgba(90,55,30,.05)}
@@ -222,6 +229,16 @@ body{min-height:100vh}
 <button data-page="redeem"><b>🎁</b>แลกแต้ม</button>
 <button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
 </div></nav>
+
+<div id="imagePreview" class="image-preview" aria-hidden="true" role="dialog" aria-label="ดูรูปสินค้าแบบขยาย">
+  <div class="image-preview-box" onclick="event.stopPropagation()">
+    <button class="preview-close" type="button" aria-label="ปิด" onclick="closeImagePreview()">×</button>
+    <img id="imagePreviewImg" src="" alt="">
+    <div id="imagePreviewName" class="preview-name"></div>
+    <div class="preview-hint">แตะพื้นที่ด้านนอกเพื่อปิด</div>
+  </div>
+</div>
+
 <script>
 const LIFF_ID="2011741629-yEU5sjz8";
 const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
@@ -246,6 +263,45 @@ function showPage(id){
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 
+let imagePressTimer=null;
+let imagePressStartX=0;
+let imagePressStartY=0;
+function openImagePreview(img){
+  if(!img||!img.src)return;
+  const modal=document.getElementById('imagePreview');
+  const big=document.getElementById('imagePreviewImg');
+  const name=document.getElementById('imagePreviewName');
+  big.src=img.currentSrc||img.src;
+  big.alt=img.alt||'';
+  name.textContent=img.dataset.previewName||img.alt||'';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+}
+function closeImagePreview(){
+  const modal=document.getElementById('imagePreview');
+  if(!modal)return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+function clearImagePress(){if(imagePressTimer){clearTimeout(imagePressTimer);imagePressTimer=null}}
+document.getElementById('catalogRoot').addEventListener('pointerdown',e=>{
+  const img=e.target.closest('.product-img');
+  if(!img)return;
+  clearImagePress();
+  imagePressStartX=e.clientX; imagePressStartY=e.clientY;
+  imagePressTimer=setTimeout(()=>{imagePressTimer=null;openImagePreview(img)},450);
+});
+document.getElementById('catalogRoot').addEventListener('pointermove',e=>{
+  if(!imagePressTimer)return;
+  if(Math.abs(e.clientX-imagePressStartX)>12||Math.abs(e.clientY-imagePressStartY)>12)clearImagePress();
+});
+['pointerup','pointercancel','pointerleave'].forEach(type=>document.getElementById('catalogRoot').addEventListener(type,clearImagePress));
+document.getElementById('catalogRoot').addEventListener('contextmenu',e=>{if(e.target.closest('.product-img'))e.preventDefault()});
+document.getElementById('imagePreview').addEventListener('click',closeImagePreview);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImagePreview()});
+
 const catClass={1:"sec-green",2:"sec-peach",3:"sec-pink",4:"sec-gold"};
 const catIcon={1:"🌿",2:"🥪",3:"🍓",4:"🥤"};
 function money(n){return "฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2})}
@@ -264,7 +320,8 @@ function renderCatalog(){
     const ps=catalog.products.filter(p=>p.category_id===c.id);
     const items=ps.map(p=>{
       const q=cart[p.id]||0;
-      const pic=p.image_url?'<img class="product-img" src="'+p.image_url+'" alt="">':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
+      const safeName=String(p.name||'').replace(/"/g,'&quot;');
+      const pic=p.image_url?'<img class="product-img" src="'+p.image_url+'" alt="'+safeName+'" data-preview-name="'+safeName+'" draggable="false">':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
       return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><div class="price-line"><span class="price">'+money(p.price)+'</span></div><div class="qty-label">จำนวนชิ้น</div><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
     }).join("");
     return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+(catIcon[idx+1]||"🍴")+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
