@@ -6,8 +6,8 @@ body{min-height:100vh}.shell{width:min(100%,430px);min-height:100vh;margin:auto;
 .title{text-align:center;padding:22px 18px 10px;position:relative}.title h1{font-size:40px;line-height:1;margin:0;color:var(--brown);font-weight:900}.title p{margin:9px 0 0;color:#6f5c51;font-size:15px}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:10px 12px 4px}.step-pill{padding:9px 4px;border-radius:999px;background:#eee6dd;color:#8b786d;font-weight:900;text-align:center;font-size:11px}.step-pill.active{background:var(--brown);color:#fff}.step-pill.done{background:#e5eadf;color:#58704b}
 .card{margin:12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 5px 16px rgba(80,50,30,.05)}.card h2{margin:0 0 4px;font-size:24px;color:#4c3024}.sub{font-size:13px;color:var(--muted);margin-bottom:12px}
-.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.cat{border:1px solid #e7dbcf;border-radius:15px;background:#fff;padding:9px 5px;text-align:center;font-weight:800;font-size:11px;color:#4a3329}.cat .ico{display:block;font-size:28px;margin-bottom:4px}.cat.active{border:2px solid var(--brown);background:#fff8f2;color:var(--brown)}
-.items{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{position:relative;border:1px solid #e5d7ca;background:#fff;border-radius:18px;padding:10px;min-height:148px}.item.selected{border:2px solid var(--brown);background:#fffaf5}.item .photo{height:70px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff7e9,#f2eee7);font-size:44px}.item h3{margin:7px 0 3px;font-size:14px}.item p{margin:0 0 8px;font-size:11px;color:#7b6a60;min-height:30px}.check{display:none;position:absolute;right:8px;top:8px;width:23px;height:23px;border-radius:50%;background:var(--brown);color:#fff;place-items:center;font-weight:900}.item.selected .check{display:grid}
+.categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:7px}.cat{border:1px solid #e7dbcf;border-radius:15px;background:#fff;padding:9px 5px;text-align:center;font-weight:800;font-size:11px;color:#4a3329;min-height:88px}.cat .ico{display:flex;width:44px;height:44px;margin:0 auto 5px;align-items:center;justify-content:center;font-size:28px}.cat .ico img{width:44px;height:44px;object-fit:contain;border-radius:10px}.cat.active{border:2px solid var(--brown);background:#fff8f2;color:var(--brown)}
+.items{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{position:relative;border:1px solid #e5d7ca;background:#fff;border-radius:18px;padding:10px;min-height:148px}.item.selected{border:2px solid var(--brown);background:#fffaf5}.item .photo{height:82px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff7e9,#f2eee7);font-size:44px;overflow:hidden}.item .photo img{width:100%;height:100%;object-fit:cover;display:block}.item h3{margin:7px 0 3px;font-size:14px}.item p{margin:0 0 8px;font-size:11px;color:#7b6a60;min-height:30px}.check{display:none;position:absolute;right:8px;top:8px;width:23px;height:23px;border-radius:50%;background:var(--brown);color:#fff;place-items:center;font-weight:900}.item.selected .check{display:grid}
 .qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty span{text-align:center;font-weight:900}
 .footer-cta{position:sticky;bottom:92px;margin:12px;display:grid;grid-template-columns:1fr 1.6fr;gap:8px;z-index:10}.summary-pill,.nextbtn{border-radius:18px;padding:14px 10px;font-weight:900;border:0}.summary-pill{background:#f5ecdf;color:#51352a;text-align:center}.nextbtn{background:var(--brown);color:white;font-size:16px}
 .qtybox{display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:center}.qtybox button{height:48px;border:0;border-radius:14px;font-size:23px;font-weight:900}.qtybox input{height:48px;border:1px solid #d8c7ba;border-radius:14px;text-align:center;font-size:22px;font-weight:900;background:#fff}
@@ -20,12 +20,7 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
   <div class="step-pill ">2 ของหวาน</div>
   <div class="step-pill ">3 เครื่องดื่ม</div>
   <div class="step-pill ">4 สรุป</div>
-  </div><section class="card"><h2>เลือกหมวดอาหาร</h2><div class="sub">แตะหมวดเพื่อดูรายการ</div><div class="categories">
-    <button class="cat active" data-cat="sandwich"><span class="ico">🥪</span>แซนด์วิช</button>
-    <button class="cat" data-cat="roll"><span class="ico">🥗</span>สลัดโรล</button>
-    <button class="cat" data-cat="bakery"><span class="ico">🥐</span>เบเกอรี่</button>
-    <button class="cat" data-cat="healthy"><span class="ico">🥬</span>ชุดสุขภาพ</button>
-  </div></section>
+  </div><section class="card"><h2>เลือกหมวดอาหาร</h2><div class="sub">ดึงหมวดจากหลังร้าน พร้อมไอคอนและชื่อหมวด</div><div id="categoryLoading" class="sub">กำลังโหลดหมวดอาหาร...</div><div id="categories" class="categories"></div></section>
   <section class="card"><h2>รายการอาหาร</h2><div class="sub">เลือกได้ 1 อย่างต่อกล่อง</div><div id="items" class="items"></div></section>
   <div class="footer-cta"><div class="summary-pill" id="picked">เลือกแล้ว 0 รายการ</div><button class="nextbtn" id="next" disabled>ถัดไป: เลือกของหวาน ›</button></div></div><nav class="nav"><div class="navin">
 <a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
@@ -33,8 +28,135 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
 <a href="index.html#points"><b>☆</b><span>สะสมแต้ม</span></a>
 <a href="index.html#redeem"><b>🎁</b><span>แลกแต้ม</span></a>
 <a href="index.html#contact"><b>💬</b><span>ติดต่อร้าน</span></a>
-</div></nav><script>const data={sandwich:[['🥪','ไส้กรอก + ไข่ดาว','แซนด์วิชไส้กรอก ไข่ดาว'],['🥪','โบโลน่า + ไข่ดาว','แซนด์วิชโบโลน่า ไข่ดาว'],['🥪','แฮมชีส','แซนด์วิชแฮมชีส'],['🥪','ทูน่า','แซนด์วิชทูน่าสลัด']],roll:[['🥗','สลัดโรลไส้ปูอัด','ชุดเบา ๆ'],['🌯','สลัดโรลไส้กรอก','ชุดเบา ๆ']],bakery:[['🥐','ครัวซองต์','เบเกอรี่'],['🍞','ขนมปังนุ่ม','เบเกอรี่']],healthy:[['🥬','ชุดผักสด','ชุดสุขภาพ'],['🥗','สลัดผัก','ชุดสุขภาพ']]};let cat='sandwich',choice=null,qty=0;
-function render(){items.innerHTML=data[cat].map((x,i)=>'<div class="item '+(choice&&choice.name===x[1]?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><span>'+(choice&&choice.name===x[1]?qty:0)+'</span><button class="plus" data-d="1">+</button></div></div>').join('')}
-document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));b.classList.add('active');cat=b.dataset.cat;choice=null;qty=0;update();render()});
-items.onclick=e=>{const item=e.target.closest('.item');if(!item)return;const i=Number(item.dataset.i),d=Number(e.target.dataset.d||0),x=data[cat][i];if(d){choice={cat,name:x[1],icon:x[0]};qty=Math.max(0,(choice.name===x[1]?qty:0)+d);if(qty===0)choice=null}else{choice={cat,name:x[1],icon:x[0]};qty=1}update();render()};
-function update(){picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';next.disabled=!choice}next.onclick=()=>{sessionStorage.setItem('snackFood',JSON.stringify({...choice,qty}));location.href='snack-box-step2.html'};render();</script></body></html>
+</div></nav><script>
+const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
+let catalog={categories:[],products:[]};
+let foodCategories=[];
+let currentCategoryId="";
+let choice=null;
+let qty=0;
+
+const categoryRoot=document.getElementById('categories');
+const categoryLoading=document.getElementById('categoryLoading');
+const items=document.getElementById('items');
+const picked=document.getElementById('picked');
+const next=document.getElementById('next');
+
+function esc(v){
+  return String(v??'').replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+}
+function safeUrl(v){
+  const s=String(v||'');
+  return /^https:\/\//i.test(s)?s:'';
+}
+function categoryFallback(name){
+  if(/สลัด|salad|roll/i.test(name)) return '🥗';
+  if(/แซนด์วิช|sandwich/i.test(name)) return '🥪';
+  if(/เบเกอรี่|bakery|bread/i.test(name)) return '🥐';
+  return '🍴';
+}
+function productFallback(name){
+  if(/สลัด|roll/i.test(name)) return '🥗';
+  if(/แซนด์วิช|sandwich/i.test(name)) return '🥪';
+  if(/ครัวซอง|croissant|เบเกอรี่|bread/i.test(name)) return '🥐';
+  return '🍴';
+}
+function isFoodCategory(c){
+  const n=String(c.name||'');
+  return !/เครื่องดื่ม|drink|แยม|ของหวาน|dessert|sweet/i.test(n);
+}
+function renderCategories(){
+  categoryRoot.innerHTML=foodCategories.map(c=>{
+    const icon=safeUrl(c.icon_url)
+      ? '<span class="ico"><img src="'+esc(c.icon_url)+'" alt=""></span>'
+      : '<span class="ico">'+categoryFallback(c.name)+'</span>';
+    return '<button type="button" class="cat '+(c.id===currentCategoryId?'active':'')+'" data-id="'+esc(c.id)+'">'+icon+'<span>'+esc(c.name)+'</span></button>';
+  }).join('');
+  categoryLoading.style.display=foodCategories.length?'none':'block';
+  if(!foodCategories.length) categoryLoading.textContent='ยังไม่มีหมวดอาหารในหลังร้าน';
+}
+function productsForCurrentCategory(){
+  return catalog.products.filter(p=>String(p.category_id)===String(currentCategoryId));
+}
+function renderItems(){
+  const ps=productsForCurrentCategory();
+  if(!ps.length){
+    items.innerHTML='<div class="sub" style="grid-column:1/-1;padding:10px 2px">ยังไม่มีสินค้าในหมวดนี้</div>';
+    return;
+  }
+  items.innerHTML=ps.map(p=>{
+    const selected=choice&&String(choice.id)===String(p.id);
+    const image=safeUrl(p.image_url)
+      ? '<img src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'">'
+      : productFallback(p.name);
+    return '<div class="item '+(selected?'selected':'')+'" data-id="'+esc(p.id)+'">'+
+      '<span class="check">✓</span>'+
+      '<div class="photo">'+image+'</div>'+
+      '<h3>'+esc(p.name)+'</h3>'+
+      '<p>'+esc(catalog.categories.find(c=>String(c.id)===String(p.category_id))?.name||'')+'</p>'+
+      '<div class="qty"><button type="button" class="minus" data-d="-1">−</button><span>'+(selected?qty:0)+'</span><button type="button" class="plus" data-d="1">+</button></div>'+
+      '</div>';
+  }).join('');
+}
+function update(){
+  picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';
+  next.disabled=!choice;
+}
+categoryRoot.addEventListener('click',e=>{
+  const b=e.target.closest('.cat');
+  if(!b)return;
+  currentCategoryId=b.dataset.id;
+  choice=null;
+  qty=0;
+  renderCategories();
+  renderItems();
+  update();
+});
+items.addEventListener('click',e=>{
+  const item=e.target.closest('.item');
+  if(!item)return;
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));
+  if(!p)return;
+  const d=Number(e.target.dataset.d||0);
+  const same=choice&&String(choice.id)===String(p.id);
+  if(d){
+    const newQty=Math.max(0,(same?qty:0)+d);
+    if(newQty===0){
+      choice=null;qty=0;
+    }else{
+      choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
+      qty=newQty;
+    }
+  }else{
+    choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
+    qty=1;
+  }
+  renderItems();
+  update();
+});
+next.onclick=()=>{
+  if(!choice)return;
+  sessionStorage.setItem('snackFood',JSON.stringify({...choice,qty}));
+  location.href='snack-box-step2.html';
+};
+
+async function loadCatalog(){
+  try{
+    const r=await fetch(STORE_API+'?action=catalog');
+    const j=await r.json();
+    if(!r.ok||!j.ok) throw new Error(j.error||'catalog');
+    catalog=j;
+    foodCategories=(j.categories||[]).filter(isFoodCategory);
+    currentCategoryId=foodCategories[0]?.id||'';
+    renderCategories();
+    renderItems();
+    update();
+  }catch(error){
+    console.error(error);
+    categoryLoading.style.display='block';
+    categoryLoading.textContent='โหลดหมวดอาหารไม่สำเร็จ กรุณาลองใหม่';
+    items.innerHTML='<div class="sub" style="grid-column:1/-1">ยังโหลดรายการอาหารไม่ได้</div>';
+  }
+}
+loadCatalog();
+</script></body></html>
