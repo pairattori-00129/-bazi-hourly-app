@@ -11,7 +11,7 @@ body{min-height:100vh}.shell{width:min(100%,430px);min-height:100vh;margin:auto;
 .qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty span{text-align:center;font-weight:900}
 .footer-cta{position:sticky;bottom:92px;margin:12px;display:grid;grid-template-columns:1fr 1.6fr;gap:8px;z-index:10}.summary-pill,.nextbtn{border-radius:18px;padding:14px 10px;font-weight:900;border:0}.summary-pill{background:#f5ecdf;color:#51352a;text-align:center}.nextbtn{background:var(--brown);color:white;font-size:16px}
 .qtybox{display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:center}.qtybox button{height:48px;border:0;border-radius:14px;font-size:23px;font-weight:900}.qtybox input{height:48px;border:1px solid #d8c7ba;border-radius:14px;text-align:center;font-size:22px;font-weight:900;background:#fff}
-.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.summary-item{border:1px solid #e5d7ca;border-radius:16px;padding:10px;background:#fff;text-align:center}.summary-item .photo{font-size:42px}.summary-item b{display:block;font-size:12px;margin-top:5px}
+.summary-grid{display:block}.summary-group{margin-bottom:14px}.summary-group:last-child{margin-bottom:0}.summary-group h3{margin:0 0 7px;font-size:15px;color:#6b4a3a}.summary-line{display:grid;grid-template-columns:42px 1fr auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid #eee2d7}.summary-line:last-child{border-bottom:0}.summary-line .ico{width:40px;height:40px;border-radius:11px;background:#fff6e9;display:grid;place-items:center;font-size:25px;overflow:hidden}.summary-line .ico img{width:100%;height:100%;object-fit:cover}.summary-line .name{font-weight:800;font-size:14px}.summary-line .qtyv{font-weight:900;color:var(--brown);white-space:nowrap}
 textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;padding:12px;font:inherit;background:#fff}
 .actions{display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin:12px}.actions button,.actions a{border:0;border-radius:17px;padding:14px;font-weight:900;font-size:16px;text-align:center;text-decoration:none}.backbtn{background:#efe5db;color:var(--brown)}.confirm{background:var(--brown);color:#fff}
 .nav{position:fixed;left:0;right:0;bottom:10px;z-index:30;pointer-events:none}
@@ -32,8 +32,8 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
   <div class="step-pill done">3 เครื่องดื่ม</div>
   <div class="step-pill active">4 สรุป</div>
   </div><section class="card"><h2>รายการที่เลือก</h2><div id="summaryItems" class="summary-grid"></div></section>
-  <section class="card"><h2>จำนวน Snack Box</h2><div class="sub">กำหนดจำนวนกล่องที่ต้องการ</div><div class="qtybox"><button class="minus" id="minus">−</button><input id="boxQty" type="number" min="1" max="9999"><button class="plus" id="plus">+</button></div></section>
-  <section class="card"><h2>สรุปคำสั่งซื้อ</h2><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee0d5"><span>จำนวนชุด</span><strong id="qtyText"></strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>เลือกแล้ว</span><strong>3 รายการ</strong></div><div class="sub" style="margin-top:10px">หมายเหตุเพิ่มเติม</div><textarea id="note" maxlength="200" placeholder="เช่น ไม่ใส่ผัก, แยกซอส, อื่นๆ (ถ้ามี)"></textarea></section>
+  <section class="card"><h2>จำนวน Snack Box</h2><div class="sub">คำนวณจากจำนวนอาหารที่เลือกใน Step 1</div><div style="display:flex;align-items:baseline;justify-content:center;gap:8px;padding:12px 0"><strong id="boxQtyText" style="font-size:44px;color:var(--brown)">0</strong><span style="font-size:20px;font-weight:900">กล่อง</span></div></section>
+  <section class="card"><h2>สรุปคำสั่งซื้อ</h2><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee0d5"><span>จำนวนชุด</span><strong id="qtyText"></strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>จำนวนเมนูรวม</span><strong id="menuCountText">0 รายการ</strong></div><div class="sub" style="margin-top:10px">หมายเหตุเพิ่มเติม</div><textarea id="note" maxlength="200" placeholder="เช่น ไม่ใส่ผัก, แยกซอส, อื่นๆ (ถ้ามี)"></textarea></section>
   <div class="actions"><a class="backbtn" href="snack-box-step3.html">‹ ย้อนกลับ</a><button class="confirm" id="confirm">✓ ยืนยันคำสั่งซื้อ</button></div></div><nav class="nav"><div class="navin">
 <a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
 <a class="active" href="snack-box-step1.html?preview=1&v=20260927-1925"><b><svg class="snack-nav-svg" viewBox="0 0 32 24" width="30" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b><span>Snack Box</span></a>
@@ -55,5 +55,58 @@ if(TEST_PREVIEW){
   });
 }
 function snackGo(url){ location.href=snackTestUrl(url); }
-const food=JSON.parse(sessionStorage.getItem('snackFood')||'null'),dessert=JSON.parse(sessionStorage.getItem('snackDessert')||'null'),drink=JSON.parse(sessionStorage.getItem('snackDrink')||'null');if(!food||!dessert||!drink){snackGo('snack-box-step1.html')}else{summaryItems.innerHTML=[[food,'อาหาร'],[dessert,'ของหวาน'],[drink,'เครื่องดื่ม']].map(([x,l])=>'<div class="summary-item"><div class="photo">'+x.icon+'</div><small>'+l+'</small><b>'+x.name+'</b></div>').join('')}
-let q=Number(sessionStorage.getItem('snackQty')||20);function update(){q=Math.max(1,Math.min(9999,Math.floor(q||1)));boxQty.value=q;qtyText.textContent=q+' กล่อง';sessionStorage.setItem('snackQty',String(q))}minus.onclick=()=>{q--;update()};plus.onclick=()=>{q++;update()};boxQty.oninput=e=>{q=Number(e.target.value||1);update()};confirm.onclick=()=>{sessionStorage.setItem('snackNote',note.value);alert('บันทึกคำสั่ง Snack Box สำหรับทดสอบแล้ว\nจำนวน '+q+' กล่อง');};update();</script></body></html>
+function normalize(key){
+  let v=null;try{v=JSON.parse(sessionStorage.getItem(key)||'[]')}catch(_){}
+  if(Array.isArray(v))return v.filter(x=>x&&Number(x.qty)>0);
+  if(v&&v.name&&Number(v.qty)>0)return [v];
+  return [];
+}
+const food=normalize('snackFood');
+const dessert=normalize('snackDessert');
+const drink=normalize('snackDrink');
+const target=Number(sessionStorage.getItem('snackBoxTarget')||0);
+if(!food.length||!dessert.length||!drink.length||!target){
+  snackGo('snack-box-step1.html');
+}
+function safeImage(v){
+  const s=String(v||'');
+  return /^https:\/\//i.test(s)||/^data:image\//i.test(s)?s:'';
+}
+function iconHtml(x){
+  const img=safeImage(x.image_url);
+  return img?'<img src="'+img+'" alt="">':(x.icon||'🍴');
+}
+function groupHtml(label,arr,unit){
+  return '<div class="summary-group"><h3>'+label+'</h3>'+
+    arr.map(x=>'<div class="summary-line"><div class="ico">'+iconHtml(x)+'</div><div class="name">'+x.name+'</div><div class="qtyv">× '+Number(x.qty)+' '+unit+'</div></div>').join('')+
+    '</div>';
+}
+summaryItems.innerHTML=
+  groupHtml('อาหาร',food,'ชิ้น')+
+  groupHtml('ของหวาน',dessert,'ชิ้น')+
+  groupHtml('เครื่องดื่ม',drink,'ขวด');
+
+const foodTotal=food.reduce((s,x)=>s+Number(x.qty||0),0);
+const dessertTotal=dessert.reduce((s,x)=>s+Number(x.qty||0),0);
+const drinkTotal=drink.reduce((s,x)=>s+Number(x.qty||0),0);
+const menuCount=food.length+dessert.length+drink.length;
+
+boxQtyText.textContent=String(foodTotal);
+qtyText.textContent=foodTotal+' กล่อง';
+menuCountText.textContent=menuCount+' รายการ';
+
+if(foodTotal!==target||dessertTotal!==target||drinkTotal!==target){
+  alert('จำนวนในแต่ละ Step ไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+}
+confirm.onclick=()=>{
+  const noteText=note.value.trim();
+  const order={
+    box_count:foodTotal,
+    food,dessert,drink,
+    note:noteText,
+    created_at:new Date().toISOString()
+  };
+  sessionStorage.setItem('snackOrderDraft',JSON.stringify(order));
+  sessionStorage.setItem('snackNote',noteText);
+  alert('บันทึกคำสั่ง Snack Box สำหรับทดสอบแล้ว\nจำนวน '+foodTotal+' กล่อง\nรวม '+menuCount+' รายการ');
+};</script></body></html>
