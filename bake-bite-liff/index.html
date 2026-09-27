@@ -89,6 +89,7 @@ body{min-height:100vh}
 .navin:before{content:"";position:absolute;left:var(--notch-left);top:-1px;transform:translate(-50%,-1px);width:78px;height:38px;background:#fff8ec;border-radius:0 0 44px 44px;z-index:1;pointer-events:none;box-shadow:0 1px 0 #fff8ec}
 .nav button{position:relative;z-index:2;min-height:54px;border:0;background:transparent;border-radius:18px;padding:5px 2px 2px;color:#6b4a3a;font-family:inherit;font-size:11.5px;line-height:1.15;transition:color .22s ease,transform .22s ease;overflow:visible}
 .nav button b{display:flex;width:40px;height:40px;align-items:center;justify-content:center;margin:0 auto 3px;border-radius:50%;font-size:21px;line-height:1;background:transparent;border:0;transition:all .22s ease}
+.nav button b svg{display:block;width:25px;height:25px;stroke:currentColor}
 .nav button.active{color:#4a281b;font-weight:900;background:transparent}
 .nav button.active b{width:56px;height:56px;margin-top:-29px;margin-bottom:5px;background:#5b2d1b;border:4px solid #fff8ef;box-shadow:0 8px 20px rgba(74,40,27,.28);font-size:25px;color:#fff;transform:translateY(-1px)}
 .nav button:active b{transform:scale(.95)}
@@ -224,7 +225,7 @@ body{min-height:100vh}
 
 <!-- แถบเมนู 2: notched floating nav; แถบเมนู 1 สำรองไว้ที่ menu-1-backup.html -->
 <nav class="nav"><div class="navin points-active">
-<button data-page="order"><b>🍴</b>สั่งอาหาร</button>
+<button data-page="order"><b aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H7"/><circle cx="10" cy="19" r="1.35"/><circle cx="18" cy="19" r="1.35"/></svg></b>สั่งอาหาร</button>
 <button data-page="points" class="active"><b>☆</b>สะสมแต้ม</button>
 <button data-page="redeem"><b>🎁</b>แลกแต้ม</button>
 <button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
