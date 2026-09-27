@@ -170,14 +170,25 @@ items.addEventListener('input',e=>{
   const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));
   if(!p)return;
   const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
+  items.querySelectorAll('.item').forEach(card=>{
+    const other=card.querySelector('.qty-input');
+    const same=card===item;
+    card.classList.toggle('selected',same&&n>0);
+    if(!same&&other) other.value='0';
+  });
   if(n===0){
-    if(choice&&String(choice.id)===String(p.id)){choice=null;qty=0;}
+    choice=null;qty=0;
   }else{
     choice={id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',icon:productFallback(p.name)};
     qty=n;
   }
-  renderItems();
   update();
+});
+items.addEventListener('change',e=>{
+  const input=e.target.closest('.qty-input');
+  if(!input)return;
+  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
+  input.value=String(n);
 });
 next.onclick=()=>{
   if(!choice)return;
