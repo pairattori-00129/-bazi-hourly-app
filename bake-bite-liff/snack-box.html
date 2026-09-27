@@ -5,29 +5,41 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Snack Box · Bake & Bite</title>
 <style>
-:root{--brown:#5b2d1b;--green:#78966a;--green2:#eef5e8;--cream:#fff8ee;--paper:#fffdf9;--line:#ead9ca;--muted:#7b685d;--peach:#fff0e5}
+:root{
+  --cream:#fff9ef;--paper:#fffdf8;--brown:#5a2f1f;--green:#718d5a;
+  --ink:#402d27;--muted:#857166;--line:#ead8c7;
+}
 *{box-sizing:border-box}
-html,body{margin:0;background:#f6efe5;color:#402d27;font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+html,body{margin:0;background:#f6efe5;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+body{min-height:100vh}
 button,input{font:inherit}
-.shell{width:min(100%,430px);min-height:100vh;margin:auto;background:linear-gradient(180deg,#fffdfa,#fff8ec);padding-bottom:125px}.brand-header{position:relative;aspect-ratio:3/1;overflow:hidden;background:#fff;border-bottom:1px solid rgba(90,47,31,.08)}.brand-header img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
-.hero{padding:24px 20px 20px;background:linear-gradient(145deg,#eef5e8,#fff4e9);border-bottom:1px solid #eadfd4}
-.back{display:inline-block;text-decoration:none;color:var(--brown);font-weight:900;margin-bottom:12px}
-.hero h1{margin:0;color:var(--brown);font-size:36px;line-height:1.05}
-.hero p{margin:9px 0 0;color:#725f54;line-height:1.45;font-size:14px}
+.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdfa 0%,#fff8ec 100%);position:relative;box-shadow:0 0 30px rgba(60,40,25,.08);overflow:hidden}
+.app{padding-bottom:112px}
 
-.progress{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:14px 12px 0}
-.progress-step{background:#efe6dd;border-radius:999px;padding:8px 5px;text-align:center;font-size:12px;font-weight:900;color:#8b786d}
-.progress-step.active{background:var(--brown);color:#fff}
+.header{position:relative;aspect-ratio:3/1;padding:0;margin:0;text-align:center;overflow:hidden;background:#fff;border-bottom:1px solid rgba(90,47,31,.08)}
+.header:before,.header:after{display:none!important;content:none!important}
+.header .hero-bg{width:100%;height:100%;max-width:none;display:block;margin:0;object-fit:cover;object-position:center;filter:none;transform:none;image-rendering:auto}
+
+.title{position:relative;text-align:center;padding:24px 18px 14px}
+.title:before,.title:after{content:"";position:absolute;width:28px;height:14px;border-radius:50%;background:#a3b68c;opacity:.55;transform:rotate(-28deg)}
+.title:before{left:30px;top:18px}
+.title:after{right:34px;bottom:16px;transform:rotate(28deg)}
+.title h1{font-size:42px;line-height:1;margin:0;color:#5b2d1b;font-weight:900;letter-spacing:-1px}
+.title p{margin:8px 0 0;font-size:16px;color:#6f5c51}
+
+.progress-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 12px 4px}
+.progress-step{background:#efe6dd;border-radius:999px;padding:9px 4px;text-align:center;font-size:12px;font-weight:900;color:#8b786d}
+.progress-step.active{background:#5b2d1b;color:#fff}
 .progress-step.done{background:#dfead7;color:#4e6941}
 
-.card{margin:12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 5px 16px rgba(80,50,30,.05)}
+.card{margin:10px 12px 14px;background:#fffdf8;border:1px solid #ead8c7;border-radius:24px;padding:16px;box-shadow:0 5px 18px rgba(90,55,30,.05)}
 .step{display:none}.step.active{display:block}
-.step-label{font-size:13px;font-weight:900;color:#6d8a5c;margin-bottom:4px}
-.card h2{margin:0 0 5px;color:#4c3024;font-size:24px}
-.sub{color:var(--muted);font-size:14px;line-height:1.45;margin-bottom:12px}
+.step-label{font-size:13px;font-weight:900;color:#718d5a;margin-bottom:4px}
+.card h2{margin:0 0 5px;color:#4c3024;font-size:27px}
+.sub{color:#7b6a60;font-size:14px;line-height:1.45;margin-bottom:12px}
 
 .options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.choice{position:relative;border:1.5px solid #e7dbcf;border-radius:17px;padding:12px 10px;background:#fff;min-height:112px;text-align:left;cursor:pointer;color:#402d27}
+.choice{position:relative;border:1.5px solid #e7dbcf;border-radius:18px;padding:12px 10px;background:#fff;min-height:112px;text-align:left;cursor:pointer;color:#402d27}
 .choice.selected{border-color:#7f9c70;background:#f1f7ec;box-shadow:0 0 0 2px rgba(120,150,106,.10)}
 .choice .icon{font-size:34px;line-height:1}
 .choice b{display:block;margin-top:8px;font-size:14px;line-height:1.3}
@@ -44,12 +56,12 @@ button,input{font:inherit}
 .hint{font-size:12px;color:#7d6d64;margin-top:7px}
 
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
-.btn{width:100%;border:0;border-radius:15px;padding:13px 14px;font-weight:900;color:#fff;background:var(--green);cursor:pointer}
+.btn{width:100%;border:0;border-radius:16px;padding:14px;font-weight:900;color:#fff;background:#78966a;cursor:pointer}
 .btn.backbtn{background:#eee5dd;color:#5b2d1b}
-.btn.full{grid-column:1/-1;background:var(--brown)}
+.btn.full{grid-column:1/-1;background:#5b2d1b}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 
-.summary{display:none;margin:12px;background:#f5f8f1;border:1px solid #dfe8d7;border-radius:20px;padding:16px}
+.summary{display:none;margin:10px 12px 14px;background:#f5f8f1;border:1px solid #dfe8d7;border-radius:24px;padding:16px}
 .summary.show{display:block}
 .summary h2{margin:0 0 10px;color:#4c3024}
 .summary-row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid #e2eadc}
@@ -57,161 +69,155 @@ button,input{font:inherit}
 .summary-row span:first-child{color:#7b6a60}
 .summary-row strong{text-align:right}
 .summary .total{margin-top:12px;padding:12px;border-radius:14px;background:#fff;color:#5b2d1b;font-weight:900;text-align:center}
-
 .contact{margin:12px;display:none}
 .contact.show{display:block}
 .contact a{display:block;text-decoration:none;text-align:center;background:#5b2d1b;color:#fff;border-radius:15px;padding:14px;font-weight:900}
 
-
-.bottom-nav{position:fixed;left:0;right:0;bottom:10px;z-index:40;pointer-events:none}
-.bottom-nav .navin{--notch-left:30%;width:min(calc(100% - 24px),398px);margin:auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:rgba(255,253,248,.985);border:1px solid rgba(90,47,31,.10);border-radius:24px;padding:12px 7px calc(10px + env(safe-area-inset-bottom));box-shadow:0 12px 28px rgba(75,52,35,.16);backdrop-filter:blur(10px);pointer-events:auto;overflow:visible;position:relative}
-.bottom-nav .navin:before{content:"";position:absolute;left:var(--notch-left);top:-1px;transform:translate(-50%,-1px);width:78px;height:38px;background:#fff8ec;border-radius:0 0 44px 44px;z-index:1;pointer-events:none}
-.bottom-nav button{position:relative;z-index:2;min-height:54px;border:0;background:transparent;border-radius:18px;padding:5px 2px 2px;color:#6b4a3a;font-family:inherit;font-size:11px;line-height:1.15}
-.bottom-nav button b{display:flex;width:40px;height:40px;align-items:center;justify-content:center;margin:0 auto 3px;border-radius:50%;font-size:21px}.bottom-nav button b svg{display:block;width:30px;height:24px;stroke:currentColor}
-.bottom-nav button.active{font-weight:900;color:#4a281b}
-.bottom-nav button.active b{width:56px;height:56px;margin-top:-29px;margin-bottom:5px;background:#5b2d1b;border:4px solid #fff8ef;box-shadow:0 8px 20px rgba(74,40,27,.28);color:#fff}
-@media(max-width:380px){.bottom-nav .navin{width:calc(100% - 18px);padding-left:4px;padding-right:4px}.bottom-nav button{font-size:10px}.bottom-nav button b{width:37px;height:37px;font-size:19px}.bottom-nav button.active b{width:52px;height:52px;margin-top:-26px}}
-
-@media(max-width:360px){.options{grid-template-columns:1fr}}
-
-/* floating bottom nav */
+/* floating bottom nav — same style as order page */
 .nav{position:fixed;left:0;right:0;bottom:10px;z-index:30;pointer-events:none}
 .navin{--notch-left:30%;width:min(calc(100% - 24px),398px);margin:auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:rgba(255,253,248,.985);border:1px solid rgba(90,47,31,.10);border-radius:24px;padding:12px 7px calc(10px + env(safe-area-inset-bottom));box-shadow:0 12px 28px rgba(75,52,35,.16);backdrop-filter:blur(10px);pointer-events:auto;overflow:visible;position:relative}
 .navin:before{content:"";position:absolute;left:var(--notch-left);top:-1px;transform:translate(-50%,-1px);width:78px;height:38px;background:#fff8ec;border-radius:0 0 44px 44px;z-index:1;pointer-events:none;box-shadow:0 1px 0 #fff8ec}
-.nav button{position:relative;z-index:2;min-height:54px;border:0;background:transparent;border-radius:18px;padding:5px 2px 2px;color:#6b4a3a;font-family:inherit;font-size:11px;line-height:1.15;overflow:visible}
+.nav button{position:relative;z-index:2;min-height:54px;border:0;background:transparent;border-radius:18px;padding:5px 2px 2px;color:#6b4a3a;font-family:inherit;font-size:11.5px;line-height:1.15;overflow:visible}
 .nav button b{display:flex;width:40px;height:40px;align-items:center;justify-content:center;margin:0 auto 3px;border-radius:50%;font-size:21px;line-height:1;background:transparent;border:0}
 .nav button b svg{display:block;width:25px;height:25px;stroke:currentColor}
 .nav button.active{color:#4a281b;font-weight:900}
 .nav button.active b{width:56px;height:56px;margin-top:-29px;margin-bottom:5px;background:#5b2d1b;border:4px solid #fff8ef;box-shadow:0 8px 20px rgba(74,40,27,.28);font-size:25px;color:#fff;transform:translateY(-1px)}
 .nav button:active b{transform:scale(.95)}
-@media(max-width:380px){.navin{width:calc(100% - 18px);padding-left:3px;padding-right:3px}.navin:before{width:70px;height:35px}.nav button{font-size:9.5px}.nav button b{width:35px;height:35px;font-size:18px}.nav button.active b{width:50px;height:50px;font-size:22px;margin-top:-25px}}
-
+@media(max-width:380px){
+  .navin{width:calc(100% - 18px);padding-left:4px;padding-right:4px}
+  .navin:before{width:72px;height:35px}
+  .nav button{font-size:10.5px}
+  .nav button b{width:37px;height:37px;font-size:19px}
+  .nav button.active b{width:52px;height:52px;font-size:23px;margin-top:-26px}
+}
+@media(max-width:360px){.options{grid-template-columns:1fr}}
+@media(min-width:700px){.shell{border-radius:26px;margin-top:14px;margin-bottom:14px;min-height:calc(100vh - 28px)}}
 </style>
 </head>
-<body><div class="shell">
-<header class="brand-header"><img src="bake-bite-header-v2.png?v=20260927-0810" alt="Bake & Bite"></header>
-<section class="hero">
-<a class="back" href="index.html#order">‹ กลับหน้าสั่งอาหาร</a>
-<h1>Snack Box</h1>
-<p>เลือกเมนูทีละขั้น แล้วกำหนดจำนวนกล่องที่ต้องการ</p>
-</section>
+<body>
+<div class="shell"><main class="app">
+<header class="header"><img class="hero-bg" src="bake-bite-header-v2.png?v=20260927-0810" alt="Bake & Bite"></header>
 
-<div class="progress" aria-label="ขั้นตอน">
-<div class="progress-step active" data-progress="1">1 อาหาร</div>
-<div class="progress-step" data-progress="2">2 ของหวาน</div>
-<div class="progress-step" data-progress="3">3 เครื่องดื่ม</div>
+<div class="title">
+  <h1>Snack Box</h1>
+  <p>เลือกอาหาร ของหวาน เครื่องดื่ม และจำนวนกล่อง</p>
+</div>
+
+<div class="progress-steps" aria-label="ขั้นตอน">
+  <div class="progress-step active" data-progress="1">1 อาหาร</div>
+  <div class="progress-step" data-progress="2">2 ของหวาน</div>
+  <div class="progress-step" data-progress="3">3 เครื่องดื่ม</div>
 </div>
 
 <section class="card step active" data-step="1">
-<div class="step-label">STEP 1</div>
-<h2>เลือกอาหาร</h2>
-<div class="sub">เลือกอาหารหลัก 1 อย่างต่อกล่อง</div>
-<div class="options" data-group="food">
-<button type="button" class="choice" data-value="แซนด์วิชไส้กรอก + ไข่ดาว"><span class="check">✓</span><span class="icon">🥪</span><b>ไส้กรอก + ไข่ดาว</b><span>แซนด์วิช</span></button>
-<button type="button" class="choice" data-value="แซนด์วิชโบโลน่า + ไข่ดาว"><span class="check">✓</span><span class="icon">🥪</span><b>โบโลน่า + ไข่ดาว</b><span>แซนด์วิช</span></button>
-<button type="button" class="choice" data-value="สลัดโรลไส้ปูอัด"><span class="check">✓</span><span class="icon">🥗</span><b>สลัดโรลไส้ปูอัด</b><span>ชุดเบา ๆ</span></button>
-<button type="button" class="choice" data-value="สลัดโรลไส้กรอก"><span class="check">✓</span><span class="icon">🌯</span><b>สลัดโรลไส้กรอก</b><span>ชุดเบา ๆ</span></button>
-</div>
-<div class="actions"><button type="button" class="btn full next" data-next="2" disabled>ถัดไป: เลือกของหวาน ›</button></div>
+  <div class="step-label">STEP 1</div>
+  <h2>เลือกอาหาร</h2>
+  <div class="sub">เลือกอาหารหลัก 1 อย่างต่อกล่อง</div>
+  <div class="options" data-group="food">
+    <button type="button" class="choice" data-value="แซนด์วิชไส้กรอก + ไข่ดาว"><span class="check">✓</span><span class="icon">🥪</span><b>ไส้กรอก + ไข่ดาว</b><span>แซนด์วิช</span></button>
+    <button type="button" class="choice" data-value="แซนด์วิชโบโลน่า + ไข่ดาว"><span class="check">✓</span><span class="icon">🥪</span><b>โบโลน่า + ไข่ดาว</b><span>แซนด์วิช</span></button>
+    <button type="button" class="choice" data-value="สลัดโรลไส้ปูอัด"><span class="check">✓</span><span class="icon">🥗</span><b>สลัดโรลไส้ปูอัด</b><span>ชุดเบา ๆ</span></button>
+    <button type="button" class="choice" data-value="สลัดโรลไส้กรอก"><span class="check">✓</span><span class="icon">🌯</span><b>สลัดโรลไส้กรอก</b><span>ชุดเบา ๆ</span></button>
+  </div>
+  <div class="actions"><button type="button" class="btn full next" data-next="2" disabled>ถัดไป: เลือกของหวาน ›</button></div>
 </section>
 
 <section class="card step" data-step="2">
-<div class="step-label">STEP 2</div>
-<h2>เลือกของหวาน</h2>
-<div class="sub">เลือกของหวาน 1 อย่างต่อกล่อง</div>
-<div class="options" data-group="dessert">
-<button type="button" class="choice" data-value="แซนด์วิชแยมสตรอว์เบอร์รี"><span class="check">✓</span><span class="icon">🍓</span><b>แยมสตรอว์เบอร์รี</b><span>หวานหอม</span></button>
-<button type="button" class="choice" data-value="แซนด์วิชแยมบลูเบอร์รี"><span class="check">✓</span><span class="icon">🫐</span><b>แยมบลูเบอร์รี</b><span>รสผลไม้</span></button>
-<button type="button" class="choice" data-value="แซนด์วิชแยมส้ม"><span class="check">✓</span><span class="icon">🍊</span><b>แยมส้ม</b><span>เปรี้ยวหวาน</span></button>
-<button type="button" class="choice" data-value="แซนด์วิชสังขยา"><span class="check">✓</span><span class="icon">🍞</span><b>สังขยา</b><span>หอมละมุน</span></button>
-</div>
-<div class="actions">
-<button type="button" class="btn backbtn prev" data-prev="1">‹ ย้อนกลับ</button>
-<button type="button" class="btn next" data-next="3" disabled>ถัดไป ›</button>
-</div>
+  <div class="step-label">STEP 2</div>
+  <h2>เลือกของหวาน</h2>
+  <div class="sub">เลือกของหวาน 1 อย่างต่อกล่อง</div>
+  <div class="options" data-group="dessert">
+    <button type="button" class="choice" data-value="แซนด์วิชแยมสตรอว์เบอร์รี"><span class="check">✓</span><span class="icon">🍓</span><b>แยมสตรอว์เบอร์รี</b><span>หวานหอม</span></button>
+    <button type="button" class="choice" data-value="แซนด์วิชแยมบลูเบอร์รี"><span class="check">✓</span><span class="icon">🫐</span><b>แยมบลูเบอร์รี</b><span>รสผลไม้</span></button>
+    <button type="button" class="choice" data-value="แซนด์วิชแยมส้ม"><span class="check">✓</span><span class="icon">🍊</span><b>แยมส้ม</b><span>เปรี้ยวหวาน</span></button>
+    <button type="button" class="choice" data-value="แซนด์วิชสังขยา"><span class="check">✓</span><span class="icon">🍞</span><b>สังขยา</b><span>หอมละมุน</span></button>
+  </div>
+  <div class="actions">
+    <button type="button" class="btn backbtn prev" data-prev="1">‹ ย้อนกลับ</button>
+    <button type="button" class="btn next" data-next="3" disabled>ถัดไป ›</button>
+  </div>
 </section>
 
 <section class="card step" data-step="3">
-<div class="step-label">STEP 3</div>
-<h2>เลือกเครื่องดื่ม</h2>
-<div class="sub">เลือกเครื่องดื่ม 1 อย่างต่อกล่อง</div>
-<div class="options" data-group="drink">
-<button type="button" class="choice" data-value="น้ำเก๊กฮวย"><span class="check">✓</span><span class="icon">🌼</span><b>น้ำเก๊กฮวย</b><span>หอม สดชื่น</span></button>
-<button type="button" class="choice" data-value="น้ำรากบัว"><span class="check">✓</span><span class="icon">🥤</span><b>น้ำรากบัว</b><span>หวานละมุน</span></button>
-<button type="button" class="choice" data-value="น้ำเปล่า"><span class="check">✓</span><span class="icon">💧</span><b>น้ำเปล่า</b><span>แบบขวด</span></button>
-<button type="button" class="choice" data-value="ไม่รับเครื่องดื่ม"><span class="check">✓</span><span class="icon">➖</span><b>ไม่รับเครื่องดื่ม</b><span>อาหาร + ของหวาน</span></button>
-</div>
+  <div class="step-label">STEP 3</div>
+  <h2>เลือกเครื่องดื่ม</h2>
+  <div class="sub">เลือกเครื่องดื่ม 1 อย่างต่อกล่อง</div>
+  <div class="options" data-group="drink">
+    <button type="button" class="choice" data-value="น้ำเก๊กฮวย"><span class="check">✓</span><span class="icon">🌼</span><b>น้ำเก๊กฮวย</b><span>หอม สดชื่น</span></button>
+    <button type="button" class="choice" data-value="น้ำรากบัว"><span class="check">✓</span><span class="icon">🥤</span><b>น้ำรากบัว</b><span>หวานละมุน</span></button>
+    <button type="button" class="choice" data-value="น้ำเปล่า"><span class="check">✓</span><span class="icon">💧</span><b>น้ำเปล่า</b><span>แบบขวด</span></button>
+    <button type="button" class="choice" data-value="ไม่รับเครื่องดื่ม"><span class="check">✓</span><span class="icon">➖</span><b>ไม่รับเครื่องดื่ม</b><span>อาหาร + ของหวาน</span></button>
+  </div>
 
-<div class="qtybox">
-<label for="qty">จำนวน Snack Box</label>
-<div class="qtyrow">
-<button type="button" id="minusQty" aria-label="ลดจำนวน">−</button>
-<input id="qty" type="number" min="1" max="9999" inputmode="numeric" value="1">
-<button type="button" id="plusQty" aria-label="เพิ่มจำนวน">+</button>
-</div>
-<div class="hint">จำนวนนี้ใช้กับชุดที่เลือกด้านบนทั้งหมด</div>
-</div>
+  <div class="qtybox">
+    <label for="qty">จำนวน Snack Box</label>
+    <div class="qtyrow">
+      <button type="button" id="minusQty" aria-label="ลดจำนวน">−</button>
+      <input id="qty" type="number" min="1" max="9999" inputmode="numeric" value="1">
+      <button type="button" id="plusQty" aria-label="เพิ่มจำนวน">+</button>
+    </div>
+    <div class="hint">จำนวนนี้ใช้กับชุดที่เลือกด้านบนทั้งหมด</div>
+  </div>
 
-<div class="actions">
-<button type="button" class="btn backbtn prev" data-prev="2">‹ ย้อนกลับ</button>
-<button type="button" class="btn" id="summaryBtn" disabled>ดูสรุป</button>
-</div>
+  <div class="actions">
+    <button type="button" class="btn backbtn prev" data-prev="2">‹ ย้อนกลับ</button>
+    <button type="button" class="btn" id="summaryBtn" disabled>ดูสรุป</button>
+  </div>
 </section>
 
 <section id="summary" class="summary" aria-live="polite">
-<h2>สรุป Snack Box</h2>
-<div class="summary-row"><span>อาหาร</span><strong id="sumFood"></strong></div>
-<div class="summary-row"><span>ของหวาน</span><strong id="sumDessert"></strong></div>
-<div class="summary-row"><span>เครื่องดื่ม</span><strong id="sumDrink"></strong></div>
-<div class="summary-row"><span>จำนวน</span><strong id="sumQty"></strong></div>
-<div class="total">📦 ชุดที่เลือก × <span id="sumQty2"></span> กล่อง</div>
-<div class="actions">
-<button type="button" class="btn backbtn" id="editBtn">แก้ไขรายการ</button>
-<button type="button" class="btn" id="contactBtn">ติดต่อร้าน</button>
-</div>
+  <h2>สรุป Snack Box</h2>
+  <div class="summary-row"><span>อาหาร</span><strong id="sumFood"></strong></div>
+  <div class="summary-row"><span>ของหวาน</span><strong id="sumDessert"></strong></div>
+  <div class="summary-row"><span>เครื่องดื่ม</span><strong id="sumDrink"></strong></div>
+  <div class="summary-row"><span>จำนวน</span><strong id="sumQty"></strong></div>
+  <div class="total">📦 ชุดที่เลือก × <span id="sumQty2"></span> กล่อง</div>
+  <div class="actions">
+    <button type="button" class="btn backbtn" id="editBtn">แก้ไขรายการ</button>
+    <button type="button" class="btn" id="contactBtn">ติดต่อร้าน</button>
+  </div>
 </section>
 
 <div id="contact" class="contact">
-<a href="index.html#contact">ไปหน้าติดต่อร้าน ›</a>
+  <a href="index.html#contact">ไปหน้าติดต่อร้าน ›</a>
 </div>
-</div>
+</main></div>
 
-<nav class="bottom-nav" aria-label="เมนูหลัก"><div class="navin">
-<button type="button" data-href="index.html#order"><b>🛒</b>สั่งอาหาร</button>
-<button type="button" class="active"><b aria-hidden="true"><svg viewBox="0 0 32 24" width="30" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b>Snack Box</button>
-<button type="button" data-href="index.html#points"><b>☆</b>สะสมแต้ม</button>
-<button type="button" data-href="index.html#redeem"><b>🎁</b>แลกแต้ม</button>
-<button type="button" data-href="index.html#contact"><b>💬</b>ติดต่อร้าน</button>
+<nav class="nav" aria-label="เมนูหลัก"><div class="navin">
+  <button type="button" data-href="index.html#order"><b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H7"/><circle cx="10" cy="19" r="1.35"/><circle cx="18" cy="19" r="1.35"/></svg></b>สั่งอาหาร</button>
+  <button type="button" class="active" aria-current="page"><b aria-hidden="true"><svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b>Snack Box</button>
+  <button type="button" data-href="index.html#points"><b>☆</b>สะสมแต้ม</button>
+  <button type="button" data-href="index.html#redeem"><b>🎁</b>แลกแต้ม</button>
+  <button type="button" data-href="index.html#contact"><b>💬</b>ติดต่อร้าน</button>
 </div></nav>
 
 <script>
-document.querySelectorAll('.bottom-nav button[data-href]').forEach(b=>b.addEventListener('click',()=>{location.href=b.dataset.href}));
+document.querySelectorAll('.nav button[data-href]').forEach(b=>b.addEventListener('click',()=>{location.href=b.dataset.href}));
 
 const state={food:'',dessert:'',drink:'',qty:1};
 const steps=[...document.querySelectorAll('.step')];
 const progress=[...document.querySelectorAll('.progress-step')];
 
 function showStep(n){
- steps.forEach(el=>el.classList.toggle('active',Number(el.dataset.step)===n));
- progress.forEach(el=>{
-   const p=Number(el.dataset.progress);
-   el.classList.toggle('active',p===n);
-   el.classList.toggle('done',p<n);
- });
- window.scrollTo({top:0,behavior:'smooth'});
+  steps.forEach(el=>el.classList.toggle('active',Number(el.dataset.step)===n));
+  progress.forEach(el=>{
+    const p=Number(el.dataset.progress);
+    el.classList.toggle('active',p===n);
+    el.classList.toggle('done',p<n);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function selectChoice(button){
- const group=button.closest('[data-group]');
- const key=group.dataset.group;
- group.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
- button.classList.add('selected');
- state[key]=button.dataset.value;
-
- const step=button.closest('.step');
- const next=step.querySelector('.next');
- if(next)next.disabled=false;
- if(key==='drink')document.getElementById('summaryBtn').disabled=false;
+  const group=button.closest('[data-group]');
+  const key=group.dataset.group;
+  group.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+  button.classList.add('selected');
+  state[key]=button.dataset.value;
+  const step=button.closest('.step');
+  const next=step.querySelector('.next');
+  if(next)next.disabled=false;
+  if(key==='drink')document.getElementById('summaryBtn').disabled=false;
 }
 
 document.querySelectorAll('.choice').forEach(btn=>btn.addEventListener('click',()=>selectChoice(btn)));
@@ -219,45 +225,34 @@ document.querySelectorAll('.next').forEach(btn=>btn.addEventListener('click',()=
 document.querySelectorAll('.prev').forEach(btn=>btn.addEventListener('click',()=>showStep(Number(btn.dataset.prev))));
 
 function setQty(v){
- const clean=Math.max(1,Math.min(9999,Math.floor(Number(v)||1)));
- state.qty=clean;document.getElementById('qty').value=clean;
+  const clean=Math.max(1,Math.min(9999,Math.floor(Number(v)||1)));
+  state.qty=clean;
+  document.getElementById('qty').value=clean;
 }
 document.getElementById('minusQty').addEventListener('click',()=>setQty(state.qty-1));
 document.getElementById('plusQty').addEventListener('click',()=>setQty(state.qty+1));
 document.getElementById('qty').addEventListener('input',e=>setQty(e.target.value));
 
 document.getElementById('summaryBtn').addEventListener('click',()=>{
- setQty(document.getElementById('qty').value);
- if(!state.food||!state.dessert||!state.drink)return;
- document.getElementById('sumFood').textContent=state.food;
- document.getElementById('sumDessert').textContent=state.dessert;
- document.getElementById('sumDrink').textContent=state.drink;
- document.getElementById('sumQty').textContent=state.qty+' กล่อง';
- document.getElementById('sumQty2').textContent=state.qty;
- document.getElementById('summary').classList.add('show');
- document.getElementById('summary').scrollIntoView({behavior:'smooth',block:'start'});
+  setQty(document.getElementById('qty').value);
+  if(!state.food||!state.dessert||!state.drink)return;
+  document.getElementById('sumFood').textContent=state.food;
+  document.getElementById('sumDessert').textContent=state.dessert;
+  document.getElementById('sumDrink').textContent=state.drink;
+  document.getElementById('sumQty').textContent=state.qty+' กล่อง';
+  document.getElementById('sumQty2').textContent=state.qty;
+  document.getElementById('summary').classList.add('show');
+  document.getElementById('summary').scrollIntoView({behavior:'smooth',block:'start'});
 });
 
 document.getElementById('editBtn').addEventListener('click',()=>{
- document.getElementById('summary').classList.remove('show');
- showStep(1);
+  document.getElementById('summary').classList.remove('show');
+  showStep(1);
 });
-
 document.getElementById('contactBtn').addEventListener('click',()=>{
- document.getElementById('contact').classList.add('show');
- document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('contact').classList.add('show');
+  document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 </script>
-
-<nav class="nav" aria-label="เมนูหลัก">
-  <div class="navin">
-    <button type="button" onclick="location.href='index.html#order'"><b aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H7"/><circle cx="10" cy="19" r="1.35"/><circle cx="18" cy="19" r="1.35"/></svg></b>สั่งอาหาร</button>
-    <button type="button" class="active" aria-current="page"><b>📦</b>Snack Box</button>
-    <button type="button" onclick="location.href='index.html#points'"><b>☆</b>สะสมแต้ม</button>
-    <button type="button" onclick="location.href='index.html#redeem'"><b>🎁</b>แลกแต้ม</button>
-    <button type="button" onclick="location.href='index.html#contact'"><b>💬</b>ติดต่อร้าน</button>
-  </div>
-</nav>
-
 </body>
 </html>
