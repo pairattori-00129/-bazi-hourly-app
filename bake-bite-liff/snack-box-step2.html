@@ -33,7 +33,7 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
   <div class="step-pill ">4 สรุป</div>
   </div><section class="card"><h2>เลือกหมวดของหวาน</h2><div class="sub">เลือกหมวดที่ต้องการ</div><div id="categoryLoading" class="sub">กำลังโหลดหมวดของหวาน...</div><div id="categories" class="categories"></div></section>
   <section class="card"><h2>รายการของหวาน</h2><div class="sub">เลือกได้หลายเมนู โดยจำนวนรวมต้องเท่ากับจำนวน Snack Box</div><div id="items" class="items"></div></section>
-  <div class="footer-cta"><div class="summary-pill" id="picked">เลือกแล้ว 0 รายการ</div><button class="nextbtn" id="next" disabled>ถัดไป: เลือกเครื่องดื่ม ›</button></div></div><nav class="nav"><div class="navin">
+  <div class="footer-cta"><div class="summary-pill" id="picked">เลือกแล้ว 0 รายการ</div><button class="nextbtn" id="next">ถัดไป: เลือกเครื่องดื่ม ›</button></div></div><nav class="nav"><div class="navin">
 <a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
 <a class="active" href="snack-box-step1.html?v=20260927-1955"><b><svg class="snack-nav-svg" viewBox="0 0 32 24" width="30" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b><span>Snack Box</span></a>
 <a href="index.html#points"><b>☆</b><span>สะสมแต้ม</span></a>
@@ -155,8 +155,15 @@ function setQty(p,n){
 }
 function update(){
   const t=totalInfo();
-  picked.textContent='เลือกแล้ว '+t.total+' / '+target+' ชิ้น • '+t.menus+' เมนู';
-  next.disabled=t.total!==target;
+  const remain=target-t.total;
+  if(remain>0){
+    picked.textContent='เลือกแล้ว '+t.total+' / '+target+' ชิ้น • เหลือ '+remain+' ชิ้น';
+  }else if(remain<0){
+    picked.textContent='เลือกเกิน '+Math.abs(remain)+' ชิ้น • กรุณาลดจำนวน';
+  }else{
+    picked.textContent='ครบ '+t.total+' / '+target+' ชิ้น • '+t.menus+' เมนู';
+  }
+  next.disabled=false;
 }
 categoryRoot.addEventListener('click',e=>{
   const b=e.target.closest('.cat');if(!b)return;
@@ -189,7 +196,12 @@ items.addEventListener('change',e=>{
 });
 next.onclick=()=>{
   const t=totalInfo();
-  if(t.total!==target){alert('จำนวนของหวานต้องรวม '+target+' ชิ้น');return}
+  if(t.total!==target){
+    const remain=target-t.total;
+    if(remain>0) alert('จำนวนของหวานยังไม่ครบ\nตอนนี้ '+t.total+' / '+target+' ชิ้น\nเหลืออีก '+remain+' ชิ้น');
+    else alert('จำนวนของหวานเกิน '+Math.abs(remain)+' ชิ้น\nกรุณาลดให้เหลือรวม '+target+' ชิ้น');
+    return;
+  }
   sessionStorage.setItem('snackDessert',JSON.stringify(t.arr));
   snackGo('snack-box-step3.html');
 };
