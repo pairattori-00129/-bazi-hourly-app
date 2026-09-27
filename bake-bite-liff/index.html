@@ -85,6 +85,8 @@ body{min-height:100vh}
 /* contact */
 .contact-list{padding:0 12px}.contact-card{display:flex;align-items:center;gap:14px;margin:10px 0;padding:17px;border-radius:24px;border:1px solid #eddccf;background:#fff;box-shadow:0 4px 12px rgba(80,50,30,.04)}
 .contact-card.green{background:linear-gradient(135deg,#eef5e9,#fff)}.contact-card.peach{background:linear-gradient(135deg,#ffe9df,#fff)}.contact-card.gold{background:linear-gradient(135deg,#fff1d9,#fff)}.contact-card.pink{background:linear-gradient(135deg,#ffe6e4,#fff)}
+.contact-card.share{width:100%;font:inherit;text-align:left;cursor:pointer;background:linear-gradient(135deg,#e7f4ea,#fff)}.contact-card.share:disabled{opacity:.7;cursor:wait}
+.referral-note{margin:0 16px 16px;font-size:14px;line-height:1.5;color:#70594b}
 .cicon{font-size:52px;width:70px;text-align:center}.cbody{flex:1}.cbody h3{font-size:21px;margin:0 0 5px}.cbody p{margin:0;color:#75645c;line-height:1.35}.arrow{font-size:26px;color:#a9785b}
 .linebtn{margin:16px 32px 8px;width:calc(100% - 64px);background:#3a9b44;border-radius:999px;border:0;color:#fff;padding:15px;font-weight:900;font-size:18px}
 
@@ -242,6 +244,8 @@ body{min-height:100vh}
     <div class="contact-card peach"><div class="cicon">📞</div><div class="cbody"><h3>โทรหาร้าน</h3><p>ใส่เบอร์โทรร้านจริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
     <div class="contact-card gold"><div class="cicon">🕒</div><div class="cbody"><h3>เวลาทำการ</h3><p>กำหนดเวลาทำการจริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
     <div class="contact-card pink"><div class="cicon">📍</div><div class="cbody"><h3>ที่อยู่ / จุดรับสินค้า</h3><p>เพิ่มที่อยู่ร้านและแผนที่จริงได้ภายหลัง</p></div><div class="arrow">›</div></div>
+    <button id="shareShopButton" class="contact-card share" type="button" onclick="shareShop()"><div class="cicon">🎁</div><div class="cbody"><h3>แชร์ร้านให้เพื่อน</h3><p>เพื่อนเปิดลิงก์รับ 1 แต้ม · เพื่อนสั่งซื้อครั้งแรกสำเร็จ รับเพิ่ม 5 แต้ม</p></div><div class="arrow">›</div></button>
+    <p class="referral-note" id="referralStats">แต้มจะเข้าเมื่อเพื่อนเปิดลิงก์ด้วยบัญชี LINE ของตนเอง และเมื่อออเดอร์แรกชำระเงินพร้อมเสร็จสิ้น</p>
   </div>
   <button class="linebtn" onclick="closeLiff()">💬 กลับไปแชต LINE ›</button>
 </section>
@@ -276,6 +280,7 @@ let catalog={categories:[],products:[]};
 let cart={};
 let deliveryLat=null, deliveryLng=null;
 let savedAddresses=[];
+let referralCode="";
 function lineToken(){return window.liff&&liff.isLoggedIn()?liff.getAccessToken():null}
 async function memberApi(action,method="GET",body){
   const token=lineToken();
@@ -294,6 +299,9 @@ async function loadMember(){
   try{
     const result=await memberApi("me");
     const m=result.member;
+    referralCode=m.referral_code||"";
+    const stats=result.referral_stats;
+    if(stats) document.getElementById("referralStats").textContent="ชวนสำเร็จ "+stats.friends+" คน · เพื่อนสั่งซื้อครั้งแรกแล้ว "+stats.first_purchases+" คน — รับ 1 แต้มเมื่อเพื่อนเปิดลิงก์ และอีก 5 แต้มเมื่อออเดอร์แรกชำระเงินและเสร็จสิ้น";
     document.getElementById("memberName").textContent=m.display_name||"สมาชิก Bake & Bite";
     document.getElementById("pointsValue").textContent=m.points;
     document.getElementById("redeemPoints").textContent=m.points;
@@ -502,7 +510,9 @@ async function submitOrder(){
 }
 async function init(){
   const validPages=['order','points','redeem','contact','checkout'];
-  const previewMode=new URLSearchParams(location.search).get('preview')==='1';
+  const params=new URLSearchParams(location.search);
+  const previewMode=params.get('preview')==='1';
+  const invite=params.get('ref');
   try{
     await liff.init({liffId:LIFF_ID});
 
@@ -513,7 +523,7 @@ async function init(){
     // ถ้าเปิด URL เว็บตรง ๆ จาก LINE in-app browser / Safari ให้พากลับเข้า LIFF browser
     // แทนการเรียก liff.login() ทันที ซึ่งเป็นสาเหตุที่ผู้ใช้ถูกส่งไปหน้า LINE Login
     if(!previewMode && !liff.isInClient() && !liff.isLoggedIn()){
-      location.replace(LIFF_URL+'#'+page);
+      location.replace(LIFF_URL+(invite?'?ref='+encodeURIComponent(invite):'')+'#'+page);
       return;
     }
 
@@ -523,6 +533,12 @@ async function init(){
       const p=await liff.getProfile();
       lineUserId=p.userId||"";
       lineDisplayName=p.displayName||"";
+      if(invite){
+        try{
+          const accepted=await memberApi('accept-referral','POST',{code:invite});
+          if(accepted.status==='rewarded') alert('ยินดีต้อนรับสู่ Bake & Bite! ร้านบันทึกการแนะนำจากเพื่อนแล้ว');
+        }catch(e){console.error('referral',e)}
+      }
       const n=document.getElementById('memberName');
       if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
       await loadMember();
@@ -535,7 +551,7 @@ async function init(){
     // ถ้าเข้าจาก URL เว็บตรงและ LIFF init ไม่สำเร็จ ให้ลองเปิดผ่าน LIFF URL
     if(!previewMode){
       const page=(location.hash.replace('#','')||'order');
-      location.replace(LIFF_URL+'#'+page);
+      location.replace(LIFF_URL+(invite?'?ref='+encodeURIComponent(invite):'')+'#'+page);
     }else{
       showPage('order');
     }
@@ -554,6 +570,26 @@ async function requestPoints(){
   }catch(e){alert('ส่งคำขอไม่สำเร็จ: '+e.message)}
 }
 function closeLiff(){if(window.liff&&liff.isInClient())liff.closeWindow();else history.back()}
+async function shareShop(){
+  if(!lineToken()||!referralCode){alert("กรุณาเปิดผ่าน LINE เพื่อแชร์ลิงก์สมาชิก");return}
+  const button=document.getElementById("shareShopButton");
+  const url=LIFF_URL+"?ref="+encodeURIComponent(referralCode)+"#order";
+  const message="ชวนมาสั่งอาหารร้าน Bake & Bite 🥗🥪\n"+url;
+  button.disabled=true;
+  try{
+    if(liff.isApiAvailable("shareTargetPicker")){
+      await liff.shareTargetPicker([{type:"text",text:message}]);
+    }else if(navigator.share){
+      await navigator.share({title:"Bake & Bite",text:"ชวนมาสั่งอาหารร้าน Bake & Bite",url});
+    }else if(navigator.clipboard){
+      await navigator.clipboard.writeText(message);
+      alert("คัดลอกลิงก์ร้านแล้ว ส่งให้เพื่อนได้เลย");
+    }else{
+      prompt("คัดลอกลิงก์ร้านเพื่อส่งให้เพื่อน",url);
+    }
+  }catch(e){if(e?.name!=="AbortError")alert("แชร์ไม่สำเร็จ กรุณาลองอีกครั้ง")}
+  finally{button.disabled=false}
+}
 loadCatalog(); init();
 </script>
 </body>
