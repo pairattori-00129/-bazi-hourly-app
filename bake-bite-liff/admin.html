@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ตั้งค่าแต้มแนะนำเพื่อน · Bake & Bite</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#422b20;background:#f8f1e9}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh}main{max-width:510px;margin:0 auto;padding:24px 18px 80px}
+    header{padding:20px 0 24px}small{font-size:14px;font-weight:800;letter-spacing:.08em;color:#8c684f}
+    h1{font-size:30px;line-height:1.2;margin:10px 0 8px;color:#5b2d1b}p{line-height:1.55;color:#705d51;margin:0}
+    section{background:#fffefa;border:1px solid #ecddce;border-radius:24px;padding:20px;margin:14px 0;box-shadow:0 7px 20px #643e220b}
+    label{display:block;font-weight:800;margin-bottom:8px;font-size:17px}input{width:100%;border:1px solid #d9c7b8;border-radius:14px;padding:14px;font:inherit;font-size:19px;background:white;color:#422b20}
+    input:focus{outline:3px solid #c9dda9;border-color:#718d5a}input[type=number]{max-width:180px}
+    .hint{font-size:14px;margin-top:8px}.row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    button{border:0;border-radius:16px;background:#659347;color:#fff;font:inherit;font-weight:800;font-size:17px;padding:15px 20px;cursor:pointer}
+    button:disabled{opacity:.6;cursor:wait}.primary{width:100%}.secondary{background:#5b2d1b}
+    #settings{display:none}#message{min-height:26px;font-weight:700;margin:14px 3px;color:#4d7834}
+    .error{color:#b13e38!important}.foot{font-size:14px;margin-top:18px}
+  </style>
+</head>
+<body><main>
+  <header><small>BAKE & BITE · ADMIN</small><h1>ตั้งค่าแต้มแนะนำเพื่อน</h1><p>กำหนดคะแนนที่ผู้ชวนจะได้รับจากเพื่อนที่ชวนเข้าร้าน</p></header>
+  <section id="login">
+    <label for="adminKey">รหัสผู้ดูแลร้าน</label>
+    <input id="adminKey" type="password" autocomplete="off" placeholder="กรอกรหัสผู้ดูแล">
+    <p class="hint">ใช้รหัสเดียวกับระบบจัดการร้าน รหัสจะอยู่เฉพาะในหน้านี้จนกว่าจะปิดหน้า</p>
+    <button class="primary" id="openButton" type="button">เข้าสู่หน้าตั้งค่า</button>
+  </section>
+  <form id="settings">
+    <section><div class="row"><div><label for="sharePoints">เพื่อนเปิดลิงก์แชร์</label><p>แต้มต่อเพื่อน 1 คน</p></div><input id="sharePoints" type="number" min="0" max="100" step="1" required></div></section>
+    <section><div class="row"><div><label for="firstPoints">เพื่อนสั่งซื้อครั้งแรก</label><p>เพิ่มเมื่อชำระเงินและออเดอร์เสร็จสิ้น</p></div><input id="firstPoints" type="number" min="0" max="100" step="1" required></div></section>
+    <button class="primary" id="saveButton" type="submit">บันทึกคะแนน</button>
+    <p class="foot">กำหนดได้ 0–100 แต้มต่อรายการ ค่าใหม่ใช้กับการแนะนำและออเดอร์ที่เข้าเงื่อนไขหลังบันทึก</p>
+  </form>
+  <p role="status" aria-live="polite" id="message"></p>
+  <p class="foot"><a href="./#contact">กลับหน้าติดต่อร้าน</a></p>
+</main>
+<script>
+const API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
+let adminKey='';
+const message=document.getElementById('message');
+async function call(method,body){
+  const response=await fetch(API+'?action=admin-referral-settings',{
+    method,headers:{'x-admin-key':adminKey,...(body?{'content-type':'application/json'}:{})},
+    ...(body?{body:JSON.stringify(body)}:{})
+  });
+  const data=await response.json();
+  if(!response.ok||!data.ok) throw new Error(response.status===401?'รหัสผู้ดูแลไม่ถูกต้อง':(data.error||'เชื่อมต่อไม่สำเร็จ'));
+  return data.settings;
+}
+function showMessage(text,error=false){message.textContent=text;message.classList.toggle('error',error)}
+document.getElementById('openButton').onclick=async()=>{
+  adminKey=document.getElementById('adminKey').value.trim();
+  if(!adminKey){showMessage('กรุณากรอกรหัสผู้ดูแล',true);return}
+  const button=document.getElementById('openButton');button.disabled=true;
+  try{
+    const settings=await call('GET');
+    document.getElementById('sharePoints').value=settings.share_points;
+    document.getElementById('firstPoints').value=settings.first_purchase_points;
+    document.getElementById('adminKey').value='';
+    document.getElementById('login').style.display='none';
+    document.getElementById('settings').style.display='block';
+    showMessage('โหลดค่าคะแนนปัจจุบันแล้ว');
+  }catch(e){adminKey='';showMessage(e.message,true)}
+  finally{button.disabled=false}
+};
+document.getElementById('settings').onsubmit=async event=>{
+  event.preventDefault();
+  const share=Number(document.getElementById('sharePoints').value);
+  const first=Number(document.getElementById('firstPoints').value);
+  if(!Number.isInteger(share)||share<0||share>100||!Number.isInteger(first)||first<0||first>100){
+    showMessage('กรอกจำนวนเต็มตั้งแต่ 0 ถึง 100 แต้ม',true);return;
+  }
+  const button=document.getElementById('saveButton');button.disabled=true;
+  try{
+    const settings=await call('POST',{share_points:share,first_purchase_points:first});
+    showMessage('บันทึกแล้ว: แชร์ '+settings.share_points+' แต้ม · สั่งซื้อครั้งแรก '+settings.first_purchase_points+' แต้ม');
+  }catch(e){showMessage(e.message,true)}
+  finally{button.disabled=false}
+};
+</script></body></html>
