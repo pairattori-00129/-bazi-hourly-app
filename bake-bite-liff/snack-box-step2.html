@@ -68,11 +68,19 @@ items.addEventListener('input',e=>{
   const item=input.closest('.item');if(!item)return;
   const i=Number(item.dataset.i),x=data[cat][i];
   const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
-  if(n===0){
-    if(choice&&choice.name===x[1]){choice=null;qty=0;}
-  }else{
-    choice={cat,name:x[1],icon:x[0]};qty=n;
-  }
-  update();render();
+  items.querySelectorAll('.item').forEach(card=>{
+    const other=card.querySelector('.qty-input');
+    const same=card===item;
+    card.classList.toggle('selected',same&&n>0);
+    if(!same&&other) other.value='0';
+  });
+  if(n===0){choice=null;qty=0;}
+  else{choice={cat,name:x[1],icon:x[0]};qty=n;}
+  update();
+});
+items.addEventListener('change',e=>{
+  const input=e.target.closest('.qty-input');if(!input)return;
+  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
+  input.value=String(n);
 });
 function update(){picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';next.disabled=!choice}next.onclick=()=>{sessionStorage.setItem('snackDessert',JSON.stringify({...choice,qty}));snackGo('snack-box-step3.html')};render();</script></body></html>
