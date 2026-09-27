@@ -6,8 +6,8 @@ body{min-height:100vh}.shell{width:min(100%,430px);min-height:100vh;margin:auto;
 .title{text-align:center;padding:22px 18px 10px;position:relative}.title h1{font-size:40px;line-height:1;margin:0;color:var(--brown);font-weight:900}.title p{margin:9px 0 0;color:#6f5c51;font-size:15px}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:10px 12px 4px}.step-pill{padding:9px 4px;border-radius:999px;background:#eee6dd;color:#8b786d;font-weight:900;text-align:center;font-size:11px}.step-pill.active{background:var(--brown);color:#fff}.step-pill.done{background:#e5eadf;color:#58704b}
 .card{margin:12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 5px 16px rgba(80,50,30,.05)}.card h2{margin:0 0 4px;font-size:24px;color:#4c3024}.sub{font-size:13px;color:var(--muted);margin-bottom:12px}
-.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.cat{border:1px solid #e7dbcf;border-radius:15px;background:#fff;padding:9px 5px;text-align:center;font-weight:800;font-size:11px;color:#4a3329}.cat .ico{display:block;font-size:28px;margin-bottom:4px}.cat.active{border:2px solid var(--brown);background:#fff8f2;color:var(--brown)}
-.items{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{position:relative;border:1px solid #e5d7ca;background:#fff;border-radius:18px;padding:10px;min-height:148px}.item.selected{border:2px solid var(--brown);background:#fffaf5}.item .photo{height:70px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff7e9,#f2eee7);font-size:44px}.item h3{margin:7px 0 3px;font-size:14px}.item p{margin:0 0 8px;font-size:11px;color:#7b6a60;min-height:30px}.check{display:none;position:absolute;right:8px;top:8px;width:23px;height:23px;border-radius:50%;background:var(--brown);color:#fff;place-items:center;font-weight:900}.item.selected .check{display:grid}
+.categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:7px}.cat{border:1px solid #e7dbcf;border-radius:15px;background:#fff;padding:9px 5px;text-align:center;font-weight:800;font-size:11px;color:#4a3329;min-height:88px}.cat .ico{display:flex;width:44px;height:44px;margin:0 auto 5px;align-items:center;justify-content:center;font-size:28px}.cat .ico img{width:44px;height:44px;object-fit:contain;border-radius:10px}.cat.active{border:2px solid var(--brown);background:#fff8f2;color:var(--brown)}
+.items{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{position:relative;border:1px solid #e5d7ca;background:#fff;border-radius:18px;padding:10px;min-height:148px}.item.selected{border:2px solid var(--brown);background:#fffaf5}.item .photo{height:82px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#fff7e9,#f2eee7);font-size:44px;overflow:hidden}.item .photo img{width:100%;height:100%;object-fit:cover;display:block}.item h3{margin:7px 0 3px;font-size:14px}.item p{margin:0 0 8px;font-size:11px;color:#7b6a60;min-height:30px}.check{display:none;position:absolute;right:8px;top:8px;width:23px;height:23px;border-radius:50%;background:var(--brown);color:#fff;place-items:center;font-weight:900}.item.selected .check{display:grid}
 .qty{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center}.qty button{height:32px;border:0;border-radius:10px;font-size:18px;font-weight:900}.minus{background:#efe6dc;color:var(--brown)}.plus{background:var(--brown);color:#fff}.qty input{width:100%;height:32px;border:1px solid #e6d8ca;border-radius:10px;background:#fffdf9;text-align:center;font-weight:900;font-size:16px;color:#402d27;padding:0 3px;-moz-appearance:textfield}.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .footer-cta{position:sticky;bottom:92px;margin:12px;display:grid;grid-template-columns:1fr 1.6fr;gap:8px;z-index:10}.summary-pill,.nextbtn{border-radius:18px;padding:14px 10px;font-weight:900;border:0}.summary-pill{background:#f5ecdf;color:#51352a;text-align:center}.nextbtn{background:var(--brown);color:white;font-size:16px}
 .qtybox{display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:center}.qtybox button{height:48px;border:0;border-radius:14px;font-size:23px;font-weight:900}.qtybox input{height:48px;border:1px solid #d8c7ba;border-radius:14px;text-align:center;font-size:22px;font-weight:900;background:#fff}
@@ -31,12 +31,7 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
   <div class="step-pill active">2 ของหวาน</div>
   <div class="step-pill ">3 เครื่องดื่ม</div>
   <div class="step-pill ">4 สรุป</div>
-  </div><section class="card"><h2>เลือกหมวดของหวาน</h2><div class="sub">แตะหมวดเพื่อดูรายการ</div><div class="categories">
-    <button class="cat active" data-cat="sweet"><span class="ico">🍓</span>แซนด์วิชหวาน</button>
-    <button class="cat" data-cat="bakery"><span class="ico">🥐</span>เบเกอรี่</button>
-    <button class="cat" data-cat="fruit"><span class="ico">🍊</span>ผลไม้</button>
-    <button class="cat" data-cat="snack"><span class="ico">🍪</span>ของทานเล่น</button>
-  </div></section>
+  </div><section class="card"><h2>เลือกหมวดของหวาน</h2><div class="sub">เลือกหมวดที่ต้องการ</div><div id="categoryLoading" class="sub">กำลังโหลดหมวดของหวาน...</div><div id="categories" class="categories"></div></section>
   <section class="card"><h2>รายการของหวาน</h2><div class="sub">เลือกได้หลายเมนู โดยจำนวนรวมต้องเท่ากับจำนวน Snack Box</div><div id="items" class="items"></div></section>
   <div class="footer-cta"><div class="summary-pill" id="picked">เลือกแล้ว 0 รายการ</div><button class="nextbtn" id="next" disabled>ถัดไป: เลือกเครื่องดื่ม ›</button></div></div><nav class="nav"><div class="navin">
 <a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
@@ -59,32 +54,103 @@ if(TEST_PREVIEW){
   });
 }
 function snackGo(url){ location.href=snackTestUrl(url); }
-const data={sweet:[['🍓','แยมสตรอว์เบอร์รี','แซนด์วิชหวานรสผลไม้'],['🫐','แยมบลูเบอร์รี','แซนด์วิชหวานรสผลไม้'],['🍊','แยมส้ม','แซนด์วิชหวานรสผลไม้'],['🍞','สังขยา','กลิ่นหอมละมุน']],bakery:[['🥐','ครัวซองต์หวาน','เบเกอรี่'],['🧁','คัพเค้ก','เบเกอรี่']],fruit:[['🍎','ผลไม้รวม','ผลไม้สด'],['🍉','แตงโม','ผลไม้สด']],snack:[['🍪','คุกกี้','ของทานเล่น'],['🍫','บราวนี่','ของทานเล่น']]};
+const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
 const target=Number(sessionStorage.getItem('snackBoxTarget')||0);
 if(!target){snackGo('snack-box-step1.html')}
-let cat='sweet';
+
+let catalog={categories:[],products:[]};
+let dessertCategories=[];
+let currentCategoryId="";
 const selections=new Map();
-function keyFor(cat,i){return cat+'|'+i}
+
+const categoryRoot=document.getElementById('categories');
+const categoryLoading=document.getElementById('categoryLoading');
+const items=document.getElementById('items');
+const picked=document.getElementById('picked');
+const next=document.getElementById('next');
+
+function esc(v){
+  return String(v??'').replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+}
+function safeUrl(v){
+  const s=String(v||'');
+  if(/^https:\/\//i.test(s)) return s;
+  if(/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(s)) return s;
+  return '';
+}
+function isDessertCategory(c){
+  const n=String(c.name||'');
+  return /แยม|เบเกอรี่|ของหวาน|dessert|sweet|ผลไม้|ทานเล่น/i.test(n);
+}
+function categoryFallback(name){
+  const n=String(name||'');
+  if(/แยม|sweet/i.test(n)) return '🍓';
+  if(/เบเกอรี่|bakery/i.test(n)) return '🥐';
+  if(/ผลไม้/i.test(n)) return '🍊';
+  if(/ทานเล่น/i.test(n)) return '🍪';
+  return '🍰';
+}
+function productFallback(name){
+  const n=String(name||'');
+  if(/สตรอ|straw/i.test(n)) return '🍓';
+  if(/บลู|blue/i.test(n)) return '🫐';
+  if(/ส้ม|orange/i.test(n)) return '🍊';
+  if(/ครัวซอง|croissant/i.test(n)) return '🥐';
+  if(/ขนมปัง|แซนด์วิช|sandwich/i.test(n)) return '🍞';
+  return '🍰';
+}
 function restore(){
-  let old=[];try{old=JSON.parse(sessionStorage.getItem('snackDessert')||'[]')}catch(_){}
-  if(!Array.isArray(old)&&old&&old.name)old=[old];
-  (old||[]).forEach(x=>{if(x&&x.key&&Number(x.qty)>0)selections.set(x.key,{...x,qty:Number(x.qty)})});
+  let old=[];
+  try{old=JSON.parse(sessionStorage.getItem('snackDessert')||'[]')}catch(_){}
+  if(!Array.isArray(old)&&old&&old.name) old=[old];
+  (old||[]).forEach(x=>{
+    if(x&&x.id&&Number(x.qty)>0) selections.set(String(x.id),{...x,qty:Number(x.qty)});
+  });
 }
 function totalInfo(){
   const arr=[...selections.values()].filter(x=>Number(x.qty)>0);
   return {arr,total:arr.reduce((s,x)=>s+Number(x.qty||0),0),menus:arr.length};
 }
-function render(){
-  items.innerHTML=data[cat].map((x,i)=>{
-    const key=keyFor(cat,i),q=Number(selections.get(key)?.qty||0);
-    return '<div class="item '+(q>0?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+q+'" aria-label="จำนวน '+x[1]+'"><button class="plus" data-d="1">+</button></div></div>';
+function renderCategories(){
+  categoryRoot.innerHTML=dessertCategories.map(cat=>{
+    const icon=safeUrl(cat.icon_url)
+      ? '<span class="ico"><img src="'+esc(cat.icon_url)+'" alt=""></span>'
+      : '<span class="ico">'+categoryFallback(cat.name)+'</span>';
+    return '<button type="button" class="cat '+(String(cat.id)===String(currentCategoryId)?'active':'')+'" data-id="'+esc(cat.id)+'">'+icon+'<span>'+esc(cat.name)+'</span></button>';
+  }).join('');
+  categoryLoading.style.display=dessertCategories.length?'none':'block';
+  if(!dessertCategories.length) categoryLoading.textContent='ยังไม่มีหมวดของหวานในหลังร้าน';
+}
+function productsForCurrentCategory(){
+  return catalog.products.filter(p=>String(p.category_id)===String(currentCategoryId));
+}
+function renderItems(){
+  const ps=productsForCurrentCategory();
+  if(!ps.length){
+    items.innerHTML='<div class="sub" style="grid-column:1/-1;padding:10px 2px">ยังไม่มีสินค้าในหมวดนี้</div>';
+    return;
+  }
+  items.innerHTML=ps.map(p=>{
+    const q=Number(selections.get(String(p.id))?.qty||0);
+    const image=safeUrl(p.image_url)
+      ? '<img src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'">'
+      : productFallback(p.name);
+    const catName=catalog.categories.find(c=>String(c.id)===String(p.category_id))?.name||'';
+    return '<div class="item '+(q>0?'selected':'')+'" data-id="'+esc(p.id)+'">'+
+      '<span class="check">✓</span><div class="photo">'+image+'</div>'+
+      '<h3>'+esc(p.name)+'</h3><p>'+esc(catName)+'</p>'+
+      '<div class="qty"><button type="button" class="minus" data-d="-1">−</button>'+
+      '<input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+q+'" aria-label="จำนวน '+esc(p.name)+'">'+
+      '<button type="button" class="plus" data-d="1">+</button></div></div>';
   }).join('');
 }
-function setQty(i,n){
-  const x=data[cat][i],key=keyFor(cat,i);
+function setQty(p,n){
   n=Math.max(0,Math.min(999,Math.floor(Number(n)||0)));
-  if(n===0)selections.delete(key);
-  else selections.set(key,{key,cat,name:x[1],icon:x[0],qty:n});
+  if(n===0) selections.delete(String(p.id));
+  else selections.set(String(p.id),{
+    id:p.id,category_id:p.category_id,name:p.name,image_url:p.image_url||'',
+    icon:productFallback(p.name),qty:n
+  });
   return n;
 }
 function update(){
@@ -92,24 +158,34 @@ function update(){
   picked.textContent='เลือกแล้ว '+t.total+' / '+target+' ชิ้น • '+t.menus+' เมนู';
   next.disabled=t.total!==target;
 }
-document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');cat=b.dataset.cat;render();update();
+categoryRoot.addEventListener('click',e=>{
+  const b=e.target.closest('.cat');if(!b)return;
+  currentCategoryId=b.dataset.id;
+  renderCategories();renderItems();update();
 });
-items.onclick=e=>{
-  if(e.target.classList.contains('qty-input'))return;
+items.addEventListener('click',e=>{
+  if(e.target.classList.contains('qty-input')) return;
   const item=e.target.closest('.item');if(!item)return;
-  const i=Number(item.dataset.i),key=keyFor(cat,i),old=Number(selections.get(key)?.qty||0),d=Number(e.target.dataset.d||0);
-  setQty(i,d?old+d:(old||1));render();update();
-};
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));if(!p)return;
+  const old=Number(selections.get(String(p.id))?.qty||0);
+  const d=Number(e.target.dataset.d||0);
+  setQty(p,d?old+d:(old||1));
+  renderItems();update();
+});
 items.addEventListener('input',e=>{
   const input=e.target.closest('.qty-input');if(!input)return;
-  const item=input.closest('.item'),i=Number(item.dataset.i);
-  const n=setQty(i,input.value);item.classList.toggle('selected',n>0);update();
+  const item=input.closest('.item');
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));if(!p)return;
+  const n=setQty(p,input.value);
+  item.classList.toggle('selected',n>0);
+  update();
 });
 items.addEventListener('change',e=>{
   const input=e.target.closest('.qty-input');if(!input)return;
-  input.value=String(setQty(Number(input.closest('.item').dataset.i),input.value));update();
+  const item=input.closest('.item');
+  const p=catalog.products.find(x=>String(x.id)===String(item.dataset.id));if(!p)return;
+  input.value=String(setQty(p,input.value));
+  update();
 });
 next.onclick=()=>{
   const t=totalInfo();
@@ -117,4 +193,21 @@ next.onclick=()=>{
   sessionStorage.setItem('snackDessert',JSON.stringify(t.arr));
   snackGo('snack-box-step3.html');
 };
-restore();render();update();</script></body></html>
+async function loadCatalog(){
+  try{
+    const r=await fetch(STORE_API+'?action=catalog');
+    const j=await r.json();
+    if(!r.ok||!j.ok) throw new Error(j.error||'catalog');
+    catalog=j;
+    dessertCategories=(j.categories||[]).filter(isDessertCategory);
+    currentCategoryId=dessertCategories[0]?.id||'';
+    restore();
+    renderCategories();renderItems();update();
+  }catch(error){
+    console.error(error);
+    categoryLoading.style.display='block';
+    categoryLoading.textContent='โหลดหมวดของหวานไม่สำเร็จ กรุณาลองใหม่';
+    items.innerHTML='<div class="sub" style="grid-column:1/-1">ยังโหลดรายการของหวานไม่ได้</div>';
+  }
+}
+loadCatalog();</script></body></html>
