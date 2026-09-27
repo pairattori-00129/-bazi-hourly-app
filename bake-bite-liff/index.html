@@ -170,6 +170,11 @@ body{min-height:100vh}
       <label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="radio" name="fulfillment" value="lineman" onchange="toggleDelivery()"> จัดส่งด้วย LINE MAN</label>
     </div>
     <div id="deliveryFields" style="display:none">
+      <div class="card" style="margin-top:12px;background:#f7fbf2">
+        <strong>ที่อยู่ที่บันทึกไว้</strong>
+        <select class="field" id="savedAddress" onchange="selectSavedAddress()"><option value="">กรอกที่อยู่ใหม่</option></select>
+        <div class="sub" style="margin-top:7px">เลือกบ้านหรือที่ทำงานเพื่อกรอกข้อมูลให้อัตโนมัติ</div>
+      </div>
       <input class="field" id="recipientName" placeholder="ชื่อผู้รับ">
       <input class="field" id="recipientPhone" placeholder="เบอร์โทรผู้รับ">
       <textarea class="field" id="deliveryAddress" rows="3" placeholder="ที่อยู่จัดส่ง"></textarea>
@@ -181,11 +186,13 @@ body{min-height:100vh}
         <div id="locationText" class="sub" style="margin-top:8px">ยังไม่ได้ระบุตำแหน่ง</div>
       </div>
       <input class="field" id="deliveryNote" placeholder="จุดสังเกต / หมายเหตุการจัดส่ง">
+      <label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="saveAddressCheck" onchange="toggleSaveAddress()"> บันทึกที่อยู่นี้ไว้ใช้ครั้งต่อไป</label>
+      <select class="field" id="addressLabel" style="display:none"><option value="home">บ้าน</option><option value="work">ที่ทำงาน</option><option value="other">อื่น ๆ</option></select>
     </div>
     <input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
     <select class="field" id="paymentMethod"><option value="transfer">โอนเงิน / QR</option><option value="cash">เงินสดที่ร้าน (เฉพาะรับเอง)</option></select>
     <div class="note" style="margin-top:10px">ถ้าเลือก LINE MAN ระบบจะรอให้ร้านยืนยันการชำระเงินก่อน แล้วจึงเข้าสถานะ “รอเรียก LINE MAN”</div>
-    <button class="btn" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
+    <button class="btn" id="submitOrderButton" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
     <button class="btn" style="background:#8f8178" onclick="showPage('order')">กลับไปแก้ไขรายการ</button>
   </div>
 </section>
@@ -194,9 +201,20 @@ body{min-height:100vh}
   <div class="title"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
   <section class="member-card">
     <div class="member-top"><div class="avatar">👤</div><div><div class="member-name" id="memberName">สมาชิก Bake & Bite</div><div style="color:#89756a">สมาชิกสะสมแต้ม</div></div></div>
-    <div class="points-panel"><span class="coin">⭐</span> <strong id="pointsValue">12</strong> <span>แต้ม</span></div>
-    <div class="progress"><i></i></div>
-    <div class="next">อีก 8 แต้ม รับแซนด์วิชฟรี 1 ชิ้น</div>
+    <div class="points-panel"><span class="coin">⭐</span> <strong id="pointsValue">—</strong> <span>แต้ม</span></div>
+    <div class="progress"><i id="pointsProgress" style="width:0%"></i></div>
+    <div class="next" id="nextReward">กำลังโหลดคะแนน</div>
+  </section>
+  <section class="card" style="margin:12px">
+    <h2 style="margin:0 0 6px">ข้อมูลติดต่อ</h2>
+    <div class="sub">ใช้ติดต่อเรื่องออเดอร์ ไม่ใช้เบอร์โทรหรืออีเมลเป็นรหัสสะสมแต้ม</div>
+    <input class="field" id="memberPhone" inputmode="tel" placeholder="เบอร์โทรติดต่อ (ถ้ามี)">
+    <input class="field" id="memberEmail" type="email" placeholder="อีเมล (ถ้ามี)">
+    <button class="btn" onclick="saveContact()">บันทึกข้อมูลติดต่อ</button>
+  </section>
+  <section class="card" style="margin:12px">
+    <h2 style="margin:0 0 6px">ประวัติการสั่งซื้อ</h2>
+    <div id="orderHistory" class="sub">เข้าสู่ระบบ LINE เพื่อดูออเดอร์ของคุณ</div>
   </section>
   <section class="delivery">
     <h2>🛵 รับแต้มจาก Delivery</h2><p>สั่งผ่านแอป แล้วมารับแต้มได้เลย</p>
@@ -205,12 +223,13 @@ body{min-height:100vh}
     <input class="field" id="orderNo" placeholder="Order No. (เลขที่คำสั่งซื้อ)">
     <input class="field" id="amount" type="number" placeholder="ยอดสั่งซื้อ (บาท)">
     <button class="btn" onclick="requestPoints()">ส่งคำขอรับแต้ม ›</button>
+    <div id="pointRequestHistory" class="sub" style="margin-top:12px"></div>
   </section>
 </section>
 
 <section id="redeem" class="page">
   <div class="title"><h1>แลกแต้ม</h1><p>เลือกของรางวัลจากคะแนนสะสม</p></div>
-  <section class="balance"><div class="medal">🏅</div><div class="label">คุณมี</div><strong>12</strong> <span>แต้ม</span></section>
+  <section class="balance"><div class="medal">🏅</div><div class="label">คุณมี</div><strong id="redeemPoints">—</strong> <span>แต้ม</span></section>
   <section class="reward green"><div class="art">🌼</div><div class="info"><h3>น้ำเก๊กฮวยฟรี 1 ขวด</h3><span class="cost">⭐ 5 แต้ม</span></div><button class="redeem-btn">แลกรางวัล ›</button></section>
   <section class="reward pink"><div class="art">🎟️</div><div class="info"><h3>ส่วนลด 30 บาท</h3><span class="cost">⭐ 10 แต้ม</span></div><button class="redeem-btn" style="background:#d46b5c">แลกรางวัล ›</button></section>
   <section class="reward gold"><div class="art">🥪</div><div class="info"><h3>แซนด์วิชฟรี 1 ชิ้น</h3><span class="cost">⭐ 20 แต้ม</span></div><button class="redeem-btn" style="background:#c99332">แลกรางวัล ›</button></section>
@@ -256,6 +275,70 @@ let lineDisplayName="";
 let catalog={categories:[],products:[]};
 let cart={};
 let deliveryLat=null, deliveryLng=null;
+let savedAddresses=[];
+function lineToken(){return window.liff&&liff.isLoggedIn()?liff.getAccessToken():null}
+async function memberApi(action,method="GET",body){
+  const token=lineToken();
+  if(!token) throw new Error("กรุณาเปิดหน้านี้ผ่าน LINE ก่อน");
+  const response=await fetch(STORE_API+"?action="+action,{
+    method,headers:{"authorization":"Bearer "+token,"content-type":"application/json"},
+    ...(body?{body:JSON.stringify(body)}:{})
+  });
+  const result=await response.json();
+  if(!response.ok||!result.ok) throw new Error(result.error||"เชื่อมต่อระบบสมาชิกไม่สำเร็จ");
+  return result;
+}
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
+async function loadMember(){
+  if(!lineToken()) return;
+  try{
+    const result=await memberApi("me");
+    const m=result.member;
+    document.getElementById("memberName").textContent=m.display_name||"สมาชิก Bake & Bite";
+    document.getElementById("pointsValue").textContent=m.points;
+    document.getElementById("redeemPoints").textContent=m.points;
+    document.getElementById("pointsProgress").style.width=Math.min(100,(m.points/20)*100)+"%";
+    document.getElementById("nextReward").textContent=m.points>=20?"แต้มถึงเกณฑ์รับแซนด์วิชฟรี 1 ชิ้นแล้ว":"อีก "+(20-m.points)+" แต้ม รับแซนด์วิชฟรี 1 ชิ้น";
+    document.getElementById("memberPhone").value=m.phone||"";
+    document.getElementById("memberEmail").value=m.email||"";
+    savedAddresses=result.addresses||[];
+    const select=document.getElementById("savedAddress");
+    const old=select.value;
+    select.innerHTML='<option value="">กรอกที่อยู่ใหม่</option>'+savedAddresses.map(a=>
+      '<option value="'+escapeHtml(a.id)+'">'+escapeHtml(({home:"🏠 บ้าน",work:"🏢 ที่ทำงาน",other:"📍 อื่น ๆ"})[a.label]||a.label)+' — '+escapeHtml(a.address_text.slice(0,38))+'</option>'
+    ).join("");
+    if(savedAddresses.some(a=>a.id===old)) select.value=old;
+    const history=document.getElementById("orderHistory");
+    history.innerHTML=result.orders?.length?result.orders.map(o=>
+      '<div style="padding:10px 0;border-bottom:1px solid #ead8c7"><strong>'+escapeHtml(o.order_no)+'</strong> · '+escapeHtml(new Date(o.created_at).toLocaleDateString("th-TH"))+
+      '<div>'+escapeHtml((o.order_items||[]).map(i=>i.product_name+' × '+i.quantity).join(', '))+'</div><div>'+escapeHtml(o.status)+' · '+money(o.total)+'</div></div>'
+    ).join(""):"ยังไม่มีประวัติการสั่งซื้อที่เชื่อมกับบัญชี LINE นี้";
+    document.getElementById("pointRequestHistory").innerHTML=result.point_requests?.length?
+      "คำขอล่าสุด: "+result.point_requests.map(r=>escapeHtml(r.platform+" #"+r.order_no+" · "+r.points_calculated+" แต้ม · "+({pending:"รอตรวจสอบ",approved:"อนุมัติ",rejected:"ไม่อนุมัติ"}[r.status]||r.status))).join("<br>"):"";
+  }catch(e){console.error("member load",e);document.getElementById("orderHistory").textContent="ยังโหลดข้อมูลสมาชิกไม่ได้ กรุณาลองใหม่"}
+}
+async function saveContact(){
+  try{
+    await memberApi("save-member","POST",{phone:document.getElementById("memberPhone").value,email:document.getElementById("memberEmail").value});
+    alert("บันทึกข้อมูลติดต่อแล้ว");
+  }catch(e){alert("บันทึกไม่สำเร็จ: "+e.message)}
+}
+function selectSavedAddress(){
+  const chosen=savedAddresses.find(a=>a.id===document.getElementById("savedAddress").value);
+  if(!chosen){
+    ["recipientName","recipientPhone","deliveryAddress","deliveryNote"].forEach(id=>document.getElementById(id).value="");
+    deliveryLat=deliveryLng=null;document.getElementById("locationText").textContent="ยังไม่ได้ระบุตำแหน่ง";
+    return;
+  }
+  document.getElementById("recipientName").value=chosen.recipient_name;
+  document.getElementById("recipientPhone").value=chosen.phone;
+  document.getElementById("deliveryAddress").value=chosen.address_text;
+  document.getElementById("deliveryNote").value=chosen.delivery_note||"";
+  deliveryLat=chosen.latitude;deliveryLng=chosen.longitude;
+  document.getElementById("locationText").textContent=deliveryLat!=null?"พิกัดที่บันทึกไว้: "+Number(deliveryLat).toFixed(6)+", "+Number(deliveryLng).toFixed(6):"ยังไม่ได้ระบุตำแหน่ง";
+  document.getElementById("saveAddressCheck").checked=false;toggleSaveAddress();
+}
+function toggleSaveAddress(){document.getElementById("addressLabel").style.display=document.getElementById("saveAddressCheck").checked?"block":"none"}
 function showPage(id){
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));
   const navPage=id==='checkout'?'order':id;
@@ -372,27 +455,50 @@ async function submitOrder(){
   if(fulfillment==="lineman" && document.getElementById("paymentMethod").value==="cash"){
     alert("การจัดส่งด้วย LINE MAN กรุณาเลือกโอนเงิน / QR"); return;
   }
-  const body={
-    p_line_user_id:lineUserId||null,
-    p_customer_name:lineDisplayName||null,
-    p_payment_method:document.getElementById("paymentMethod").value,
-    p_note:document.getElementById("customerNote").value,
-    p_fulfillment_method:fulfillment,
-    p_recipient_name:fulfillment==="lineman"?recipientName:null,
-    p_recipient_phone:fulfillment==="lineman"?recipientPhone:null,
-    p_delivery_address:fulfillment==="lineman"?deliveryAddress:null,
-    p_delivery_note:fulfillment==="lineman"?deliveryNote:null,
-    p_delivery_latitude:fulfillment==="lineman"?deliveryLat:null,
-    p_delivery_longitude:fulfillment==="lineman"?deliveryLng:null,
-    p_items:items.map(i=>({product_id:i.id,quantity:i.quantity}))
-  };
+  const button=document.getElementById("submitOrderButton");
+  button.disabled=true;
   try{
-    const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/bb_create_order",{method:"POST",headers:{"apikey":SUPABASE_KEY,"authorization":"Bearer "+SUPABASE_KEY,"content-type":"application/json"},body:JSON.stringify(body)});
-    const order=await r.json(); if(!r.ok) throw new Error(order.message||"order");
+    const token=lineToken();
+    let addressId=null;
+    if(fulfillment==="lineman"){
+      const chosen=savedAddresses.find(a=>a.id===document.getElementById("savedAddress").value);
+      const unchanged=chosen&&chosen.recipient_name===recipientName&&chosen.phone===recipientPhone&&
+        chosen.address_text===deliveryAddress&&(chosen.delivery_note||"")===deliveryNote&&
+        Number(chosen.latitude??0)===Number(deliveryLat??0)&&Number(chosen.longitude??0)===Number(deliveryLng??0);
+      if(unchanged) addressId=chosen.id;
+      if(document.getElementById("saveAddressCheck").checked){
+        const result=await memberApi("save-address","POST",{
+          label:document.getElementById("addressLabel").value,
+          recipient_name:recipientName,phone:recipientPhone,address_text:deliveryAddress,
+          delivery_note:deliveryNote,latitude:deliveryLat,longitude:deliveryLng,
+          is_default:savedAddresses.length===0
+        });
+        addressId=result.address.id;
+      }
+    }
+    const body={
+      customer_name:lineDisplayName||null,
+      payment_method:document.getElementById("paymentMethod").value,
+      note:document.getElementById("customerNote").value,
+      fulfillment_method:fulfillment,
+      member_address_id:addressId,
+      recipient_name:recipientName,recipient_phone:recipientPhone,
+      delivery_address:deliveryAddress,delivery_note:deliveryNote,
+      delivery_latitude:deliveryLat,delivery_longitude:deliveryLng,
+      items:items.map(i=>({product_id:i.id,quantity:i.quantity}))
+    };
+    const r=await fetch(STORE_API+"?action=order",{
+      method:"POST",headers:{"content-type":"application/json",...(token?{"authorization":"Bearer "+token}:{})},
+      body:JSON.stringify(body)
+    });
+    const result=await r.json();if(!r.ok||!result.ok)throw new Error(result.error||"ส่งออเดอร์ไม่สำเร็จ");
+    const order=result.order;
     const deliveryText=fulfillment==="lineman"?"\nจัดส่ง: LINE MAN\nสถานะ: รอยืนยันการชำระเงิน":"\nรับสินค้า: รับเองที่ร้าน";
     alert("รับคำสั่งซื้อแล้ว\nเลขที่ "+order.order_no+"\nยอดรวม "+money(order.total)+deliveryText);
     cart={}; renderCatalog(); showPage("order");
+    loadMember();
   }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
+  finally{button.disabled=false}
 }
 async function init(){
   const validPages=['order','points','redeem','contact','checkout'];
@@ -419,6 +525,7 @@ async function init(){
       lineDisplayName=p.displayName||"";
       const n=document.getElementById('memberName');
       if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
+      await loadMember();
     }else if(previewMode){
       const n=document.getElementById('memberName');
       if(n) n.textContent='โหมดทดสอบ';
@@ -435,13 +542,16 @@ async function init(){
   }
 }
 async function requestPoints(){
-  if(!lineUserId){alert('กรุณาเปิดหน้านี้ผ่าน LINE ก่อน');return}
   const platform=document.getElementById('platform').value;
   const orderNo=document.getElementById('orderNo').value.trim();
   const amount=Number(document.getElementById('amount').value||0);
-  if(!platform||!orderNo||amount<=0){alert('กรุณากรอกข้อมูลให้ครบ');return}
-  const points=Math.floor(amount/50);
-  alert('คำขอรับแต้ม '+points+' แต้ม พร้อมส่งตรวจสอบ');
+  if(!platform||!orderNo||amount<50){alert('กรุณาเลือกแพลตฟอร์ม กรอกเลขออเดอร์ และยอดอย่างน้อย 50 บาท');return}
+  try{
+    const result=await memberApi('request-points','POST',{platform,order_no:orderNo,purchase_amount:amount});
+    alert('ส่งคำขอ '+result.request.points_calculated+' แต้มแล้ว รอร้านตรวจสอบ');
+    document.getElementById('orderNo').value='';document.getElementById('amount').value='';
+    loadMember();
+  }catch(e){alert('ส่งคำขอไม่สำเร็จ: '+e.message)}
 }
 function closeLiff(){if(window.liff&&liff.isInClient())liff.closeWindow();else history.back()}
 loadCatalog(); init();
