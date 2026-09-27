@@ -420,6 +420,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImagePreview()}
 
 const catClass={1:"sec-green",2:"sec-peach",3:"sec-pink",4:"sec-gold"};
 const catIcon={1:"🌿",2:"🥪",3:"🍓",4:"🥤"};
+function categoryIcon(c,idx){if(c.icon_url){const url=String(c.icon_url);if(/^https:\/\//i.test(url))return '<img src="'+url.replace(/[&"<>]/g,ch=>({"&":"&amp;",'"':"&quot;","<":"&lt;",">":"&gt;"}[ch]))+'" alt="" style="width:31px;height:31px;object-fit:contain">'}return /เบเกอรี่|bakery/i.test(c.name)?"🍞":(catIcon[idx+1]||"🍴")}
 function money(n){return "฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2})}
 async function loadCatalog(){
   try{
@@ -440,7 +441,7 @@ function renderCatalog(){
       const pic=p.image_url?'<div class="product-media"><img class="product-img" src="'+p.image_url+'" alt="'+safeName+'" data-preview-name="'+safeName+'" draggable="false"><span class="zoom-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6"></circle><path d="M16 16l4 4"></path><path d="M8 11h6M11 8v6"></path></svg>แตะดู</span></div>':'<div class="thumb">'+(idx===0?'🥗':idx===1?'🥪':idx===2?'🍓':'🥤')+'</div>';
       return '<div class="product">'+pic+'<h3>'+p.name+'</h3><div class="row-price"><div class="price-line"><span class="price">'+money(p.price)+'</span></div><div class="qty-label">จำนวนชิ้น</div><div class="qty"><button class="minus" onclick="changeQty(\''+p.id+'\',-1)">−</button><span>'+q+'</span><button class="plus2" onclick="changeQty(\''+p.id+'\',1)">+</button></div></div></div>'
     }).join("");
-    return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+(catIcon[idx+1]||"🍴")+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
+    return '<section class="section '+(catClass[idx+1]||"sec-green")+'"><div class="section-head"><div class="sec-icon">'+categoryIcon(c,idx)+'</div><div class="txt"><h2>'+c.name+'</h2><p>เลือกจำนวนที่ต้องการ</p></div></div><div class="products">'+items+'</div></section>'
   }).join("");
   updateCart();
 }
