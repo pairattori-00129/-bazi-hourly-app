@@ -419,6 +419,32 @@ Deno.serve(async(req)=>{
       return json({ok:true,product:q.data});
     }
 
+    if(action==="admin-upload-image" && req.method==="POST"){
+      if(!await okAdmin(req)) return json({ok:false,error:"unauthorized"},401);
+      const incomingSize=Number(req.headers.get("content-length")||0);
+      if(incomingSize>6*1024*1024) return json({ok:false,error:"image_too_large"},413);
+      const form=await req.formData();
+      const file=form.get("image");
+      if(!(file instanceof File)||file.size===0||file.size>5*1024*1024){
+        return json({ok:false,error:"invalid_image_size"},400);
+      }
+      const types:{[key:string]:{ext:string,signature:(v:Uint8Array)=>boolean}}={
+        "image/jpeg":{ext:"jpg",signature:v=>v[0]===0xff&&v[1]===0xd8&&v[2]===0xff},
+        "image/png":{ext:"png",signature:v=>v[0]===0x89&&v[1]===0x50&&v[2]===0x4e&&v[3]===0x47},
+        "image/webp":{ext:"webp",signature:v=>String.fromCharCode(...v.slice(0,4))==="RIFF"&&String.fromCharCode(...v.slice(8,12))==="WEBP"}
+      };
+      const type=types[file.type];
+      if(!type||!type.signature(new Uint8Array(await file.slice(0,12).arrayBuffer()))){
+        return json({ok:false,error:"unsupported_image_type"},400);
+      }
+      const path=`products/${crypto.randomUUID()}.${type.ext}`;
+      const {error}=await supabase.storage.from("product-images")
+        .upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
+      if(error) throw error;
+      const {data}=supabase.storage.from("product-images").getPublicUrl(path);
+      return json({ok:true,image_url:data.publicUrl});
+    }
+
     if(action==="admin-save-category" && (req.method==="POST"||req.method==="PUT")){
       if(!await okAdmin(req)) return json({ok:false,error:"unauthorized"},401);
       const p=await req.json();
