@@ -49,7 +49,7 @@ async function uploadImage(file){
  const result=await response.json();
  if(response.status===401){clearAdminToken();location.replace('admin-login.html');throw new Error('กรุณาเข้าสู่ระบบใหม่')}
  if(!response.ok||!result.ok)throw new Error(result.error==='invalid_image'?'รูปนี้ใช้ไม่ได้ กรุณาเลือกรูปอื่น':result.error==='image_too_large'?'รูปใหญ่เกิน 5 MB':'อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่');
- return result.url;
+ return result.url||result.image_url;
 }
 function render(){
  document.getElementById('category').innerHTML=categories.map(c=>'<option value="'+safe(c.id)+'">'+safe(c.name)+'</option>').join('');
