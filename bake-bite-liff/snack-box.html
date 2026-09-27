@@ -9,7 +9,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#f6efe5;color:#402d27;font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
 button,input{font:inherit}
-.shell{width:min(100%,430px);min-height:100vh;margin:auto;background:linear-gradient(180deg,#fffdfa,#fff8ec);padding-bottom:40px}
+.shell{width:min(100%,430px);min-height:100vh;margin:auto;background:linear-gradient(180deg,#fffdfa,#fff8ec);padding-bottom:125px}
 .hero{padding:24px 20px 20px;background:linear-gradient(145deg,#eef5e8,#fff4e9);border-bottom:1px solid #eadfd4}
 .back{display:inline-block;text-decoration:none;color:var(--brown);font-weight:900;margin-bottom:12px}
 .hero h1{margin:0;color:var(--brown);font-size:36px;line-height:1.05}
@@ -63,6 +63,19 @@ button,input{font:inherit}
 .contact a{display:block;text-decoration:none;text-align:center;background:#5b2d1b;color:#fff;border-radius:15px;padding:14px;font-weight:900}
 
 @media(max-width:360px){.options{grid-template-columns:1fr}}
+
+/* floating bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:10px;z-index:30;pointer-events:none}
+.navin{--notch-left:30%;width:min(calc(100% - 24px),398px);margin:auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:rgba(255,253,248,.985);border:1px solid rgba(90,47,31,.10);border-radius:24px;padding:12px 7px calc(10px + env(safe-area-inset-bottom));box-shadow:0 12px 28px rgba(75,52,35,.16);backdrop-filter:blur(10px);pointer-events:auto;overflow:visible;position:relative}
+.navin:before{content:"";position:absolute;left:var(--notch-left);top:-1px;transform:translate(-50%,-1px);width:78px;height:38px;background:#fff8ec;border-radius:0 0 44px 44px;z-index:1;pointer-events:none;box-shadow:0 1px 0 #fff8ec}
+.nav button{position:relative;z-index:2;min-height:54px;border:0;background:transparent;border-radius:18px;padding:5px 2px 2px;color:#6b4a3a;font-family:inherit;font-size:11px;line-height:1.15;overflow:visible}
+.nav button b{display:flex;width:40px;height:40px;align-items:center;justify-content:center;margin:0 auto 3px;border-radius:50%;font-size:21px;line-height:1;background:transparent;border:0}
+.nav button b svg{display:block;width:25px;height:25px;stroke:currentColor}
+.nav button.active{color:#4a281b;font-weight:900}
+.nav button.active b{width:56px;height:56px;margin-top:-29px;margin-bottom:5px;background:#5b2d1b;border:4px solid #fff8ef;box-shadow:0 8px 20px rgba(74,40,27,.28);font-size:25px;color:#fff;transform:translateY(-1px)}
+.nav button:active b{transform:scale(.95)}
+@media(max-width:380px){.navin{width:calc(100% - 18px);padding-left:3px;padding-right:3px}.navin:before{width:70px;height:35px}.nav button{font-size:9.5px}.nav button b{width:35px;height:35px;font-size:18px}.nav button.active b{width:50px;height:50px;font-size:22px;margin-top:-25px}}
+
 </style>
 </head>
 <body><div class="shell">
@@ -214,5 +227,16 @@ document.getElementById('contactBtn').addEventListener('click',()=>{
  document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 </script>
+
+<nav class="nav" aria-label="เมนูหลัก">
+  <div class="navin">
+    <button type="button" onclick="location.href='index.html#order'"><b aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H7"/><circle cx="10" cy="19" r="1.35"/><circle cx="18" cy="19" r="1.35"/></svg></b>สั่งอาหาร</button>
+    <button type="button" class="active" aria-current="page"><b>📦</b>Snack Box</button>
+    <button type="button" onclick="location.href='index.html#points'"><b>☆</b>สะสมแต้ม</button>
+    <button type="button" onclick="location.href='index.html#redeem'"><b>🎁</b>แลกแต้ม</button>
+    <button type="button" onclick="location.href='index.html#contact'"><b>💬</b>ติดต่อร้าน</button>
+  </div>
+</nav>
+
 </body>
 </html>
