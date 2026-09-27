@@ -7,6 +7,7 @@ input,select{font:inherit;font-size:16px;width:100%;padding:12px;border:1px soli
 button{font:inherit;font-size:16px;font-weight:800;border:0;border-radius:13px;background:#669348;color:#fff;padding:13px 17px;cursor:pointer}button:disabled{opacity:.6}.outline{background:#5b2d1b}
 nav{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}nav a{font-weight:800;color:#5b2d1b;background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:10px;text-decoration:none}nav a.active{background:#5b2d1b;color:#fff}
 #panel{display:none}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.muted{font-size:14px;color:#786659}.error{color:#ba4039!important}#message{min-height:24px;font-weight:800}.item{display:flex;justify-content:space-between;align-items:center;gap:10px}.item img{width:54px;height:54px;border-radius:10px;object-fit:cover}
+.category-group{margin:20px 0 24px}.category-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;background:#f0f5e9;border-radius:14px;color:#4d653d}.category-head h3{font-size:19px;margin:0}.category-head span{font-size:14px;font-weight:800;white-space:nowrap}.category-group .item{margin:9px 0;border-radius:17px;box-shadow:none}.empty-category{padding:16px 4px 3px;font-size:14px;color:#786659}
 @media(max-width:500px){.grid{grid-template-columns:1fr}}
 </style></head><body><main>
 <small>BAKE & BITE · ADMIN</small><h1>จัดการเมนูสินค้า</h1><p>เพิ่มรายการ เปลี่ยนราคา รูปภาพ และสถานะขาย</p>
@@ -25,7 +26,14 @@ async function api(action,body){return adminRequest(action,body?'POST':'GET',bod
 function clearForm(){editing=null;document.getElementById('productForm').reset();document.getElementById('active').checked=true;document.getElementById('formTitle').textContent='เพิ่มสินค้า'}
 function render(){
  document.getElementById('category').innerHTML=categories.map(c=>'<option value="'+safe(c.id)+'">'+safe(c.name)+'</option>').join('');
- document.getElementById('products').innerHTML=products.length?products.map(p=>'<div class="item"><div style="display:flex;align-items:center;gap:12px">'+(p.image_url?'<img src="'+safe(p.image_url)+'" alt="">':'')+'<div><strong>'+safe(p.name)+'</strong><div class="muted">฿'+Number(p.price).toLocaleString('th-TH')+' · '+safe(categories.find(c=>c.id===p.category_id)?.name||'')+(p.is_active?'':' · ปิดขาย')+'</div></div></div><button type="button" data-id="'+safe(p.id)+'">แก้ไข</button></div>').join(''):'<p>ยังไม่มีสินค้า</p>';
+ const item=p=>'<div class="item"><div style="display:flex;align-items:center;gap:12px">'+(p.image_url?'<img src="'+safe(p.image_url)+'" alt="">':'')+'<div><strong>'+safe(p.name)+'</strong><div class="muted">฿'+Number(p.price).toLocaleString('th-TH')+(p.is_active?'':' · ปิดขาย')+'</div></div></div><button type="button" data-id="'+safe(p.id)+'">แก้ไข</button></div>';
+ const groups=categories.map(c=>({name:c.name,items:products.filter(p=>p.category_id===c.id)}));
+ const uncategorized=products.filter(p=>!categories.some(c=>c.id===p.category_id));
+ if(uncategorized.length)groups.push({name:'อื่น ๆ',items:uncategorized});
+ document.getElementById('products').innerHTML=groups.length?groups.map(g=>
+   '<div class="category-group"><div class="category-head"><h3>'+safe(g.name)+'</h3><span>'+g.items.length+' รายการ</span></div>'+
+   (g.items.length?g.items.map(item).join(''):'<div class="empty-category">ยังไม่มีสินค้าในหมวดนี้</div>')+'</div>'
+ ).join(''):'<p>ยังไม่มีหมวดหมู่สินค้า</p>';
 }
 async function load(){const j=await api('admin-list');products=j.products||[];categories=j.categories||[];render();notice('โหลดสินค้า '+products.length+' รายการ')}
 requireAdmin().then(async ok=>{if(ok){document.getElementById('panel').style.display='block';try{await load()}catch(e){notice(e.message,true)}}});
