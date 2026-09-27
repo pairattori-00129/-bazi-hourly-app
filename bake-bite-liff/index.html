@@ -95,7 +95,7 @@ body{min-height:100vh}
 
 /* floating bottom nav — MENU 2 (notched active bubble) */
 .nav{position:fixed;left:0;right:0;bottom:10px;z-index:30;pointer-events:none}
-.navin{--notch-left:37.5%;width:min(calc(100% - 24px),398px);margin:auto;display:grid;grid-template-columns:repeat(4,1fr);align-items:end;background:rgba(255,253,248,.985);border:1px solid rgba(90,47,31,.10);border-radius:24px;padding:12px 7px calc(10px + env(safe-area-inset-bottom));box-shadow:0 12px 28px rgba(75,52,35,.16);backdrop-filter:blur(10px);pointer-events:auto;overflow:visible;position:relative}
+.navin{--notch-left:37.5%;width:min(calc(100% - 24px),398px);margin:auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:rgba(255,253,248,.985);border:1px solid rgba(90,47,31,.10);border-radius:24px;padding:12px 7px calc(10px + env(safe-area-inset-bottom));box-shadow:0 12px 28px rgba(75,52,35,.16);backdrop-filter:blur(10px);pointer-events:auto;overflow:visible;position:relative}
 .navin:before{content:"";position:absolute;left:var(--notch-left);top:-1px;transform:translate(-50%,-1px);width:78px;height:38px;background:#fff8ec;border-radius:0 0 44px 44px;z-index:1;pointer-events:none;box-shadow:0 1px 0 #fff8ec}
 .nav button{position:relative;z-index:2;min-height:54px;border:0;background:transparent;border-radius:18px;padding:5px 2px 2px;color:#6b4a3a;font-family:inherit;font-size:11.5px;line-height:1.15;transition:color .22s ease,transform .22s ease;overflow:visible}
 .nav button b{display:flex;width:40px;height:40px;align-items:center;justify-content:center;margin:0 auto 3px;border-radius:50%;font-size:21px;line-height:1;background:transparent;border:0;transition:all .22s ease}
@@ -103,7 +103,7 @@ body{min-height:100vh}
 .nav button.active{color:#4a281b;font-weight:900;background:transparent}
 .nav button.active b{width:56px;height:56px;margin-top:-29px;margin-bottom:5px;background:#5b2d1b;border:4px solid #fff8ef;box-shadow:0 8px 20px rgba(74,40,27,.28);font-size:25px;color:#fff;transform:translateY(-1px)}
 .nav button:active b{transform:scale(.95)}
-.navin.order-active{--notch-left:12.5%}.navin.points-active{--notch-left:37.5%}.navin.redeem-active{--notch-left:62.5%}.navin.contact-active{--notch-left:87.5%}
+.navin.order-active{--notch-left:10%}.navin.snack-active{--notch-left:30%}.navin.points-active{--notch-left:50%}.navin.redeem-active{--notch-left:70%}.navin.contact-active{--notch-left:90%}
 @media(max-width:380px){.navin{width:calc(100% - 18px);padding-left:4px;padding-right:4px}.navin:before{width:72px;height:35px}.nav button{font-size:10.5px}.nav button b{width:37px;height:37px;font-size:19px}.nav button.active b{width:52px;height:52px;font-size:23px;margin-top:-26px}}
 @media (min-width:700px){.shell{border-radius:26px;margin-top:14px;margin-bottom:14px;min-height:calc(100vh - 28px)}}
 </style>
@@ -262,6 +262,7 @@ body{min-height:100vh}
 <!-- แถบเมนู 2: notched floating nav; แถบเมนู 1 สำรองไว้ที่ menu-1-backup.html -->
 <nav class="nav"><div class="navin points-active">
 <button data-page="order"><b aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H7"/><circle cx="10" cy="19" r="1.35"/><circle cx="18" cy="19" r="1.35"/></svg></b>สั่งอาหาร</button>
+<button data-href="snack-box.html" data-nav="snack"><b>📦</b>Snack Box</button>
 <button data-page="points" class="active"><b>☆</b>สะสมแต้ม</button>
 <button data-page="redeem"><b>🎁</b>แลกแต้ม</button>
 <button data-page="contact"><b>💬</b>ติดต่อร้าน</button>
@@ -373,13 +374,13 @@ function showPage(id){
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===navPage));
   const navin=document.querySelector('.navin');
   if(navin){
-    navin.classList.remove('order-active','points-active','redeem-active','contact-active');
+    navin.classList.remove('order-active','snack-active','points-active','redeem-active','contact-active');
     if(['order','points','redeem','contact'].includes(navPage)) navin.classList.add(navPage+'-active');
   }
   history.replaceState({},'',location.pathname+'#'+id);
   window.scrollTo({top:0,behavior:'smooth'});
 }
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{if(b.dataset.href){location.href=b.dataset.href;return;}showPage(b.dataset.page)});
 
 let imagePressTimer=null;
 let imagePressStartX=0;
