@@ -1,6 +1,6 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>จัดการสินค้า · Bake & Bite</title>
 <style>
-:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#432d22;background:#f8f1e9}*{box-sizing:border-box}body{margin:0}main{max-width:740px;margin:auto;padding:24px 16px 80px}
+:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#432d22;background:#f8f1e9}*{box-sizing:border-box}body{margin:0;visibility:hidden}body.admin-verified{visibility:visible}main{max-width:740px;margin:auto;padding:24px 16px 80px}
 h1{font-size:30px;color:#5b2d1b;margin:8px 0}h2{font-size:23px;margin:0 0 14px}p{line-height:1.5;color:#705d51}small{font-size:14px;color:#8c684f;font-weight:800;letter-spacing:.08em}
 section,.item{background:#fffefa;border:1px solid #e9dacb;border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 7px 18px #643e220b}
 input,select{font:inherit;font-size:16px;width:100%;padding:12px;border:1px solid #d8c7b7;border-radius:13px;background:#fff}input[type=checkbox]{width:auto}label{display:block;font-weight:800;font-size:15px;margin:12px 0 6px}
@@ -10,30 +10,27 @@ nav{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}nav a{font-weight:800;colo
 @media(max-width:500px){.grid{grid-template-columns:1fr}}
 </style></head><body><main>
 <small>BAKE & BITE · ADMIN</small><h1>จัดการเมนูสินค้า</h1><p>เพิ่มรายการ เปลี่ยนราคา รูปภาพ และสถานะขาย</p>
-<nav aria-label="หน้าผู้ดูแล"><a href="admin-orders.html">ออเดอร์</a><a class="active" href="admin-products.html">เมนูสินค้า</a><a href="admin.html">ตั้งค่าแต้ม</a></nav>
-<section id="login"><label for="adminKey">รหัสผู้ดูแลร้าน</label><input id="adminKey" type="password" autocomplete="off" placeholder="กรอกรหัสผู้ดูแล"><p class="muted">เมื่อเปลี่ยนไปหน้าอื่น ระบบจะขอรหัสอีกครั้ง</p><button id="loginButton">เข้าสู่หน้าเมนู</button></section>
+<nav aria-label="หน้าผู้ดูแล"><a href="admin-main.html">หน้าหลัก</a><a href="admin-orders.html">ออเดอร์</a><a class="active" href="admin-products.html">เมนูสินค้า</a><a href="admin.html">ตั้งค่าแต้ม</a></nav>
 <div id="panel">
  <section><h2>รายการสินค้า</h2><div id="products"></div><button class="outline" id="newButton" type="button">+ เพิ่มสินค้า</button></section>
  <section id="editor"><h2 id="formTitle">เพิ่มสินค้า</h2><form id="productForm"><div class="grid"><div><label for="name">ชื่อสินค้า</label><input id="name" required maxlength="120"></div><div><label for="category">หมวดหมู่</label><select id="category" required></select></div><div><label for="price">ราคา (บาท)</label><input id="price" type="number" min="0" max="100000" step="0.01" required></div><div><label for="imageUrl">ลิงก์รูปสินค้า</label><input id="imageUrl" type="url" placeholder="https://..."></div></div><label for="description">รายละเอียด</label><input id="description" maxlength="500"><label><input type="checkbox" id="active" checked> เปิดขาย</label><button id="saveButton" type="submit">บันทึกสินค้า</button></form></section>
  <section><h2>เพิ่มหมวดหมู่</h2><form id="categoryForm"><label for="categoryName">ชื่อหมวดหมู่</label><input id="categoryName" required maxlength="100" placeholder="เช่น เครื่องดื่ม"><button type="submit" style="margin-top:12px">เพิ่มหมวดหมู่</button></form></section>
 </div><p role="status" aria-live="polite" id="message"></p>
-</main><script>
-const API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
-let key='';let products=[];let categories=[];let editing=null;
+</main><script src="admin-session.js"></script><script>
+let products=[];let categories=[];let editing=null;
 const message=document.getElementById('message');
 function notice(value,error=false){message.textContent=value;message.classList.toggle('error',error)}
 function safe(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function api(action,body){const r=await fetch(API+'?action='+action,{method:body?'POST':'GET',headers:{'x-admin-key':key,...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(r.status===401?'รหัสผู้ดูแลไม่ถูกต้อง':(j.error||'เชื่อมต่อไม่สำเร็จ'));return j}
+async function api(action,body){return adminRequest(action,body?'POST':'GET',body)}
 function clearForm(){editing=null;document.getElementById('productForm').reset();document.getElementById('active').checked=true;document.getElementById('formTitle').textContent='เพิ่มสินค้า'}
 function render(){
  document.getElementById('category').innerHTML=categories.map(c=>'<option value="'+safe(c.id)+'">'+safe(c.name)+'</option>').join('');
  document.getElementById('products').innerHTML=products.length?products.map(p=>'<div class="item"><div style="display:flex;align-items:center;gap:12px">'+(p.image_url?'<img src="'+safe(p.image_url)+'" alt="">':'')+'<div><strong>'+safe(p.name)+'</strong><div class="muted">฿'+Number(p.price).toLocaleString('th-TH')+' · '+safe(categories.find(c=>c.id===p.category_id)?.name||'')+(p.is_active?'':' · ปิดขาย')+'</div></div></div><button type="button" data-id="'+safe(p.id)+'">แก้ไข</button></div>').join(''):'<p>ยังไม่มีสินค้า</p>';
 }
 async function load(){const j=await api('admin-list');products=j.products||[];categories=j.categories||[];render();notice('โหลดสินค้า '+products.length+' รายการ')}
-document.getElementById('loginButton').onclick=async()=>{key=document.getElementById('adminKey').value.trim();if(!key){notice('กรุณากรอกรหัสผู้ดูแล',true);return}const b=document.getElementById('loginButton');b.disabled=true;try{await load();document.getElementById('adminKey').value='';document.getElementById('login').style.display='none';document.getElementById('panel').style.display='block'}catch(e){key='';notice(e.message,true)}finally{b.disabled=false}};
+requireAdmin().then(async ok=>{if(ok){document.getElementById('panel').style.display='block';try{await load()}catch(e){notice(e.message,true)}}});
 document.getElementById('products').onclick=e=>{const b=e.target.closest('button[data-id]');if(!b)return;const p=products.find(x=>x.id===b.dataset.id);if(!p)return;editing=p.id;document.getElementById('formTitle').textContent='แก้ไข '+p.name;document.getElementById('name').value=p.name;document.getElementById('category').value=p.category_id;document.getElementById('price').value=p.price;document.getElementById('imageUrl').value=p.image_url||'';document.getElementById('description').value=p.description||'';document.getElementById('active').checked=p.is_active;document.getElementById('editor').scrollIntoView({behavior:'smooth'})};
 document.getElementById('newButton').onclick=()=>{clearForm();document.getElementById('editor').scrollIntoView({behavior:'smooth'})};
 document.getElementById('productForm').onsubmit=async e=>{e.preventDefault();const b=document.getElementById('saveButton');b.disabled=true;try{await api('admin-save-product',{id:editing,category_id:document.getElementById('category').value,name:document.getElementById('name').value.trim(),price:Number(document.getElementById('price').value),image_url:document.getElementById('imageUrl').value.trim()||null,description:document.getElementById('description').value.trim(),is_active:document.getElementById('active').checked});await load();clearForm();notice('บันทึกสินค้าแล้ว หน้าลูกค้าจะเห็นข้อมูลใหม่')}catch(err){notice(err.message,true)}finally{b.disabled=false}};
 document.getElementById('categoryForm').onsubmit=async e=>{e.preventDefault();const name=document.getElementById('categoryName').value.trim();if(!name)return;try{await api('admin-save-category',{name});await load();document.getElementById('categoryName').value='';notice('เพิ่มหมวดหมู่แล้ว')}catch(err){notice(err.message,true)}};
-window.addEventListener('pagehide',()=>{key='';products=[];categories=[];document.getElementById('panel').style.display='none';document.getElementById('login').style.display='block'});
 </script></body></html>
