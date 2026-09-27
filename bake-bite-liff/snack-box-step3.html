@@ -37,7 +37,7 @@ textarea{width:100%;min-height:88px;border:1px solid #decfc3;border-radius:14px;
     <button class="cat" data-cat="tea"><span class="ico">🍵</span>ชา</button>
     <button class="cat" data-cat="coffee"><span class="ico">☕</span>กาแฟ</button>
   </div></section>
-  <section class="card"><h2>รายการเครื่องดื่ม</h2><div class="sub">เลือกได้ 1 อย่างต่อกล่อง</div><div id="items" class="items"></div></section>
+  <section class="card"><h2>รายการเครื่องดื่ม</h2><div class="sub">เลือกได้หลายเครื่องดื่ม โดยจำนวนรวมต้องเท่ากับจำนวน Snack Box</div><div id="items" class="items"></div></section>
   <div class="footer-cta"><div class="summary-pill" id="picked">เลือกแล้ว 0 รายการ</div><button class="nextbtn" id="next" disabled>ไปหน้าสรุป ›</button></div></div><nav class="nav"><div class="navin">
 <a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
 <a class="active" href="snack-box-step1.html?preview=1&v=20260927-1925"><b><svg class="snack-nav-svg" viewBox="0 0 32 24" width="30" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b><span>Snack Box</span></a>
@@ -59,28 +59,63 @@ if(TEST_PREVIEW){
   });
 }
 function snackGo(url){ location.href=snackTestUrl(url); }
-const data={herb:[['🌼','น้ำเก๊กฮวย','เครื่องดื่มสมุนไพร'],['🥤','น้ำรากบัว','เครื่องดื่มสมุนไพร'],['🟣','น้ำอัญชันมะนาว','สดชื่น เปรี้ยวอมหวาน']],water:[['💧','น้ำเปล่า','สะอาด สดชื่น']],tea:[['🍵','ชา','ชาอุ่น/เย็น']],coffee:[['☕','กาแฟ','กาแฟหอม'] ]};let cat='herb',choice=null,qty=0;
-function render(){items.innerHTML=data[cat].map((x,i)=>'<div class="item '+(choice&&choice.name===x[1]?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+(choice&&choice.name===x[1]?qty:0)+'" aria-label="จำนวน"><button class="plus" data-d="1">+</button></div></div>').join('')}
-document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));b.classList.add('active');cat=b.dataset.cat;choice=null;qty=0;update();render()});
-items.onclick=e=>{if(e.target.classList.contains('qty-input'))return;const item=e.target.closest('.item');if(!item)return;const i=Number(item.dataset.i),d=Number(e.target.dataset.d||0),x=data[cat][i];if(d){choice={cat,name:x[1],icon:x[0]};qty=Math.max(0,(choice.name===x[1]?qty:0)+d);if(qty===0)choice=null}else{choice={cat,name:x[1],icon:x[0]};qty=1}update();render()};
+const data={herb:[['🌼','น้ำเก๊กฮวย','เครื่องดื่มสมุนไพร'],['🥤','น้ำรากบัว','เครื่องดื่มสมุนไพร'],['🟣','น้ำอัญชันมะนาว','สดชื่น เปรี้ยวอมหวาน']],water:[['💧','น้ำเปล่า','สะอาด สดชื่น']],tea:[['🍵','ชา','ชาอุ่น/เย็น']],coffee:[['☕','กาแฟ','กาแฟหอม']]};
+const target=Number(sessionStorage.getItem('snackBoxTarget')||0);
+if(!target){snackGo('snack-box-step1.html')}
+let cat='herb';
+const selections=new Map();
+function keyFor(cat,i){return cat+'|'+i}
+function restore(){
+  let old=[];try{old=JSON.parse(sessionStorage.getItem('snackDrink')||'[]')}catch(_){}
+  if(!Array.isArray(old)&&old&&old.name)old=[old];
+  (old||[]).forEach(x=>{if(x&&x.key&&Number(x.qty)>0)selections.set(x.key,{...x,qty:Number(x.qty)})});
+}
+function totalInfo(){
+  const arr=[...selections.values()].filter(x=>Number(x.qty)>0);
+  return {arr,total:arr.reduce((s,x)=>s+Number(x.qty||0),0),menus:arr.length};
+}
+function render(){
+  items.innerHTML=data[cat].map((x,i)=>{
+    const key=keyFor(cat,i),q=Number(selections.get(key)?.qty||0);
+    return '<div class="item '+(q>0?'selected':'')+'" data-i="'+i+'"><span class="check">✓</span><div class="photo">'+x[0]+'</div><h3>'+x[1]+'</h3><p>'+x[2]+'</p><div class="qty"><button class="minus" data-d="-1">−</button><input class="qty-input" type="number" inputmode="numeric" min="0" max="999" value="'+q+'" aria-label="จำนวน '+x[1]+'"><button class="plus" data-d="1">+</button></div></div>';
+  }).join('');
+}
+function setQty(i,n){
+  const x=data[cat][i],key=keyFor(cat,i);
+  n=Math.max(0,Math.min(999,Math.floor(Number(n)||0)));
+  if(n===0)selections.delete(key);
+  else selections.set(key,{key,cat,name:x[1],icon:x[0],qty:n});
+  return n;
+}
+function update(){
+  const t=totalInfo();
+  picked.textContent='เลือกแล้ว '+t.total+' / '+target+' ขวด • '+t.menus+' เมนู';
+  next.disabled=t.total!==target;
+}
+document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');cat=b.dataset.cat;render();update();
+});
+items.onclick=e=>{
+  if(e.target.classList.contains('qty-input'))return;
+  const item=e.target.closest('.item');if(!item)return;
+  const i=Number(item.dataset.i),key=keyFor(cat,i),old=Number(selections.get(key)?.qty||0),d=Number(e.target.dataset.d||0);
+  setQty(i,d?old+d:(old||1));render();update();
+};
 items.addEventListener('input',e=>{
   const input=e.target.closest('.qty-input');if(!input)return;
-  const item=input.closest('.item');if(!item)return;
-  const i=Number(item.dataset.i),x=data[cat][i];
-  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
-  items.querySelectorAll('.item').forEach(card=>{
-    const other=card.querySelector('.qty-input');
-    const same=card===item;
-    card.classList.toggle('selected',same&&n>0);
-    if(!same&&other) other.value='0';
-  });
-  if(n===0){choice=null;qty=0;}
-  else{choice={cat,name:x[1],icon:x[0]};qty=n;}
-  update();
+  const item=input.closest('.item'),i=Number(item.dataset.i);
+  const n=setQty(i,input.value);item.classList.toggle('selected',n>0);update();
 });
 items.addEventListener('change',e=>{
   const input=e.target.closest('.qty-input');if(!input)return;
-  const n=Math.max(0,Math.min(999,Math.floor(Number(input.value)||0)));
-  input.value=String(n);
+  input.value=String(setQty(Number(input.closest('.item').dataset.i),input.value));update();
 });
-function update(){picked.textContent='เลือกแล้ว '+(choice?1:0)+' รายการ';next.disabled=!choice}next.onclick=()=>{sessionStorage.setItem('snackDrink',JSON.stringify({...choice,qty}));if(!sessionStorage.getItem('snackQty'))sessionStorage.setItem('snackQty','20');snackGo('snack-box-summary.html')};render();</script></body></html>
+next.onclick=()=>{
+  const t=totalInfo();
+  if(t.total!==target){alert('จำนวนเครื่องดื่มต้องรวม '+target+' ขวด');return}
+  sessionStorage.setItem('snackDrink',JSON.stringify(t.arr));
+  sessionStorage.setItem('snackQty',String(target));
+  snackGo('snack-box-summary.html');
+};
+restore();render();update();</script></body></html>
