@@ -1,0 +1,50 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>จัดการออเดอร์ · Bake & Bite</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#432d22;background:#f8f1e9}*{box-sizing:border-box}body{margin:0}main{max-width:720px;margin:auto;padding:24px 16px 80px}
+h1{font-size:30px;color:#5b2d1b;margin:8px 0}p{line-height:1.5;color:#705d51}small{font-size:14px;color:#8c684f;font-weight:800;letter-spacing:.08em}
+section,.card{background:#fffefa;border:1px solid #e9dacb;border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 7px 18px #643e220b}
+input,select{font:inherit;font-size:17px;padding:12px;border:1px solid #d8c7b7;border-radius:13px;background:white;max-width:100%}label{display:block;font-weight:800;margin:10px 0 7px}
+button{font:inherit;font-size:16px;font-weight:800;border:0;border-radius:13px;background:#669348;color:#fff;padding:13px 17px;cursor:pointer}button:disabled{opacity:.6}nav{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}nav a{font-weight:800;color:#5b2d1b;background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:10px;text-decoration:none}nav a.active{background:#5b2d1b;color:#fff}
+#panel{display:none}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.muted{font-size:14px;color:#786659}.items{padding:10px 0;border-top:1px solid #eaded1}.error{color:#ba4039!important}#message{min-height:24px;font-weight:800}strong{overflow-wrap:anywhere}@media(max-width:500px){.grid{grid-template-columns:1fr}}
+</style></head><body><main>
+<small>BAKE & BITE · ADMIN</small><h1>จัดการออเดอร์</h1><p>ตรวจรายการ เปลี่ยนสถานะ และยืนยันการชำระเงิน</p>
+<nav aria-label="หน้าผู้ดูแล"><a class="active" href="admin-orders.html">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a href="admin.html">ตั้งค่าแต้ม</a></nav>
+<section id="login"><label for="adminKey">รหัสผู้ดูแลร้าน</label><input id="adminKey" type="password" autocomplete="off" placeholder="กรอกรหัสผู้ดูแล"><p class="muted">เมื่อเปลี่ยนไปหน้าอื่น ระบบจะขอรหัสอีกครั้ง</p><button id="loginButton">เข้าสู่หน้าออเดอร์</button></section>
+<div id="panel"><button id="refreshButton" type="button">โหลดออเดอร์ล่าสุด</button><div id="orders"></div></div><p role="status" aria-live="polite" id="message"></p>
+</main><script>
+const API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
+let key='';let orders=[];
+const message=document.getElementById('message');
+function notice(value,error=false){message.textContent=value;message.classList.toggle('error',error)}
+function safe(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function api(action,method='GET',body){
+ const r=await fetch(API+'?action='+action,{method,headers:{'x-admin-key':key,...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const j=await r.json();if(!r.ok||!j.ok)throw new Error(r.status===401?'รหัสผู้ดูแลไม่ถูกต้อง':(j.error||'เชื่อมต่อไม่สำเร็จ'));return j;
+}
+const statusList=[['pending','รอรับออเดอร์'],['confirmed','ยืนยันแล้ว'],['preparing','กำลังทำ'],['ready','พร้อมรับ'],['completed','เสร็จสิ้น'],['cancelled','ยกเลิก']];
+const paymentList=[['pending','รอชำระ'],['paid','ชำระแล้ว'],['refunded','คืนเงิน']];
+function options(list,current){return list.map(([v,t])=>'<option value="'+v+'"'+(current===v?' selected':'')+'>'+t+'</option>').join('')}
+function render(){
+ document.getElementById('orders').innerHTML=orders.length?orders.map(o=>{
+  const lines=(o.order_items||[]).map(i=>safe(i.product_name)+' × '+Number(i.quantity)).join(' · ');
+  const date=new Date(o.created_at).toLocaleString('th-TH');
+  return '<article class="card" data-order="'+safe(o.id)+'"><strong>'+safe(o.order_no)+'</strong> <span class="muted">'+safe(date)+'</span><p>'+safe(o.customer_name||'ไม่ระบุชื่อ')+' · ฿'+Number(o.total).toLocaleString('th-TH')+'</p><div class="items">'+(lines||'ไม่มีรายการสินค้า')+'</div>'+
+  '<p class="muted">'+(o.fulfillment_method==='lineman'?'จัดส่ง LINE MAN · '+safe(o.delivery_address||'ไม่ระบุที่อยู่'):'รับเองที่ร้าน')+'</p>'+
+  '<div class="grid"><div><label>สถานะออเดอร์</label><select class="orderStatus">'+options(statusList,o.status)+'</select></div><div><label>การชำระเงิน</label><select class="paymentStatus">'+options(paymentList,o.payment_status==='unpaid'?'pending':o.payment_status)+'</select></div></div><button class="save" style="margin-top:14px">บันทึกออเดอร์</button></article>'
+ }).join(''):'<section>ยังไม่มีออเดอร์</section>';
+}
+async function load(){const result=await api('admin-orders');orders=result.orders||[];render();notice('โหลดออเดอร์ล่าสุด '+orders.length+' รายการ')}
+document.getElementById('loginButton').onclick=async()=>{
+ key=document.getElementById('adminKey').value.trim();if(!key){notice('กรุณากรอกรหัสผู้ดูแล',true);return}
+ const b=document.getElementById('loginButton');b.disabled=true;
+ try{await load();document.getElementById('adminKey').value='';document.getElementById('login').style.display='none';document.getElementById('panel').style.display='block'}catch(e){key='';notice(e.message,true)}finally{b.disabled=false}
+};
+document.getElementById('refreshButton').onclick=async()=>{try{await load()}catch(e){notice(e.message,true)}};
+document.getElementById('orders').onclick=async event=>{
+ const button=event.target.closest('button.save');if(!button)return;
+ const card=button.closest('[data-order]');button.disabled=true;
+ try{await api('admin-update-order','POST',{id:card.dataset.order,status:card.querySelector('.orderStatus').value,payment_status:card.querySelector('.paymentStatus').value});await load();notice('บันทึกสถานะออเดอร์แล้ว')}
+ catch(e){notice(e.message,true)}finally{button.disabled=false}
+};
+window.addEventListener('pagehide',()=>{key='';orders=[];document.getElementById('panel').style.display='none';document.getElementById('login').style.display='block'});
+</script></body></html>
