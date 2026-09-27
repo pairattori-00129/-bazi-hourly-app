@@ -5,86 +5,213 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Snack Box · Bake & Bite</title>
 <style>
-:root{--brown:#5b2d1b;--green:#78966a;--cream:#fff8ee;--paper:#fffdf9;--line:#ead9ca;--muted:#7b685d}
-*{box-sizing:border-box}html,body{margin:0;background:#f6efe5;color:#402d27;font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+:root{--brown:#5b2d1b;--green:#78966a;--green2:#eef5e8;--cream:#fff8ee;--paper:#fffdf9;--line:#ead9ca;--muted:#7b685d;--peach:#fff0e5}
+*{box-sizing:border-box}
+html,body{margin:0;background:#f6efe5;color:#402d27;font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+button,input{font:inherit}
 .shell{width:min(100%,430px);min-height:100vh;margin:auto;background:linear-gradient(180deg,#fffdfa,#fff8ec);padding-bottom:40px}
-.hero{padding:28px 20px 22px;background:linear-gradient(145deg,#eef5e8,#fff4e9);border-bottom:1px solid #eadfd4}
-.back{display:inline-block;text-decoration:none;color:var(--brown);font-weight:900;margin-bottom:14px}
-.hero h1{margin:0;color:var(--brown);font-size:38px;line-height:1.05}
-.hero p{margin:10px 0 0;color:#725f54;line-height:1.5}
-.badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.badge{padding:7px 10px;border-radius:999px;background:#fff;color:#58724b;font-size:13px;font-weight:800;border:1px solid #dae7d1}
-.card{margin:14px 12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 5px 16px rgba(80,50,30,.05)}
-.card h2{margin:0 0 6px;color:#4c3024;font-size:22px}.sub{color:var(--muted);font-size:14px;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.option{border:1px solid #e7dbcf;border-radius:16px;padding:12px 8px;text-align:center;background:#fff}.option .icon{font-size:35px}.option b{display:block;margin-top:7px;font-size:14px}.option span{font-size:12px;color:#7d6d64}
-.field{width:100%;border:1px solid #dfd2c6;background:#fff;border-radius:14px;padding:13px;font:inherit;margin-top:9px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.btn{width:100%;border:0;border-radius:16px;padding:14px;font:inherit;font-weight:900;background:var(--green);color:#fff;margin-top:12px}
-.btn.secondary{background:var(--brown);text-decoration:none;text-align:center;display:block}
-.note{padding:12px;border-radius:14px;background:#fff2de;color:#745633;font-size:13px;line-height:1.5;margin-top:12px}
-.summary{display:none;white-space:pre-line;background:#f5f8f1;border:1px solid #dfe8d7;border-radius:15px;padding:13px;margin-top:12px;line-height:1.6}
-@media(max-width:360px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+.hero{padding:24px 20px 20px;background:linear-gradient(145deg,#eef5e8,#fff4e9);border-bottom:1px solid #eadfd4}
+.back{display:inline-block;text-decoration:none;color:var(--brown);font-weight:900;margin-bottom:12px}
+.hero h1{margin:0;color:var(--brown);font-size:36px;line-height:1.05}
+.hero p{margin:9px 0 0;color:#725f54;line-height:1.45;font-size:14px}
+
+.progress{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:14px 12px 0}
+.progress-step{background:#efe6dd;border-radius:999px;padding:8px 5px;text-align:center;font-size:12px;font-weight:900;color:#8b786d}
+.progress-step.active{background:var(--brown);color:#fff}
+.progress-step.done{background:#dfead7;color:#4e6941}
+
+.card{margin:12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 5px 16px rgba(80,50,30,.05)}
+.step{display:none}.step.active{display:block}
+.step-label{font-size:13px;font-weight:900;color:#6d8a5c;margin-bottom:4px}
+.card h2{margin:0 0 5px;color:#4c3024;font-size:24px}
+.sub{color:var(--muted);font-size:14px;line-height:1.45;margin-bottom:12px}
+
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.choice{position:relative;border:1.5px solid #e7dbcf;border-radius:17px;padding:12px 10px;background:#fff;min-height:112px;text-align:left;cursor:pointer;color:#402d27}
+.choice.selected{border-color:#7f9c70;background:#f1f7ec;box-shadow:0 0 0 2px rgba(120,150,106,.10)}
+.choice .icon{font-size:34px;line-height:1}
+.choice b{display:block;margin-top:8px;font-size:14px;line-height:1.3}
+.choice span{display:block;font-size:12px;color:#7d6d64;margin-top:3px;line-height:1.3}
+.check{position:absolute;right:8px;top:8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#eee5dd;color:transparent;font-weight:900}
+.choice.selected .check{background:#78966a;color:#fff}
+
+.qtybox{margin-top:14px;padding:14px;border-radius:17px;background:#fff6ea;border:1px solid #ead9c6}
+.qtybox label{display:block;font-weight:900;margin-bottom:7px}
+.qtyrow{display:grid;grid-template-columns:46px 1fr 46px;gap:8px;align-items:center}
+.qtyrow button{height:44px;border:0;border-radius:12px;background:#eadfd5;color:#5b2d1b;font-size:22px;font-weight:900}
+.qtyrow button:last-child{background:#78966a;color:#fff}
+.qtyrow input{height:44px;width:100%;border:1px solid #dccbbd;border-radius:12px;text-align:center;font-size:18px;font-weight:900;background:#fff}
+.hint{font-size:12px;color:#7d6d64;margin-top:7px}
+
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.btn{width:100%;border:0;border-radius:15px;padding:13px 14px;font-weight:900;color:#fff;background:var(--green);cursor:pointer}
+.btn.backbtn{background:#eee5dd;color:#5b2d1b}
+.btn.full{grid-column:1/-1;background:var(--brown)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.summary{display:none;margin:12px;background:#f5f8f1;border:1px solid #dfe8d7;border-radius:20px;padding:16px}
+.summary.show{display:block}
+.summary h2{margin:0 0 10px;color:#4c3024}
+.summary-row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid #e2eadc}
+.summary-row:last-child{border-bottom:0}
+.summary-row span:first-child{color:#7b6a60}
+.summary-row strong{text-align:right}
+.summary .total{margin-top:12px;padding:12px;border-radius:14px;background:#fff;color:#5b2d1b;font-weight:900;text-align:center}
+
+.contact{margin:12px;display:none}
+.contact.show{display:block}
+.contact a{display:block;text-decoration:none;text-align:center;background:#5b2d1b;color:#fff;border-radius:15px;padding:14px;font-weight:900}
+
+@media(max-width:360px){.options{grid-template-columns:1fr}}
 </style>
 </head>
 <body><div class="shell">
 <section class="hero">
 <a class="back" href="index.html#order">‹ กลับหน้าสั่งอาหาร</a>
 <h1>Snack Box</h1>
-<p>บริการจัดชุดอาหารว่างสำหรับประชุม อบรม งานสัมมนา งานเลี้ยง และกิจกรรมต่าง ๆ</p>
-<div class="badges"><span class="badge">🥪 จัดชุดได้</span><span class="badge">🥤 เพิ่มเครื่องดื่มได้</span><span class="badge">📦 สั่งหลายชุดได้</span></div>
+<p>เลือกเมนูทีละขั้น แล้วกำหนดจำนวนกล่องที่ต้องการ</p>
 </section>
 
-<section class="card">
-<h2>รูปแบบบริการ</h2><div class="sub">เลือกแนวชุดที่ต้องการ แล้วระบุรายละเอียดให้ร้านจัดให้เหมาะกับงาน</div>
-<div class="grid">
-<div class="option"><div class="icon">🥪</div><b>ชุดแซนด์วิช</b><span>เหมาะกับประชุมและอบรม</span></div>
-<div class="option"><div class="icon">🥗</div><b>ชุดเบา ๆ</b><span>สลัดโรล + เครื่องดื่ม</span></div>
-<div class="option"><div class="icon">🎁</div><b>จัดชุดตามงบ</b><span>ระบุงบต่อกล่องได้</span></div>
+<div class="progress" aria-label="ขั้นตอน">
+<div class="progress-step active" data-progress="1">1 อาหาร</div>
+<div class="progress-step" data-progress="2">2 ของหวาน</div>
+<div class="progress-step" data-progress="3">3 เครื่องดื่ม</div>
+</div>
+
+<section class="card step active" data-step="1">
+<div class="step-label">STEP 1</div>
+<h2>เลือกอาหาร</h2>
+<div class="sub">เลือกอาหารหลัก 1 อย่างต่อกล่อง</div>
+<div class="options" data-group="food">
+<button type="button" class="choice" data-value="แซนด์วิชไส้กรอก + ไข่ดาว"><span class="check">✓</span><span class="icon">🥪</span><b>ไส้กรอก + ไข่ดาว</b><span>แซนด์วิช</span></button>
+<button type="button" class="choice" data-value="แซนด์วิชโบโลน่า + ไข่ดาว"><span class="check">✓</span><span class="icon">🥪</span><b>โบโลน่า + ไข่ดาว</b><span>แซนด์วิช</span></button>
+<button type="button" class="choice" data-value="สลัดโรลไส้ปูอัด"><span class="check">✓</span><span class="icon">🥗</span><b>สลัดโรลไส้ปูอัด</b><span>ชุดเบา ๆ</span></button>
+<button type="button" class="choice" data-value="สลัดโรลไส้กรอก"><span class="check">✓</span><span class="icon">🌯</span><b>สลัดโรลไส้กรอก</b><span>ชุดเบา ๆ</span></button>
+</div>
+<div class="actions"><button type="button" class="btn full next" data-next="2" disabled>ถัดไป: เลือกของหวาน ›</button></div>
+</section>
+
+<section class="card step" data-step="2">
+<div class="step-label">STEP 2</div>
+<h2>เลือกของหวาน</h2>
+<div class="sub">เลือกของหวาน 1 อย่างต่อกล่อง</div>
+<div class="options" data-group="dessert">
+<button type="button" class="choice" data-value="แซนด์วิชแยมสตรอว์เบอร์รี"><span class="check">✓</span><span class="icon">🍓</span><b>แยมสตรอว์เบอร์รี</b><span>หวานหอม</span></button>
+<button type="button" class="choice" data-value="แซนด์วิชแยมบลูเบอร์รี"><span class="check">✓</span><span class="icon">🫐</span><b>แยมบลูเบอร์รี</b><span>รสผลไม้</span></button>
+<button type="button" class="choice" data-value="แซนด์วิชแยมส้ม"><span class="check">✓</span><span class="icon">🍊</span><b>แยมส้ม</b><span>เปรี้ยวหวาน</span></button>
+<button type="button" class="choice" data-value="แซนด์วิชสังขยา"><span class="check">✓</span><span class="icon">🍞</span><b>สังขยา</b><span>หอมละมุน</span></button>
+</div>
+<div class="actions">
+<button type="button" class="btn backbtn prev" data-prev="1">‹ ย้อนกลับ</button>
+<button type="button" class="btn next" data-next="3" disabled>ถัดไป ›</button>
 </div>
 </section>
 
-<section class="card">
-<h2>ขอใบเสนอราคา / จอง Snack Box</h2>
-<div class="sub">กรอกข้อมูลเบื้องต้น ร้านจะติดต่อกลับเพื่อยืนยันเมนู ราคา และเวลาจัดส่ง</div>
-<form id="snackForm">
-<div class="row">
-<div><input class="field" id="name" required maxlength="100" placeholder="ชื่อผู้ติดต่อ"></div>
-<div><input class="field" id="phone" required maxlength="25" inputmode="tel" placeholder="เบอร์โทร"></div>
+<section class="card step" data-step="3">
+<div class="step-label">STEP 3</div>
+<h2>เลือกเครื่องดื่ม</h2>
+<div class="sub">เลือกเครื่องดื่ม 1 อย่างต่อกล่อง</div>
+<div class="options" data-group="drink">
+<button type="button" class="choice" data-value="น้ำเก๊กฮวย"><span class="check">✓</span><span class="icon">🌼</span><b>น้ำเก๊กฮวย</b><span>หอม สดชื่น</span></button>
+<button type="button" class="choice" data-value="น้ำรากบัว"><span class="check">✓</span><span class="icon">🥤</span><b>น้ำรากบัว</b><span>หวานละมุน</span></button>
+<button type="button" class="choice" data-value="น้ำเปล่า"><span class="check">✓</span><span class="icon">💧</span><b>น้ำเปล่า</b><span>แบบขวด</span></button>
+<button type="button" class="choice" data-value="ไม่รับเครื่องดื่ม"><span class="check">✓</span><span class="icon">➖</span><b>ไม่รับเครื่องดื่ม</b><span>อาหาร + ของหวาน</span></button>
 </div>
-<div class="row">
-<div><input class="field" id="date" required type="date"></div>
-<div><input class="field" id="qty" required type="number" min="1" max="9999" placeholder="จำนวนชุด"></div>
+
+<div class="qtybox">
+<label for="qty">จำนวน Snack Box</label>
+<div class="qtyrow">
+<button type="button" id="minusQty" aria-label="ลดจำนวน">−</button>
+<input id="qty" type="number" min="1" max="9999" inputmode="numeric" value="1">
+<button type="button" id="plusQty" aria-label="เพิ่มจำนวน">+</button>
 </div>
-<input class="field" id="budget" type="number" min="0" step="1" placeholder="งบประมาณต่อชุด (ถ้ามี)">
-<select class="field" id="type">
-<option value="ชุดแซนด์วิช">ชุดแซนด์วิช</option>
-<option value="ชุดสลัดโรล / เบา ๆ">ชุดสลัดโรล / เบา ๆ</option>
-<option value="จัดชุดตามงบ">จัดชุดตามงบ</option>
-<option value="ให้ร้านแนะนำ">ให้ร้านแนะนำ</option>
-</select>
-<textarea class="field" id="note" rows="4" maxlength="500" placeholder="รายละเอียดเพิ่มเติม เช่น เวลาใช้งาน สถานที่จัดส่ง เมนูที่สนใจ หรือข้อจำกัดด้านอาหาร"></textarea>
-<button class="btn" type="submit">สรุปคำขอ Snack Box</button>
-</form>
-<div id="summary" class="summary"></div>
-<div class="note">ราคาจะแจ้งหลังร้านตรวจจำนวนชุด เมนู วันที่ และเงื่อนไขการจัดส่ง</div>
-<a class="btn secondary" href="index.html#contact">ติดต่อร้านผ่าน LINE</a>
+<div class="hint">จำนวนนี้ใช้กับชุดที่เลือกด้านบนทั้งหมด</div>
+</div>
+
+<div class="actions">
+<button type="button" class="btn backbtn prev" data-prev="2">‹ ย้อนกลับ</button>
+<button type="button" class="btn" id="summaryBtn" disabled>ดูสรุป</button>
+</div>
 </section>
+
+<section id="summary" class="summary" aria-live="polite">
+<h2>สรุป Snack Box</h2>
+<div class="summary-row"><span>อาหาร</span><strong id="sumFood"></strong></div>
+<div class="summary-row"><span>ของหวาน</span><strong id="sumDessert"></strong></div>
+<div class="summary-row"><span>เครื่องดื่ม</span><strong id="sumDrink"></strong></div>
+<div class="summary-row"><span>จำนวน</span><strong id="sumQty"></strong></div>
+<div class="total">📦 ชุดที่เลือก × <span id="sumQty2"></span> กล่อง</div>
+<div class="actions">
+<button type="button" class="btn backbtn" id="editBtn">แก้ไขรายการ</button>
+<button type="button" class="btn" id="contactBtn">ติดต่อร้าน</button>
 </div>
+</section>
+
+<div id="contact" class="contact">
+<a href="index.html#contact">ไปหน้าติดต่อร้าน ›</a>
+</div>
+</div>
+
 <script>
-const form=document.getElementById('snackForm');
-form.addEventListener('submit',e=>{
- e.preventDefault();
- const text='คำขอ Snack Box\\n'
- +'ชื่อ: '+document.getElementById('name').value.trim()+'\\n'
- +'โทร: '+document.getElementById('phone').value.trim()+'\\n'
- +'วันที่: '+document.getElementById('date').value+'\\n'
- +'จำนวน: '+document.getElementById('qty').value+' ชุด\\n'
- +'รูปแบบ: '+document.getElementById('type').value+'\\n'
- +'งบ/ชุด: '+(document.getElementById('budget').value||'ไม่ระบุ')+'\\n'
- +'รายละเอียด: '+(document.getElementById('note').value.trim()||'-');
- const box=document.getElementById('summary');
- box.textContent=text;box.style.display='block';
- box.scrollIntoView({behavior:'smooth',block:'nearest'});
+const state={food:'',dessert:'',drink:'',qty:1};
+const steps=[...document.querySelectorAll('.step')];
+const progress=[...document.querySelectorAll('.progress-step')];
+
+function showStep(n){
+ steps.forEach(el=>el.classList.toggle('active',Number(el.dataset.step)===n));
+ progress.forEach(el=>{
+   const p=Number(el.dataset.progress);
+   el.classList.toggle('active',p===n);
+   el.classList.toggle('done',p<n);
+ });
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function selectChoice(button){
+ const group=button.closest('[data-group]');
+ const key=group.dataset.group;
+ group.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+ button.classList.add('selected');
+ state[key]=button.dataset.value;
+
+ const step=button.closest('.step');
+ const next=step.querySelector('.next');
+ if(next)next.disabled=false;
+ if(key==='drink')document.getElementById('summaryBtn').disabled=false;
+}
+
+document.querySelectorAll('.choice').forEach(btn=>btn.addEventListener('click',()=>selectChoice(btn)));
+document.querySelectorAll('.next').forEach(btn=>btn.addEventListener('click',()=>showStep(Number(btn.dataset.next))));
+document.querySelectorAll('.prev').forEach(btn=>btn.addEventListener('click',()=>showStep(Number(btn.dataset.prev))));
+
+function setQty(v){
+ const clean=Math.max(1,Math.min(9999,Math.floor(Number(v)||1)));
+ state.qty=clean;document.getElementById('qty').value=clean;
+}
+document.getElementById('minusQty').addEventListener('click',()=>setQty(state.qty-1));
+document.getElementById('plusQty').addEventListener('click',()=>setQty(state.qty+1));
+document.getElementById('qty').addEventListener('input',e=>setQty(e.target.value));
+
+document.getElementById('summaryBtn').addEventListener('click',()=>{
+ setQty(document.getElementById('qty').value);
+ if(!state.food||!state.dessert||!state.drink)return;
+ document.getElementById('sumFood').textContent=state.food;
+ document.getElementById('sumDessert').textContent=state.dessert;
+ document.getElementById('sumDrink').textContent=state.drink;
+ document.getElementById('sumQty').textContent=state.qty+' กล่อง';
+ document.getElementById('sumQty2').textContent=state.qty;
+ document.getElementById('summary').classList.add('show');
+ document.getElementById('summary').scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+document.getElementById('editBtn').addEventListener('click',()=>{
+ document.getElementById('summary').classList.remove('show');
+ showStep(1);
+});
+
+document.getElementById('contactBtn').addEventListener('click',()=>{
+ document.getElementById('contact').classList.add('show');
+ document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 </script>
 </body>
