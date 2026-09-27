@@ -17,14 +17,16 @@
     button:disabled{opacity:.6;cursor:wait}.primary{width:100%}.secondary{background:#5b2d1b}
     #settings{display:none}#message{min-height:26px;font-weight:700;margin:14px 3px;color:#4d7834}
     .error{color:#b13e38!important}.foot{font-size:14px;margin-top:18px}
+    nav{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}nav a{font-weight:800;color:#5b2d1b;background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:10px;text-decoration:none}nav a.active{background:#5b2d1b;color:#fff}
   </style>
 </head>
 <body><main>
   <header><small>BAKE & BITE · ADMIN</small><h1>ตั้งค่าแต้มแนะนำเพื่อน</h1><p>กำหนดคะแนนที่ผู้ชวนจะได้รับจากเพื่อนที่ชวนเข้าร้าน</p></header>
+  <nav aria-label="หน้าผู้ดูแล"><a href="admin-orders.html">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a class="active" href="admin.html">ตั้งค่าแต้ม</a></nav>
   <section id="login">
     <label for="adminKey">รหัสผู้ดูแลร้าน</label>
     <input id="adminKey" type="password" autocomplete="off" placeholder="กรอกรหัสผู้ดูแล">
-    <p class="hint">ใช้รหัสเดียวกับระบบจัดการร้าน รหัสจะอยู่เฉพาะในหน้านี้จนกว่าจะปิดหน้า</p>
+    <p class="hint">ใช้รหัสเดียวกับระบบจัดการร้าน เมื่อเปลี่ยนไปหน้าอื่น ระบบจะขอรหัสอีกครั้ง</p>
     <button class="primary" id="openButton" type="button">เข้าสู่หน้าตั้งค่า</button>
   </section>
   <form id="settings">
@@ -79,4 +81,5 @@ document.getElementById('settings').onsubmit=async event=>{
   }catch(e){showMessage(e.message,true)}
   finally{button.disabled=false}
 };
+window.addEventListener('pagehide',()=>{adminKey='';document.getElementById('settings').style.display='none';document.getElementById('login').style.display='block'});
 </script></body></html>
