@@ -12,7 +12,7 @@
 h1{font-size:25px;line-height:1.25;margin:7px 0}.sub{color:var(--muted);font-size:14px;line-height:1.55;margin:0}.counter{display:inline-flex;gap:7px;margin-top:12px;padding:8px 13px;border-radius:999px;background:#e7f7f4;color:var(--accent);font-size:13px;font-weight:700}
 .card{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}.box{padding:20px}.box h2{font-size:18px;margin:0 0 6px}.box p{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 12px}.howto{display:grid;gap:9px;margin:0 0 18px}.step{display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#f8fcfb}.stepnum{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#e7f7f4;color:var(--accent);font-weight:850}.steptxt{font-size:13px;line-height:1.45;color:var(--text)}.steptxt b{color:var(--accent)}
 textarea{width:100%;min-height:145px;border:1px solid #c9dcda;border-radius:16px;padding:14px;font:inherit;font-size:16px;line-height:1.5;color:var(--text);background:#fff;outline:none;resize:vertical}textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
-button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;background:var(--accent);color:#fff;font:inherit;font-size:16px;font-weight:800}button:disabled{opacity:.55}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:9px}
+button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;background:var(--accent);color:#fff;font:inherit;font-size:16px;font-weight:800}button:disabled{opacity:.55}.currentBox{margin:0 0 18px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f8fcfb}.currentBox h2{margin:0 0 4px}.currentBox p{margin:0 0 10px}.currentBtn{margin-top:0;background:#0b5f59}.or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:12px;font-weight:700}.or:before,.or:after{content:"";height:1px;background:var(--line);flex:1}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:9px}
 .status{margin-top:12px;padding:11px 12px;border-radius:14px;background:#f3f8f7;color:var(--muted);font-size:13px;line-height:1.45}.status.error{background:#fff2f0;color:var(--danger)}
 .result{display:none;border-top:1px solid var(--line);padding:20px;text-align:center;background:linear-gradient(#fff,#f8fffd)}.result.show{display:block}.label{font-size:13px;color:var(--muted)}.height{font-size:58px;font-weight:850;letter-spacing:-2px;color:var(--accent);line-height:1;margin:7px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.place{font-size:14px;font-weight:700;line-height:1.45;margin:8px 0 4px}.coords{font-size:12px;color:var(--muted)}
 .footer{text-align:center;font-size:11px;color:var(--muted);line-height:1.55;margin:15px 7px 0}
@@ -35,6 +35,12 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
 <div class="step"><div class="stepnum">2</div><div class="steptxt">กด <b>แชร์</b> แล้วเลือก <b>คัดลอกลิงก์</b></div></div>
 <div class="step"><div class="stepnum">3</div><div class="steptxt">กลับมาหน้านี้ แล้ว <b>วางข้อมูลที่คัดลอกมา</b> ในช่องด้านล่าง จากนั้นกด “เช็คความสูง”</div></div>
 </div>
+<div class="currentBox">
+<h2>ตำแหน่งปัจจุบันของฉัน</h2>
+<p>กดปุ่มด้านล่าง แล้วอนุญาตให้เบราว์เซอร์ใช้ตำแหน่ง ระบบจะคำนวณความสูงจากระดับน้ำทะเลให้ทันที</p>
+<button id="currentBtn" class="currentBtn" type="button">🧭 เช็คตำแหน่งปัจจุบัน</button>
+</div>
+<div class="or">หรือ</div>
 <h2>วางข้อมูลตำแหน่ง</h2>
 <p>วางลิงก์ Google Maps, ข้อความที่แชร์มา, ชื่อสถานที่, ที่อยู่ หรือพิกัดได้ในช่องเดียว</p>
 <textarea id="locationInput" placeholder="ตัวอย่าง&#10;https://maps.app.goo.gl/9jaYwAUyn9VSmHim7?g_st=ic&#10;&#10;หรือวางข้อความจาก Google Maps ทั้งชุด"></textarea>
@@ -58,6 +64,7 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
 (function(){
 const input=document.getElementById("locationInput");
 const btn=document.getElementById("checkBtn");
+const currentBtn=document.getElementById("currentBtn");
 const status=document.getElementById("status");
 const result=document.getElementById("result");
 const heightEl=document.getElementById("height");
@@ -99,6 +106,46 @@ async function countVisit(){
   }catch(_){}
 }
 
+async function showResult(lat,lon,label,accuracy){
+  setStatus("พบตำแหน่งแล้ว กำลังคำนวณความสูง…",false);
+  const h=await getElevation(lat,lon);
+  heightEl.innerHTML=Math.round(h)+' <span class="unit">เมตร</span>';
+  placeEl.textContent=label||"ตำแหน่งที่ตรวจสอบ";
+  let coordText="Lat "+lat.toFixed(6)+" • Lon "+lon.toFixed(6);
+  if(Number.isFinite(accuracy)) coordText+=" • ความแม่นยำ GPS ±"+Math.round(accuracy)+" ม.";
+  coordsEl.textContent=coordText;
+  result.classList.add("show");
+  setStatus("ตรวจสำเร็จ ✓",false);
+}
+
+async function checkCurrent(){
+  if(!navigator.geolocation){
+    setStatus("อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับการอ่านตำแหน่ง",true);
+    return;
+  }
+  currentBtn.disabled=true;
+  result.classList.remove("show");
+  setStatus("กำลังขอตำแหน่งปัจจุบันจาก GPS…",false);
+  navigator.geolocation.getCurrentPosition(async(pos)=>{
+    try{
+      const lat=Number(pos.coords.latitude),lon=Number(pos.coords.longitude);
+      if(!Number.isFinite(lat)||!Number.isFinite(lon)) throw new Error("อ่านพิกัดปัจจุบันไม่ได้");
+      await showResult(lat,lon,"ตำแหน่งปัจจุบันของฉัน",Number(pos.coords.accuracy));
+    }catch(e){
+      setStatus(e.message||"ไม่สามารถตรวจความสูงของตำแหน่งปัจจุบันได้",true);
+    }finally{
+      currentBtn.disabled=false;
+    }
+  },(err)=>{
+    let msg="ไม่สามารถอ่านตำแหน่งปัจจุบันได้";
+    if(err.code===1) msg="กรุณาอนุญาตให้เว็บไซต์เข้าถึงตำแหน่ง แล้วลองอีกครั้ง";
+    else if(err.code===2) msg="ยังหาตำแหน่งจาก GPS ไม่ได้ กรุณาลองใหม่";
+    else if(err.code===3) msg="ค้นหาตำแหน่งนานเกินไป กรุณาลองใหม่";
+    setStatus(msg,true);
+    currentBtn.disabled=false;
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+
 async function check(){
   const raw=input.value.trim();
   if(!raw){setStatus("กรุณาวางข้อมูลตำแหน่งก่อน",true);return}
@@ -109,13 +156,7 @@ async function check(){
     const loc=await getLocation(raw);
     const lat=Number(loc.lat),lon=Number(loc.lon);
     if(!Number.isFinite(lat)||!Number.isFinite(lon)) throw new Error("ไม่พบพิกัดที่ใช้งานได้");
-    setStatus("พบตำแหน่งแล้ว กำลังคำนวณความสูง…",false);
-    const h=await getElevation(lat,lon);
-    heightEl.innerHTML=Math.round(h)+' <span class="unit">เมตร</span>';
-    placeEl.textContent=loc.label||"ตำแหน่งที่ตรวจสอบ";
-    coordsEl.textContent="Lat "+lat.toFixed(6)+" • Lon "+lon.toFixed(6);
-    result.classList.add("show");
-    setStatus("ตรวจสำเร็จ ✓",false);
+    await showResult(lat,lon,loc.label||"ตำแหน่งที่ตรวจสอบ");
   }catch(e){
     setStatus(e.message||"ไม่สามารถตรวจสอบตำแหน่งนี้ได้",true);
   }finally{
@@ -123,6 +164,7 @@ async function check(){
   }
 }
 
+currentBtn.addEventListener("click",checkCurrent);
 btn.addEventListener("click",check);
 countVisit();
 })();
