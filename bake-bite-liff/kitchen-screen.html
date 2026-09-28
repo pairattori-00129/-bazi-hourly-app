@@ -61,7 +61,8 @@ button,select{font:inherit}
 .line .name{font-size:15px;font-weight:800}.line .qty{font-size:18px;font-weight:950}
 .note{margin-top:8px;padding:8px 10px;border-radius:10px;background:#f7eee5;font-size:13px}
 .note strong{color:#a63d31}
-.actions{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px}
+.actions{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:10px}
+.printBtn{border:1px solid #d8c7ba;border-radius:11px;padding:10px 12px;background:#fff8ef;color:#5b2d1b;font-weight:900;cursor:pointer}
 .action{border:0;border-radius:11px;padding:11px;font-size:16px;font-weight:950;color:#fff;cursor:pointer}
 .wait .action{background:#7c341f}.work .action{background:#b58108}.ready .action{background:#28743a}
 .action:disabled{opacity:.5}
@@ -103,6 +104,7 @@ button,select{font:inherit}
     <option value="oldest">เรียงตามเวลา เก่าก่อน</option>
     <option value="newest">ใหม่ก่อน</option>
   </select>
+  <span class="ghost" id="printerStatus">🟢 Printer พร้อมใช้งาน</span>
   <button class="ghost" id="refreshButton">↻ โหลดล่าสุด</button>
   <button class="ghost" id="fullscreenButton">⛶ เต็มจอ</button>
   <a class="ghost" href="admin-main.html" style="text-decoration:none">⚙ Admin</a>
@@ -194,7 +196,7 @@ function ticketHtml(o){
     '<div class="badges"><span class="badge '+fulfillmentClass+'">'+(fulfillmentClass?'🛵 ':'🏪 ')+fulfillment+'</span>'+(snack?'<span class="badge snack">🎁 Snack Box</span>':'')+'</div>'+
     '<div class="items">'+(items.length?items.map(i=>'<div class="line"><span class="name">'+safe(i.product_name)+'</span><span class="qty">× '+Number(i.quantity||0)+'</span></div>').join(''):'<div class="line"><span class="name">ไม่มีรายการในตัวกรองนี้</span><span></span></div>')+'</div>'+
     (note?'<div class="note">📝 หมายเหตุ: <strong>'+safe(note)+'</strong></div>':'')+
-    (action?'<div class="actions"><button class="action" data-next="'+action.status+'">'+action.label+'</button></div>':'')+
+    (action?'<div class="actions"><button class="action" data-next="'+action.status+'">'+action.label+'</button><button class="printBtn" data-print="1">🖨 พิมพ์</button></div>':'')+
   '</article>';
 }
 function sorted(list){
@@ -244,7 +246,35 @@ fullscreenButton.onclick=async()=>{
     else await document.exitFullscreen();
   }catch(e){showToast('อุปกรณ์นี้ไม่รองรับเต็มจอ')}
 };
+function printOrder(id){
+  const o=orders.find(x=>String(x.id)===String(id));
+  if(!o)return;
+  const items=(o.order_items||[]).map(i=>'<tr><td>'+safe(i.product_name)+'</td><td style="text-align:right">× '+Number(i.quantity||0)+'</td></tr>').join('');
+  const note=safe(o.note||o.delivery_note||'');
+  const html='<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+safe(o.order_no||'Order')+'</title>'+
+  '<style>@page{size:80mm auto;margin:4mm}body{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#000;margin:0;font-size:13px}.center{text-align:center}.big{font-size:20px;font-weight:900}.line{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top}.note{font-weight:800;margin-top:8px}.muted{font-size:11px}</style></head><body>'+
+  '<div class="center big">BAKE & BITE</div><div class="center">ใบครัว</div><div class="line"></div>'+
+  '<div class="big">'+safe(o.order_no||o.id)+'</div>'+
+  '<div class="muted">'+new Date(o.created_at).toLocaleString('th-TH')+'</div>'+
+  '<div class="muted">'+(o.fulfillment_method==='lineman'?'เดลิเวอรี่':'รับที่ร้าน')+'</div>'+
+  '<div class="line"></div><table>'+items+'</table>'+
+  (note?'<div class="line"></div><div class="note">หมายเหตุ: '+note+'</div>':'')+
+  '<div class="line"></div><div class="center muted">Kitchen Copy</div></body></html>';
+  const w=window.open('','_blank','width=420,height=720');
+  if(!w){showToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์');return}
+  w.document.open();w.document.write(html);w.document.close();
+  w.focus();
+  setTimeout(()=>{w.print();},250);
+}
+
 document.querySelector('.board').onclick=e=>{
+  const p=e.target.closest('button[data-print]');
+  if(p){
+    const card=p.closest('[data-order]');
+    printOrder(card.dataset.order);
+    p.textContent='🖨 พิมพ์ซ้ำ';
+    return;
+  }
   const b=e.target.closest('button[data-next]');if(!b)return;
   const card=b.closest('[data-order]');updateOrder(card.dataset.order,b.dataset.next,b);
 };
