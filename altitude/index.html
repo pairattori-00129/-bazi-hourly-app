@@ -6,57 +6,119 @@
 <meta name="theme-color" content="#0f766e">
 <title>เช็คความสูงจากระดับน้ำทะเล</title>
 <style>
-:root{--bg:#f4fbfa;--card:#fff;--text:#14302d;--muted:#647b78;--accent:#0f766e;--line:#dbe9e7;--bad:#b42318}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Thai",Tahoma,sans-serif;background:linear-gradient(#e8faf7,#f7fbfa 280px);color:var(--text)}
-.app{max-width:520px;margin:auto;padding:22px 16px 40px}.hero{text-align:center;padding:16px 6px}.ico{width:74px;height:74px;margin:auto;border-radius:22px;background:#fff;display:grid;place-items:center;font-size:39px;box-shadow:0 12px 32px #0f766e20}
-h1{font-size:24px;margin:13px 0 6px}.sub{font-size:14px;color:var(--muted);line-height:1.55;margin:0}.card{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 14px 36px #0f766e1a}
-.result{text-align:center;padding:22px 16px;background:linear-gradient(#fff,#f7fffd)}.label{font-size:13px;color:var(--muted)}.height{font-size:55px;font-weight:850;color:var(--accent);letter-spacing:-2px;margin:5px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.source{font-size:12px;color:var(--muted)}
-.status{margin:14px 16px 0;padding:11px 12px;border-radius:14px;background:#f3f7f6;color:var(--muted);font-size:13px;line-height:1.45}.status.error{background:#fff1ef;color:var(--bad)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:15px 16px}.m{border:1px solid var(--line);border-radius:15px;padding:11px;min-width:0}.m .k{font-size:11px;color:var(--muted);margin-bottom:5px}.m .v{font-size:15px;font-weight:750;word-break:break-word}.full{grid-column:1/-1}
-.actions{padding:0 16px 16px;display:grid;gap:9px}button{min-height:52px;border:0;border-radius:15px;font:inherit;font-size:16px;font-weight:760}.primary{background:var(--accent);color:white}.secondary{background:#e4f6f2;color:var(--accent)}button:disabled{opacity:.5}
-.manual{border-top:1px solid var(--line);padding:16px}.manual h2{font-size:16px;margin:0 0 5px}.manual p{font-size:12px;color:var(--muted);line-height:1.45;margin:0 0 10px}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px}label{font-size:12px;color:var(--muted)}input{width:100%;min-height:47px;margin-top:5px;border:1px solid #c7d9d6;border-radius:12px;padding:10px;font-size:16px}.footer{text-align:center;font-size:11px;color:var(--muted);line-height:1.5;margin:14px 5px}
+:root{--bg:#f4fbfa;--card:#fff;--text:#14302d;--muted:#657b78;--accent:#0f766e;--line:#dcebea;--danger:#b42318;--shadow:0 14px 40px rgba(15,118,110,.12)}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Thai",Tahoma,sans-serif;color:var(--text);background:radial-gradient(circle at 50% 0%,rgba(20,184,166,.14),transparent 34%),var(--bg)}
+.app{width:min(100%,520px);margin:0 auto;padding:22px 16px 38px}.hero{text-align:center;padding:16px 8px 12px}.ico{width:76px;height:76px;margin:0 auto 12px;border-radius:23px;display:grid;place-items:center;font-size:40px;background:#fff;box-shadow:var(--shadow)}
+h1{font-size:25px;line-height:1.25;margin:7px 0}.sub{color:var(--muted);font-size:14px;line-height:1.55;margin:0}.counter{display:inline-flex;gap:7px;margin-top:12px;padding:8px 13px;border-radius:999px;background:#e7f7f4;color:var(--accent);font-size:13px;font-weight:700}
+.card{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}.box{padding:20px}.box h2{font-size:18px;margin:0 0 6px}.box p{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 12px}
+textarea{width:100%;min-height:145px;border:1px solid #c9dcda;border-radius:16px;padding:14px;font:inherit;font-size:16px;line-height:1.5;color:var(--text);background:#fff;outline:none;resize:vertical}textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
+button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;background:var(--accent);color:#fff;font:inherit;font-size:16px;font-weight:800}button:disabled{opacity:.55}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:9px}
+.status{margin-top:12px;padding:11px 12px;border-radius:14px;background:#f3f8f7;color:var(--muted);font-size:13px;line-height:1.45}.status.error{background:#fff2f0;color:var(--danger)}
+.result{display:none;border-top:1px solid var(--line);padding:20px;text-align:center;background:linear-gradient(#fff,#f8fffd)}.result.show{display:block}.label{font-size:13px;color:var(--muted)}.height{font-size:58px;font-weight:850;letter-spacing:-2px;color:var(--accent);line-height:1;margin:7px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.place{font-size:14px;font-weight:700;line-height:1.45;margin:8px 0 4px}.coords{font-size:12px;color:var(--muted)}
+.footer{text-align:center;font-size:11px;color:var(--muted);line-height:1.55;margin:15px 7px 0}
 </style>
 </head>
 <body>
 <main class="app">
-<section class="hero"><div class="ico">⛰️</div><h1>เช็คความสูงจากระดับน้ำทะเล</h1><p class="sub">ใช้ GPS ของมือถือเพื่อหาพิกัด แล้วเทียบกับข้อมูลระดับภูมิประเทศ</p></section>
+<section class="hero">
+<div class="ico">⛰️</div>
+<h1>เช็คความสูงจากระดับน้ำทะเล</h1>
+<p class="sub">คัดลอกข้อมูลจาก Google Maps แล้ววางทั้งชุดได้เลย ระบบจะหาพิกัดและคำนวณความสูงให้</p>
+<div class="counter">👀 มีผู้เข้าชมแล้ว <span id="viewCount">0</span> ครั้ง</div>
+</section>
+
 <section class="card">
-<div class="result"><div class="label">ความสูงของพื้นที่โดยประมาณ</div><div class="height" id="height">-- <span class="unit">เมตร</span></div><div class="source" id="source">ยังไม่ได้ตรวจตำแหน่ง</div></div>
-<div class="status" id="status" aria-live="polite">กด “เช็คตำแหน่งของฉัน” แล้วอนุญาตการเข้าถึงตำแหน่ง</div>
-<div class="grid">
-<div class="m"><div class="k">ละติจูด</div><div class="v" id="lat">--</div></div>
-<div class="m"><div class="k">ลองจิจูด</div><div class="v" id="lon">--</div></div>
-<div class="m"><div class="k">ความแม่นยำพิกัด</div><div class="v" id="acc">--</div></div>
-<div class="m"><div class="k">ความสูงจาก GPS</div><div class="v" id="gpsalt">--</div></div>
-<div class="m full"><div class="k">อัปเดตล่าสุด</div><div class="v" id="updated">--</div></div>
+<div class="box">
+<h2>วางข้อมูลตำแหน่ง</h2>
+<p>วางลิงก์ Google Maps, ข้อความที่แชร์มา, ชื่อสถานที่, ที่อยู่ หรือพิกัดได้ในช่องเดียว</p>
+<textarea id="locationInput" placeholder="ตัวอย่าง&#10;https://maps.app.goo.gl/9jaYwAUyn9VSmHim7?g_st=ic&#10;&#10;หรือวางข้อความจาก Google Maps ทั้งชุด"></textarea>
+<button id="checkBtn" type="button">📍 เช็คความสูง</button>
+<div class="hint">ไม่ต้องหา Latitude / Longitude เอง ลิงก์สั้น Google Maps ก็ใช้ได้</div>
+<div class="status" id="status">พร้อมตรวจสอบตำแหน่ง</div>
 </div>
-<div class="actions">
-<button class="primary" id="locate" type="button">📍 เช็คตำแหน่งของฉัน</button>
-<button class="secondary" id="retry" type="button">↻ ตรวจอีกครั้ง</button>
-</div>
-<div class="manual">
-<h2>หรือกรอกพิกัดเอง</h2>
-<p>ใช้ได้กรณีเบราว์เซอร์ไม่อนุญาต GPS หรืออยากตรวจตำแหน่งอื่น</p>
-<div class="inputs">
-<label>Latitude<input id="mlat" inputmode="decimal" placeholder="13.7563"></label>
-<label>Longitude<input id="mlon" inputmode="decimal" placeholder="100.5018"></label>
-</div>
-<button class="secondary" id="manual" type="button" style="width:100%;margin-top:9px">ตรวจความสูงจากพิกัดนี้</button>
+
+<div class="result" id="result">
+<div class="label">ความสูงของพื้นที่โดยประมาณ</div>
+<div class="height" id="height">-- <span class="unit">เมตร</span></div>
+<div class="place" id="place">--</div>
+<div class="coords" id="coords">--</div>
 </div>
 </section>
+
 <p class="footer">ข้อมูลระดับภูมิประเทศจาก Open-Meteo Elevation API / Copernicus DEM เหมาะสำหรับการประเมินทั่วไป ไม่ใช่งานสำรวจวิศวกรรม</p>
 </main>
+
 <script>
 (function(){
-var q=function(id){return document.getElementById(id)}, e={height:q("height"),source:q("source"),status:q("status"),lat:q("lat"),lon:q("lon"),acc:q("acc"),gpsalt:q("gpsalt"),updated:q("updated"),locate:q("locate"),retry:q("retry"),manual:q("manual"),mlat:q("mlat"),mlon:q("mlon")},busy=false;
-function lock(v){busy=v;e.locate.disabled=v;e.retry.disabled=v;e.manual.disabled=v}
-function msg(t,err){e.status.textContent=t;e.status.className=err?"status error":"status"}
-function num(v,d){return Number.isFinite(v)?v.toFixed(d||6):"--"}
-async function elev(lat,lon){var u="https://api.open-meteo.com/v1/elevation?latitude="+encodeURIComponent(lat)+"&longitude="+encodeURIComponent(lon);var r=await fetch(u);if(!r.ok)throw new Error("บริการข้อมูลความสูงไม่ตอบกลับ");var j=await r.json();var n=Array.isArray(j.elevation)?Number(j.elevation[0]):NaN;if(!Number.isFinite(n))throw new Error("ไม่พบข้อมูลความสูง");return n}
-async function show(lat,lon,acc,ga,gaa){e.lat.textContent=num(lat,6);e.lon.textContent=num(lon,6);e.acc.textContent=Number.isFinite(acc)?"± "+Math.round(acc)+" ม.":"ไม่ระบุ";e.gpsalt.textContent=Number.isFinite(ga)?ga.toFixed(1)+" ม."+(Number.isFinite(gaa)?" (±"+Math.round(gaa)+" ม.)":""):"อุปกรณ์ไม่ส่งค่า";msg("กำลังเทียบพิกัดกับข้อมูลระดับภูมิประเทศ…");var h=await elev(lat,lon);e.height.innerHTML=Math.round(h)+' <span class="unit">เมตร</span>';e.source.textContent="ค่าระดับภูมิประเทศเหนือระดับน้ำทะเล";e.updated.textContent=new Date().toLocaleString("th-TH");msg("ตรวจสำเร็จ ✓")}
-function locate(){if(busy)return;if(!navigator.geolocation){msg("เบราว์เซอร์นี้ไม่รองรับตำแหน่ง กรุณากรอกพิกัดเอง",true);return}lock(true);msg("กำลังค้นหาตำแหน่ง GPS…");navigator.geolocation.getCurrentPosition(async function(p){try{var c=p.coords;await show(c.latitude,c.longitude,c.accuracy,c.altitude==null?null:c.altitude,c.altitudeAccuracy==null?null:c.altitudeAccuracy)}catch(x){msg("ได้พิกัดแล้ว แต่ดึงข้อมูลความสูงไม่ได้: "+x.message,true)}finally{lock(false)}},function(x){var m={1:"ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง กรุณาอนุญาต Location ให้ Safari",2:"ไม่สามารถระบุตำแหน่งได้ ลองเปิด GPS/Wi‑Fi แล้วลองอีกครั้ง",3:"ค้นหาตำแหน่งนานเกินไป กรุณาลองใหม่"};msg(m[x.code]||"เกิดข้อผิดพลาดในการระบุตำแหน่ง",true);lock(false)},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
-async function manual(){if(busy)return;var a=Number(String(e.mlat.value).trim()),o=Number(String(e.mlon.value).trim());if(!Number.isFinite(a)||a<-90||a>90||!Number.isFinite(o)||o<-180||o>180){msg("กรุณากรอก Latitude -90 ถึง 90 และ Longitude -180 ถึง 180",true);return}lock(true);try{await show(a,o,null,null,null)}catch(x){msg("ดึงข้อมูลความสูงไม่ได้: "+x.message,true)}finally{lock(false)}}
-e.locate.addEventListener("click",locate);e.retry.addEventListener("click",locate);e.manual.addEventListener("click",manual);
+const input=document.getElementById("locationInput");
+const btn=document.getElementById("checkBtn");
+const status=document.getElementById("status");
+const result=document.getElementById("result");
+const heightEl=document.getElementById("height");
+const placeEl=document.getElementById("place");
+const coordsEl=document.getElementById("coords");
+const countEl=document.getElementById("viewCount");
+const base="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1";
+
+function setStatus(text,error){
+  status.textContent=text;
+  status.className=error?"status error":"status";
+}
+
+async function getLocation(text){
+  const r=await fetch(base+"/resolve-google-maps",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({text:text})
+  });
+  const j=await r.json();
+  if(!r.ok) throw new Error(j.error||"ไม่สามารถหาพิกัดได้");
+  return j;
+}
+
+async function getElevation(lat,lon){
+  const u="https://api.open-meteo.com/v1/elevation?latitude="+encodeURIComponent(lat)+"&longitude="+encodeURIComponent(lon);
+  const r=await fetch(u);
+  const j=await r.json();
+  const h=Array.isArray(j.elevation)?Number(j.elevation[0]):NaN;
+  if(!r.ok||!Number.isFinite(h)) throw new Error("ไม่สามารถอ่านข้อมูลความสูงได้");
+  return h;
+}
+
+async function countVisit(){
+  try{
+    const r=await fetch(base+"/altitude-counter",{method:"POST"});
+    const j=await r.json();
+    if(r.ok && Number.isFinite(Number(j.count))) countEl.textContent=String(Number(j.count));
+  }catch(_){}
+}
+
+async function check(){
+  const raw=input.value.trim();
+  if(!raw){setStatus("กรุณาวางข้อมูลตำแหน่งก่อน",true);return}
+  btn.disabled=true;
+  result.classList.remove("show");
+  setStatus("กำลังค้นหาตำแหน่ง…",false);
+  try{
+    const loc=await getLocation(raw);
+    const lat=Number(loc.lat),lon=Number(loc.lon);
+    if(!Number.isFinite(lat)||!Number.isFinite(lon)) throw new Error("ไม่พบพิกัดที่ใช้งานได้");
+    setStatus("พบตำแหน่งแล้ว กำลังคำนวณความสูง…",false);
+    const h=await getElevation(lat,lon);
+    heightEl.innerHTML=Math.round(h)+' <span class="unit">เมตร</span>';
+    placeEl.textContent=loc.label||"ตำแหน่งที่ตรวจสอบ";
+    coordsEl.textContent="Lat "+lat.toFixed(6)+" • Lon "+lon.toFixed(6);
+    result.classList.add("show");
+    setStatus("ตรวจสำเร็จ ✓",false);
+  }catch(e){
+    setStatus(e.message||"ไม่สามารถตรวจสอบตำแหน่งนี้ได้",true);
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+btn.addEventListener("click",check);
+countVisit();
 })();
 </script>
 </body>
