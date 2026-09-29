@@ -1,0 +1,99 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>จัดการของรางวัล · Bake & Bite</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#432d22;background:#f8f1e9;--brown:#5b2d1b;--green:#659348;--line:#e9dacb}
+*{box-sizing:border-box}body{margin:0;visibility:hidden}body.admin-verified{visibility:visible}main{max-width:760px;margin:auto;padding:24px 16px 80px}
+small{font-size:14px;color:#8c684f;font-weight:800;letter-spacing:.08em}h1{font-size:30px;color:var(--brown);margin:8px 0}h2{margin:0 0 12px}p{color:#705d51;line-height:1.45}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}nav a{font-weight:800;color:var(--brown);background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:9px 11px;text-decoration:none}nav a.active{background:var(--brown);color:#fff}
+section,.reward{background:#fffefa;border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 7px 18px #643e220b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{display:block;font-weight:850;margin:4px 0 6px}
+input,textarea{width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid #d8c7b7;border-radius:13px;background:#fff}textarea{min-height:80px;resize:vertical}
+button{font:inherit;font-weight:850;border:0;border-radius:13px;padding:12px 15px;cursor:pointer}.primary{background:var(--green);color:#fff}.secondary{background:#efe5db;color:var(--brown)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.imageRow{display:flex;align-items:center;gap:12px}.preview{width:92px;height:76px;border-radius:14px;background:#f4ede5;display:grid;place-items:center;overflow:hidden;font-size:34px;flex:0 0 auto}.preview img{width:100%;height:100%;object-fit:cover}
+.reward{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center}.reward img,.reward .placeholder{width:96px;height:78px;border-radius:14px;object-fit:cover;background:#f4ede5;display:grid;place-items:center;font-size:36px}.reward h3{margin:0 0 5px;font-size:20px}.meta{font-size:13px;color:#75645c;line-height:1.55}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#edf3e7;color:#4e7043;font-weight:850;margin:2px 4px 2px 0}.pill.off{background:#eee;color:#777}
+#message{min-height:24px;font-weight:850}.error{color:#b64239!important}
+@media(max-width:620px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.reward{grid-template-columns:76px 1fr}.reward img,.reward .placeholder{width:76px;height:68px}.reward .edit{grid-column:1/-1}.imageRow{align-items:flex-start}}
+</style></head><body><main>
+<small>BAKE & BITE · ADMIN</small><h1>จัดการแต้มสะสม / ของรางวัล</h1><p>กำหนดของรางวัล รูป จำนวนแต้ม และจำนวนสิทธิ์ที่ให้แลกได้ต่อวัน</p>
+<nav><a href="admin-main.html">หน้าหลัก</a><a href="admin-orders.html">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a class="active" href="admin-rewards.html">ของรางวัล</a><a href="admin.html">ตั้งค่าแต้ม</a></nav>
+
+<section>
+<h2 id="formTitle">เพิ่มของรางวัล</h2>
+<input id="rewardId" type="hidden">
+<div class="grid">
+<div><label>ชื่อของรางวัล</label><input id="name" maxlength="120" placeholder="เช่น น้ำเก๊กฮวยฟรี 1 ขวด"></div>
+<div><label>ใช้กี่แต้ม</label><input id="points" type="number" min="1" max="100000" inputmode="numeric" placeholder="5"></div>
+<div class="full"><label>รายละเอียด</label><textarea id="description" maxlength="500" placeholder="รายละเอียดหรือเงื่อนไขของรางวัล"></textarea></div>
+<div><label>สิทธิ์รวมต่อวัน</label><input id="dailyLimit" type="number" min="1" max="100000" inputmode="numeric" placeholder="เว้นว่าง = ไม่จำกัด"></div>
+<div><label>จำนวนคงเหลือทั้งหมด</label><input id="stock" type="number" min="0" max="1000000" inputmode="numeric" placeholder="เว้นว่าง = ไม่จำกัด"></div>
+<div class="full"><label>รูปของรางวัล</label><div class="imageRow"><div id="imagePreview" class="preview">🎁</div><div style="flex:1"><input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp"><input id="imageUrl" type="hidden"><p style="font-size:12px;margin:6px 0 0">รองรับ JPG / PNG / WEBP ไม่เกิน 5 MB</p></div></div></div>
+<div class="full"><label><input id="active" type="checkbox" checked style="width:auto"> เปิดให้ลูกค้าเห็นและแลกได้</label></div>
+</div>
+<div class="actions"><button id="saveBtn" class="primary" type="button">บันทึกของรางวัล</button><button id="clearBtn" class="secondary" type="button">ล้างฟอร์ม</button></div>
+</section>
+
+<h2>รายการของรางวัล</h2><div id="list"></div><p id="message" role="status"></p>
+</main><script src="admin-session.js"></script><script>
+let rewards=[];
+const $=id=>document.getElementById(id);
+function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function notice(t,e=false){$('message').textContent=t;$('message').classList.toggle('error',e)}
+function resetForm(){
+  $('rewardId').value='';$('name').value='';$('points').value='';$('description').value='';$('dailyLimit').value='';$('stock').value='';$('imageUrl').value='';$('imageFile').value='';$('active').checked=true;
+  $('imagePreview').innerHTML='🎁';$('formTitle').textContent='เพิ่มของรางวัล';window.scrollTo({top:0,behavior:'smooth'});
+}
+function imagePreview(url){
+  $('imagePreview').innerHTML=url?'<img src="'+safe(url)+'" alt="">':'🎁';
+}
+function render(){
+  $('list').innerHTML=rewards.length?rewards.map(r=>{
+    const daily=r.daily_limit==null?'ไม่จำกัด':Number(r.daily_limit)+' สิทธิ์/วัน';
+    const remain=r.daily_limit==null?'ไม่จำกัด':'เหลือวันนี้ '+Number(r.remaining_today||0)+' / '+Number(r.daily_limit);
+    const stock=r.stock==null?'สต็อกไม่จำกัด':'คงเหลือ '+Number(r.stock);
+    return '<article class="reward">'+
+      (r.image_url?'<img src="'+safe(r.image_url)+'" alt="">':'<div class="placeholder">🎁</div>')+
+      '<div><h3>'+safe(r.name)+'</h3><div class="meta">'+safe(r.description||'')+'</div>'+
+      '<span class="pill">⭐ '+Number(r.points_required)+' แต้ม</span><span class="pill">'+safe(daily)+'</span><span class="pill">'+safe(remain)+'</span><span class="pill">'+safe(stock)+'</span>'+
+      (!r.is_active?'<span class="pill off">ปิดใช้งาน</span>':'')+'</div>'+
+      '<button class="secondary edit" data-edit="'+safe(r.id)+'">แก้ไข</button></article>';
+  }).join(''):'<section>ยังไม่มีของรางวัล</section>';
+}
+async function load(){
+  const r=await adminRequest('admin-rewards');rewards=r.rewards||[];render();notice('โหลดของรางวัล '+rewards.length+' รายการ');
+}
+async function uploadImage(file){
+  const form=new FormData();form.append('image',file);
+  const response=await fetch(ADMIN_API+'?action=admin-upload-image',{method:'POST',headers:{authorization:'Bearer '+adminToken()},body:form});
+  const data=await response.json();
+  if(response.status===401){clearAdminToken();location.replace('admin-login.html');throw new Error('กรุณาเข้าสู่ระบบใหม่')}
+  if(!response.ok||!data.ok)throw new Error(data.error||'อัปโหลดรูปไม่สำเร็จ');
+  return data.image_url;
+}
+$('imageFile').onchange=async()=>{
+  const file=$('imageFile').files[0];if(!file)return;
+  if(file.size>5*1024*1024){notice('รูปต้องไม่เกิน 5 MB',true);$('imageFile').value='';return}
+  imagePreview(URL.createObjectURL(file));
+};
+$('saveBtn').onclick=async()=>{
+  const b=$('saveBtn');b.disabled=true;notice('กำลังบันทึก...');
+  try{
+    let url=$('imageUrl').value;
+    const file=$('imageFile').files[0];if(file)url=await uploadImage(file);
+    const body={
+      id:$('rewardId').value||undefined,name:$('name').value.trim(),description:$('description').value.trim(),
+      points_required:Number($('points').value),daily_limit:$('dailyLimit').value===''?null:Number($('dailyLimit').value),
+      stock:$('stock').value===''?null:Number($('stock').value),image_url:url||null,is_active:$('active').checked
+    };
+    await adminRequest('admin-save-reward',body.id?'PUT':'POST',body);resetForm();await load();notice('บันทึกของรางวัลแล้ว');
+  }catch(e){notice(e.message,true)}finally{b.disabled=false}
+};
+$('clearBtn').onclick=resetForm;
+$('list').onclick=e=>{
+  const b=e.target.closest('[data-edit]');if(!b)return;
+  const r=rewards.find(x=>x.id===b.dataset.edit);if(!r)return;
+  $('rewardId').value=r.id;$('name').value=r.name||'';$('points').value=r.points_required||'';$('description').value=r.description||'';
+  $('dailyLimit').value=r.daily_limit??'';$('stock').value=r.stock??'';$('imageUrl').value=r.image_url||'';$('imageFile').value='';$('active').checked=r.is_active!==false;
+  imagePreview(r.image_url);$('formTitle').textContent='แก้ไขของรางวัล';window.scrollTo({top:0,behavior:'smooth'});
+};
+requireAdmin().then(async ok=>{if(ok)try{await load()}catch(e){notice(e.message,true)}});
+</script></body></html>
