@@ -12,7 +12,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#f4ede4;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
 body{min-height:100vh}
-.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdf9,#fff8ed);box-shadow:0 0 30px rgba(70,45,28,.08);padding-bottom:205px}
+.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdf9,#fff8ed);box-shadow:0 0 30px rgba(70,45,28,.08);padding-bottom:270px}
 .hero{position:relative;overflow:hidden;background:#fff}
 .hero img{width:100%;display:block;aspect-ratio:3/1;object-fit:cover}
 .title{padding:18px 18px 8px}
@@ -56,7 +56,7 @@ body{min-height:100vh}
 .sum-num{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#f7dfd0;font-weight:950}
 .sum-row:nth-child(2n) .sum-num{background:#e8efe0}
 .sum-row b{font-size:13px}
-.bottom{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);width:min(calc(100% - 24px),406px);display:grid;grid-template-columns:1fr 1.5fr;gap:8px;z-index:20}
+.bottom{position:fixed;left:50%;bottom:calc(124px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(calc(100% - 24px),406px);display:grid;grid-template-columns:1fr 1.5fr;gap:8px;z-index:20}
 .bottom a,.bottom button{border:0;border-radius:18px;padding:15px 12px;font-weight:950;font-size:17px;text-align:center;text-decoration:none}
 .back{background:#fff;border:1px solid #e5d6c9!important;color:#5b2d1b}
 .next{background:#557d50;color:#fff}
