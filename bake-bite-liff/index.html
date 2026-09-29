@@ -83,7 +83,7 @@ body{min-height:100vh}
 .balance .medal{font-size:54px}.balance .label{font-size:18px}.balance strong{font-size:58px;color:#c26134}.balance span{font-size:28px;font-weight:900}
 .reward{margin:10px 12px;padding:14px;border-radius:24px;background:#fff;border:1px solid #efdfcf;display:flex;align-items:center;gap:12px;box-shadow:0 5px 13px rgba(80,55,35,.04)}
 .reward.green{background:linear-gradient(135deg,#f5faef,#fff)}.reward.pink{background:linear-gradient(135deg,#fff0ed,#fff)}.reward.gold{background:linear-gradient(135deg,#fff8e7,#fff)}
-.reward .art{font-size:58px;width:92px;text-align:center}.reward .info{flex:1}.reward h3{margin:0 0 8px;font-size:20px}.cost{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:7px 11px;font-weight:900;background:#f3e8c9;color:#7d6022}.redeem-btn{border:0;border-radius:15px;padding:10px 12px;color:white;font-weight:900;background:#7b965f}
+.reward .art{font-size:58px;width:92px;height:76px;text-align:center;display:grid;place-items:center;border-radius:16px;overflow:hidden;background:#fffaf2;flex:0 0 auto}.reward .art img{width:100%;height:100%;object-fit:cover}.reward .info{flex:1;min-width:0}.reward h3{margin:0 0 8px;font-size:20px}.reward-desc{font-size:13px;color:#78665c;line-height:1.35;margin:0 0 8px}.cost{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:7px 11px;font-weight:900;background:#f3e8c9;color:#7d6022}.reward-limit{display:block;font-size:12px;color:#7b6a60;margin-top:7px}.redeem-btn{border:0;border-radius:15px;padding:10px 12px;color:white;font-weight:900;background:#7b965f;min-width:92px}.redeem-btn:disabled{opacity:.48}.reward-empty{margin:12px;padding:20px;border:1px dashed #dfd0c4;border-radius:20px;text-align:center;color:#806f65;background:#fff}
 
 /* contact */
 .contact-list{padding:0 12px}.contact-card{display:flex;align-items:center;gap:14px;margin:10px 0;padding:17px;border-radius:24px;border:1px solid #eddccf;background:#fff;box-shadow:0 4px 12px rgba(80,50,30,.04)}
@@ -235,9 +235,7 @@ body{min-height:100vh}
 <section id="redeem" class="page">
   <div class="title"><h1>แลกแต้ม</h1><p>เลือกของรางวัลจากคะแนนสะสม</p></div>
   <section class="balance"><div class="medal">🏅</div><div class="label">คุณมี</div><strong id="redeemPoints">—</strong> <span>แต้ม</span></section>
-  <section class="reward green"><div class="art">🌼</div><div class="info"><h3>น้ำเก๊กฮวยฟรี 1 ขวด</h3><span class="cost">⭐ 5 แต้ม</span></div><button class="redeem-btn">แลกรางวัล ›</button></section>
-  <section class="reward pink"><div class="art">🎟️</div><div class="info"><h3>ส่วนลด 30 บาท</h3><span class="cost">⭐ 10 แต้ม</span></div><button class="redeem-btn" style="background:#d46b5c">แลกรางวัล ›</button></section>
-  <section class="reward gold"><div class="art">🥪</div><div class="info"><h3>แซนด์วิชฟรี 1 ชิ้น</h3><span class="cost">⭐ 20 แต้ม</span></div><button class="redeem-btn" style="background:#c99332">แลกรางวัล ›</button></section>
+  <div id="rewardList"><div class="reward-empty">กำลังโหลดของรางวัล...</div></div>
 </section>
 
 <section id="contact" class="page">
@@ -286,6 +284,8 @@ let deliveryLat=null, deliveryLng=null;
 let savedAddresses=[];
 let referralCode="";
 let referralSettings={share_points:1,first_purchase_points:5};
+let currentMemberPoints=0;
+let rewardCatalog=[];
 function renderReferralSettings(){
   document.getElementById('shareRewardText').textContent='รับ '+referralSettings.share_points+' แต้มต่อเพื่อนใหม่ 1 คน · ถ้าเพื่อนสั่งซื้อครั้งแรก รับเพิ่ม '+referralSettings.first_purchase_points+' แต้ม';
 }
@@ -309,6 +309,66 @@ async function memberApi(action,method="GET",body){
   return result;
 }
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
+function rewardImage(r){
+  const u=String(r.image_url||'');
+  return /^https:\/\//i.test(u)||/^data:image\//i.test(u)
+    ? '<img src="'+escapeHtml(u)+'" alt="'+escapeHtml(r.name)+'">'
+    : '🎁';
+}
+function renderRewards(){
+  const root=document.getElementById('rewardList');if(!root)return;
+  if(!rewardCatalog.length){root.innerHTML='<div class="reward-empty">ยังไม่มีของรางวัลที่เปิดให้แลก</div>';return}
+  root.innerHTML=rewardCatalog.map((r,i)=>{
+    const dailyFull=r.remaining_today!==null&&Number(r.remaining_today)<=0;
+    const stockOut=r.stock!==null&&Number(r.stock)<=0;
+    const enough=currentMemberPoints>=Number(r.points_required||0);
+    const logged=!!lineToken();
+    const disabled=dailyFull||stockOut||!enough||!logged;
+    let label='แลกรางวัล ›';
+    if(!logged)label='เปิดผ่าน LINE';
+    else if(dailyFull)label='สิทธิ์วันนี้เต็ม';
+    else if(stockOut)label='หมด';
+    else if(!enough)label='แต้มไม่พอ';
+    const limit=r.daily_limit==null?'ไม่จำกัดสิทธิ์ต่อวัน':'เหลือวันนี้ '+Number(r.remaining_today||0)+' / '+Number(r.daily_limit)+' สิทธิ์';
+    const stock=r.stock==null?'':' · คงเหลือ '+Number(r.stock);
+    const cls=['green','pink','gold'][i%3];
+    return '<section class="reward '+cls+'"><div class="art">'+rewardImage(r)+'</div><div class="info"><h3>'+escapeHtml(r.name)+'</h3>'+
+      (r.description?'<p class="reward-desc">'+escapeHtml(r.description)+'</p>':'')+
+      '<span class="cost">⭐ '+Number(r.points_required)+' แต้ม</span><span class="reward-limit">'+escapeHtml(limit+stock)+'</span></div>'+
+      '<button class="redeem-btn" data-reward="'+escapeHtml(r.id)+'"'+(disabled?' disabled':'')+'>'+label+'</button></section>';
+  }).join('');
+}
+async function loadRewards(){
+  try{
+    const response=await fetch(STORE_API+'?action=rewards');
+    const data=await response.json();
+    if(!response.ok||!data.ok)throw new Error(data.error||'โหลดของรางวัลไม่สำเร็จ');
+    rewardCatalog=data.rewards||[];renderRewards();
+  }catch(e){console.error('rewards',e);const root=document.getElementById('rewardList');if(root)root.innerHTML='<div class="reward-empty">โหลดของรางวัลไม่สำเร็จ กรุณาลองใหม่</div>'}
+}
+async function redeemReward(id){
+  const r=rewardCatalog.find(x=>String(x.id)===String(id));if(!r)return;
+  if(!lineToken()){alert('กรุณาเปิดหน้านี้ผ่าน LINE เพื่อแลกรางวัล');return}
+  if(!confirm('ใช้ '+Number(r.points_required)+' แต้ม แลก “'+r.name+'” ใช่หรือไม่?'))return;
+  const button=document.querySelector('[data-reward="'+CSS.escape(String(id))+'"]');if(button)button.disabled=true;
+  try{
+    const result=await memberApi('redeem-reward','POST',{reward_id:id});
+    currentMemberPoints=Number(result.points_remaining||0);
+    document.getElementById('redeemPoints').textContent=currentMemberPoints;
+    document.getElementById('pointsValue').textContent=currentMemberPoints;
+    alert('แลกรางวัลสำเร็จ\nใช้ '+Number(result.points_used)+' แต้ม\nคงเหลือ '+currentMemberPoints+' แต้ม');
+    await Promise.all([loadRewards(),loadMember()]);
+  }catch(e){
+    const map={insufficient_points:'แต้มไม่เพียงพอ',daily_limit_reached:'สิทธิ์แลกของรางวัลวันนี้เต็มแล้ว',out_of_stock:'ของรางวัลหมด',reward_not_available:'ของรางวัลนี้ไม่เปิดให้แลก'};
+    alert(map[e.message]||('แลกรางวัลไม่สำเร็จ: '+e.message));
+    await loadRewards();
+  }
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-reward]');if(!b)return;
+  redeemReward(b.dataset.reward);
+});
+
 async function loadMember(){
   if(!lineToken()) return;
   try{
@@ -320,7 +380,9 @@ async function loadMember(){
     if(stats) document.getElementById("referralStats").textContent="แนะนำสำเร็จ "+stats.friends+" คน · เพื่อนสั่งซื้อครั้งแรกแล้ว "+stats.first_purchases+" คน · 1 บัญชี LINE นับได้ครั้งเดียว — รับ "+referralSettings.share_points+" แต้มเมื่อเพื่อนใหม่เปิดลิงก์ และอีก "+referralSettings.first_purchase_points+" แต้มเมื่อออเดอร์แรกชำระเงินและเสร็จสิ้น";
     document.getElementById("memberName").textContent=m.display_name||"สมาชิก Bake & Bite";
     document.getElementById("pointsValue").textContent=m.points;
-    document.getElementById("redeemPoints").textContent=m.points;
+    currentMemberPoints=Number(m.points||0);
+    document.getElementById("redeemPoints").textContent=currentMemberPoints;
+    renderRewards();
     document.getElementById("pointsProgress").style.width=Math.min(100,(m.points/20)*100)+"%";
     document.getElementById("nextReward").textContent=m.points>=20?"แต้มถึงเกณฑ์รับแซนด์วิชฟรี 1 ชิ้นแล้ว":"อีก "+(20-m.points)+" แต้ม รับแซนด์วิชฟรี 1 ชิ้น";
     document.getElementById("memberPhone").value=m.phone||"";
@@ -373,6 +435,7 @@ function showPage(id){
     if(['order','points','redeem','contact'].includes(navPage)) navin.classList.add(navPage+'-active');
   }
   history.replaceState({},'',location.pathname+'#'+id);
+  if(id==='redeem')loadRewards();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{if(b.dataset.href){document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');const navin=document.querySelector('.navin');if(navin){navin.classList.remove('order-active','points-active','redeem-active','contact-active');navin.classList.add('snack-active')}requestAnimationFrame(()=>location.href=b.dataset.href);return;}showPage(b.dataset.page)});
@@ -658,7 +721,7 @@ async function shareShop(){
   }catch(e){if(e?.name!=="AbortError")alert("แชร์ไม่สำเร็จ กรุณาลองอีกครั้ง")}
   finally{button.disabled=false}
 }
-loadCatalog(); loadReferralSettings(); init();
+loadCatalog(); loadReferralSettings(); loadRewards(); init();
 </script>
 </body>
 </html>
