@@ -12,7 +12,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#f4ede4;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
 body{min-height:100vh}
-.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdf9,#fff8ed);box-shadow:0 0 30px rgba(70,45,28,.08);padding-bottom:110px}
+.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdf9,#fff8ed);box-shadow:0 0 30px rgba(70,45,28,.08);padding-bottom:205px}
 .hero{position:relative;overflow:hidden;background:#fff}
 .hero img{width:100%;display:block;aspect-ratio:3/1;object-fit:cover}
 .title{padding:18px 18px 8px}
@@ -56,7 +56,7 @@ body{min-height:100vh}
 .sum-num{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#f7dfd0;font-weight:950}
 .sum-row:nth-child(2n) .sum-num{background:#e8efe0}
 .sum-row b{font-size:13px}
-.bottom{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(calc(100% - 24px),406px);display:grid;grid-template-columns:1fr 1.5fr;gap:8px;z-index:20}
+.bottom{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);width:min(calc(100% - 24px),406px);display:grid;grid-template-columns:1fr 1.5fr;gap:8px;z-index:20}
 .bottom a,.bottom button{border:0;border-radius:18px;padding:15px 12px;font-weight:950;font-size:17px;text-align:center;text-decoration:none}
 .back{background:#fff;border:1px solid #e5d6c9!important;color:#5b2d1b}
 .next{background:#557d50;color:#fff}
@@ -66,6 +66,20 @@ body{min-height:100vh}
   .fields{grid-template-columns:1fr}.fields .join{display:none}
   .picker select{font-size:13px}
 }
+
+.nav{position:fixed;left:0;right:0;bottom:10px;z-index:30;pointer-events:none}
+.navin{--notch-left:30%;width:min(calc(100% - 24px),398px);margin:auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:rgba(255,253,248,.985);border:1px solid rgba(90,47,31,.10);border-radius:24px;padding:12px 7px calc(10px + env(safe-area-inset-bottom));box-shadow:0 12px 28px rgba(75,52,35,.16);backdrop-filter:blur(10px);pointer-events:auto;overflow:visible;position:relative}
+.navin:before{content:"";position:absolute;left:var(--notch-left);top:-1px;transform:translate(-50%,-1px);width:78px;height:38px;background:#fff8ec;border-radius:0 0 44px 44px;z-index:1;pointer-events:none;box-shadow:0 1px 0 #fff8ec}
+.nav a{position:relative;z-index:2;min-height:54px;text-decoration:none;color:#6b4a3a;text-align:center;font-size:11.5px;font-weight:700;line-height:1.15;padding:5px 2px 2px;overflow:visible}
+.nav a b{display:flex;width:40px;height:40px;align-items:center;justify-content:center;margin:0 auto 3px;border-radius:50%;font-size:21px;line-height:1;background:transparent;border:0}
+.nav a b .snack-nav-svg{display:block!important;width:30px!important;height:24px!important;stroke:#6b4a3a!important}
+.nav a b .snack-nav-svg path{stroke:#6b4a3a!important}
+.nav a.active{color:#4a281b;font-weight:900}
+.nav a.active b{width:56px;height:56px;margin-top:-29px;margin-bottom:5px;background:#5b2d1b;border:4px solid #fff8ef;box-shadow:0 8px 20px rgba(74,40,27,.28);font-size:25px;color:#fff;transform:translateY(-1px)}
+.nav a.active b .snack-nav-svg,.nav a.active b .snack-nav-svg path{stroke:#fff!important}
+.nav a span{display:block;margin-top:0}
+@media(max-width:380px){.navin{width:calc(100% - 18px);padding-left:4px;padding-right:4px}.navin:before{width:72px;height:35px}.nav a{font-size:10.5px}.nav a b{width:37px;height:37px;font-size:19px}.nav a.active b{width:52px;height:52px;font-size:23px;margin-top:-26px}}
+
 </style>
 </head>
 <body>
@@ -94,9 +108,24 @@ body{min-height:100vh}
   <button class="next" id="next" type="button">ถัดไป →</button>
 </div>
 
+<nav class="nav"><div class="navin">
+<a href="index.html#order"><b>🛒</b><span>สั่งอาหาร</span></a>
+<a class="active" href="snack-box-builder.html"><b><svg class="snack-nav-svg" viewBox="0 0 32 24" width="30" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5h18v13h-18z"/><path d="M2.5 7.5 11.5 3l9 4.5"/><path d="M6 16l5.2-5.2L16.5 16H6z"/><path d="M7.5 13.8h7.4"/><path d="M24 6h4.5v14H24z"/><path d="M25 2.5h2.5V6H25z"/><path d="M24 10h4.5"/></svg></b><span>Snack Box</span></a>
+<a href="index.html#points"><b>☆</b><span>สะสมแต้ม</span></a>
+<a href="index.html#redeem"><b>🎁</b><span>แลกแต้ม</span></a>
+<a href="index.html#contact"><b>💬</b><span>ติดต่อร้าน</span></a>
+</div></nav>
 <script>
 const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
 const TEST_PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
+document.querySelectorAll('.nav a[href]').forEach(a=>{
+  a.dataset.previewNav='1';
+  if(TEST_PREVIEW){
+    const h=a.getAttribute('href')||'';
+    const parts=h.split('#');
+    a.setAttribute('href',parts[0]+(parts[0].includes('?')?'&':'?')+'preview=1'+(parts[1]?'#'+parts[1]:''));
+  }
+});
 function go(url){
   if(TEST_PREVIEW) url+=(url.includes('?')?'&':'?')+'preview=1';
   location.href=url;
