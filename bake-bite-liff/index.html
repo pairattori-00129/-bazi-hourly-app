@@ -324,7 +324,7 @@ function renderRewards(){
     const enough=currentMemberPoints>=Number(r.points_required||0);
     const logged=!!lineToken();
     const disabled=dailyFull||stockOut||!enough||!logged;
-    let label='แลกรางวัล ›';
+    let label='แลกแต้ม ›';
     if(!logged)label='เปิดผ่าน LINE';
     else if(dailyFull)label='สิทธิ์วันนี้เต็ม';
     else if(stockOut)label='หมด';
