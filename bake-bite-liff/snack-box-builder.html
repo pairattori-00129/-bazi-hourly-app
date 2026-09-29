@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Snack Box Builder · Bake & Bite</title>
+<style>
+:root{
+  --brown:#5b2d1b;--ink:#3f2c24;--muted:#7f6b60;--green:#567d50;--green2:#7e9b68;
+  --cream:#fff8ee;--paper:#fffdf9;--line:#eadbce;--peach:#f8e2d4;--soft:#f4efe8
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#f4ede4;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif}
+body{min-height:100vh}
+.shell{width:min(100%,430px);margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#fffdf9,#fff8ed);box-shadow:0 0 30px rgba(70,45,28,.08);padding-bottom:110px}
+.hero{position:relative;overflow:hidden;background:#fff}
+.hero img{width:100%;display:block;aspect-ratio:3/1;object-fit:cover}
+.title{padding:18px 18px 8px}
+.title h1{font-size:42px;line-height:1;margin:0;color:var(--brown);font-weight:950;letter-spacing:-1px}
+.title p{margin:8px 0 0;color:#6f5d53;font-size:15px}
+.mode{margin:10px 14px 12px;background:#fff;border:1px solid #e7d9cc;border-radius:22px;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px;box-shadow:0 5px 16px rgba(75,48,30,.06)}
+.mode button{border:0;border-radius:18px;background:transparent;padding:12px 8px;color:#55453d;font-weight:900;font-size:19px}
+.mode button small{display:block;font-size:11px;font-weight:700;color:#8a7b72;margin-top:3px}
+.mode button.active{background:linear-gradient(145deg,#4f764c,#64875e);color:#fff;box-shadow:0 5px 14px rgba(70,105,65,.22)}
+.mode button.active small{color:#eef5ea}
+.total{margin:0 14px 12px;padding:13px 15px;border-radius:18px;background:linear-gradient(90deg,#f2f6e9,#fff8eb);text-align:center;font-weight:950;font-size:19px}
+.total b{font-size:28px;color:#315d38;margin:0 5px}
+.sets{padding:0 12px}
+.set-card{background:rgba(255,255,255,.92);border:1px solid #eaded1;border-radius:22px;margin:10px 0;padding:14px;box-shadow:0 6px 16px rgba(75,48,30,.06)}
+.set-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.set-badge{display:inline-flex;align-items:center;padding:6px 13px;border-radius:999px;background:#fae5d8;font-weight:950;color:#442d23}
+.set-card:nth-child(2n) .set-badge{background:#e9f0e3}
+.delete{border:0;background:transparent;font-size:20px;color:#9b765d;padding:4px}
+.fields{display:grid;grid-template-columns:1fr 24px 1fr;gap:7px;align-items:end}
+.fields.three{grid-template-columns:1fr 18px 1fr 18px 1fr;gap:5px}
+.field label{display:block;font-size:12px;font-weight:900;margin:0 0 6px;color:#654534}
+.picker{border:1px solid #dfd1c5;background:#fff;border-radius:14px;min-height:58px;display:grid;grid-template-columns:46px 1fr;align-items:center;overflow:hidden}
+.picker img,.thumb{width:46px;height:58px;object-fit:cover;background:#fff7ec;display:grid;place-items:center;font-size:23px}
+.picker select{width:100%;height:58px;border:0;background:transparent;color:#3d2c25;font:inherit;font-weight:800;font-size:12px;padding:0 5px;outline:0;min-width:0}
+.join{align-self:center;justify-self:center;width:24px;height:24px;border-radius:50%;background:#f3eadf;display:grid;place-items:center;font-weight:950;color:#8a674e;margin-top:20px}
+.fields.three .join{width:18px;height:18px;font-size:12px}
+.qty-row{margin-top:12px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px}
+.qty-label{font-size:13px;font-weight:850;color:#775d4d}
+.qty{display:grid;grid-template-columns:42px 72px 42px;gap:7px;align-items:center}
+.qty button{height:42px;border:0;border-radius:12px;font-size:22px;font-weight:950}
+.qty .minus{background:#eef1e5;color:#334d33}.qty .plus{background:#6f8f5e;color:#fff}
+.qty input{height:42px;width:72px;text-align:center;border:1px solid #dfd1c5;border-radius:12px;background:#fff;font-size:18px;font-weight:950;color:#35271f;-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.add{margin:14px 14px 10px;width:calc(100% - 28px);border:1.5px dashed #7ca17a;background:#fffdf9;color:#436a45;border-radius:19px;padding:13px;font-weight:950;font-size:17px}
+.summary{margin:12px 14px;background:#fffefb;border:1px solid #eadbce;border-radius:22px;padding:15px;box-shadow:0 6px 16px rgba(75,48,30,.05)}
+.summaryTop{display:flex;align-items:center;justify-content:space-between}
+.summaryTop strong{font-size:20px}.summaryTop strong b{color:#315d38;font-size:27px}
+.summaryTop span{font-size:12px;color:#88756b}
+.summaryList{margin-top:10px}
+.sum-row{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;padding:8px 0;border-top:1px dashed #e6d8cc;font-size:12px}
+.sum-num{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#f7dfd0;font-weight:950}
+.sum-row:nth-child(2n) .sum-num{background:#e8efe0}
+.sum-row b{font-size:13px}
+.bottom{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(calc(100% - 24px),406px);display:grid;grid-template-columns:1fr 1.5fr;gap:8px;z-index:20}
+.bottom a,.bottom button{border:0;border-radius:18px;padding:15px 12px;font-weight:950;font-size:17px;text-align:center;text-decoration:none}
+.back{background:#fff;border:1px solid #e5d6c9!important;color:#5b2d1b}
+.next{background:#557d50;color:#fff}
+.loading{padding:36px 18px;text-align:center;color:#7a685d}
+@media(max-width:390px){
+  .fields.three{grid-template-columns:1fr;gap:8px}.fields.three .join{display:none}
+  .fields{grid-template-columns:1fr}.fields .join{display:none}
+  .picker select{font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="hero"><img src="bake-bite-header-v2.png?v=20260927-0810" alt="Bake & Bite"></header>
+  <section class="title"><h1>Snack Box</h1><p>เลือกประเภทเซ็ตและจับคู่เมนูได้ง่ายขึ้น</p></section>
+
+  <div class="mode">
+    <button id="mode2" class="active" type="button">▣ 2 Step<small>อาหาร + เครื่องดื่ม</small></button>
+    <button id="mode3" type="button">▣ 3 Step<small>อาหารคาว + ของหวาน + เครื่องดื่ม</small></button>
+  </div>
+
+  <div class="total">📦 จำนวนรวม <b id="totalQty">0</b> กล่อง</div>
+  <div id="loading" class="loading">กำลังโหลดเมนูจากหลังร้าน...</div>
+  <div id="sets" class="sets"></div>
+  <button id="addSet" class="add" type="button">＋ เพิ่มชุด</button>
+
+  <section class="summary">
+    <div class="summaryTop"><strong>📦 รวมทั้งหมด <b id="summaryQty">0</b> กล่อง</strong><span id="summaryCount">0 ชุดย่อย</span></div>
+    <div id="summaryList" class="summaryList"></div>
+  </section>
+</div>
+
+<div class="bottom">
+  <a class="back" href="index.html#order">← ย้อนกลับ</a>
+  <button class="next" id="next" type="button">ถัดไป →</button>
+</div>
+
+<script>
+const STORE_API="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api";
+const TEST_PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
+function go(url){
+  if(TEST_PREVIEW) url+=(url.includes('?')?'&':'?')+'preview=1';
+  location.href=url;
+}
+let catalog={categories:[],products:[]};
+let mode=2;
+let sets=[];
+let serial=1;
+let savory=[],dessert=[],drink=[],food2=[];
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function safeUrl(v){const s=String(v||'');return /^https:\/\//i.test(s)||/^data:image\//i.test(s)?s:''}
+function catName(p){return String(catalog.categories.find(c=>String(c.id)===String(p.category_id))?.name||'')}
+function isDrink(p){return /เครื่องดื่ม|drink/i.test(catName(p))}
+function isDessert(p){return /แยม|เบเกอรี่|ของหวาน|dessert|sweet|bakery/i.test(catName(p))}
+function productById(id){return catalog.products.find(p=>String(p.id)===String(id))}
+function fallback(name,type){if(type==='drink')return '🥤';if(/สลัด/i.test(name))return '🥗';if(/ครัวซอง|เบเกอรี่/i.test(name))return '🥐';return '🥪'}
+function productImage(id,type){
+  const p=productById(id); if(!p)return '<span class="thumb">'+fallback('',type)+'</span>';
+  const u=safeUrl(p.image_url); return u?'<img src="'+esc(u)+'" alt="">':'<span class="thumb">'+fallback(p.name,type)+'</span>';
+}
+function options(list,value,label){
+  return '<option value="">'+label+'</option>'+list.map(p=>'<option value="'+esc(p.id)+'"'+(String(p.id)===String(value)?' selected':'')+'>'+esc(p.name)+'</option>').join('');
+}
+function makeSet(){
+  return {key:'s'+(serial++),foodId:'',dessertId:'',drinkId:'',qty:1};
+}
+function saveDraft(){
+  sessionStorage.setItem('snackBuilder',JSON.stringify({mode,sets,total:totalQty()}));
+}
+function restore(){
+  try{
+    const d=JSON.parse(sessionStorage.getItem('snackBuilder')||'null');
+    if(d&&[2,3].includes(Number(d.mode))&&Array.isArray(d.sets)&&d.sets.length){
+      mode=Number(d.mode);sets=d.sets.map(s=>({...makeSet(),...s,key:s.key||'s'+(serial++)}));
+      return;
+    }
+  }catch(_){}
+  sets=[makeSet()];
+}
+function totalQty(){return sets.reduce((s,x)=>s+Math.max(0,Number(x.qty)||0),0)}
+function validSet(s){return Number(s.qty)>0&&s.foodId&&s.drinkId&&(mode===2||s.dessertId)}
+function fieldHtml(s,type,label,list,value,placeholder){
+  return '<div class="field"><label>'+label+'</label><div class="picker">'+productImage(value,type)+
+    '<select data-key="'+esc(s.key)+'" data-field="'+type+'Id">'+options(list,value,placeholder)+'</select></div></div>';
+}
+function render(){
+  mode2.classList.toggle('active',mode===2);mode3.classList.toggle('active',mode===3);
+  setsEl().innerHTML=sets.map((s,i)=>{
+    const fields=mode===2
+      ? fieldHtml(s,'food','🍴 อาหาร',food2,s.foodId,'เลือกอาหาร')+'<span class="join">＋</span>'+fieldHtml(s,'drink','🥤 เครื่องดื่ม',drink,s.drinkId,'เลือกเครื่องดื่ม')
+      : fieldHtml(s,'food','🍴 อาหารคาว',savory,s.foodId,'เลือกอาหารคาว')+'<span class="join">＋</span>'+fieldHtml(s,'dessert','🍰 ของหวาน',dessert,s.dessertId,'เลือกของหวาน')+'<span class="join">＋</span>'+fieldHtml(s,'drink','🥤 เครื่องดื่ม',drink,s.drinkId,'เลือกเครื่องดื่ม');
+    return '<article class="set-card"><div class="set-head"><span class="set-badge">ชุดที่ '+(i+1)+'</span><button class="delete" data-delete="'+esc(s.key)+'" type="button" aria-label="ลบชุด">🗑</button></div>'+
+      '<div class="fields '+(mode===3?'three':'')+'">'+fields+'</div>'+
+      '<div class="qty-row"><span class="qty-label">จำนวน (กล่อง)</span><div class="qty"><button class="minus" data-q="-1" data-key="'+esc(s.key)+'" type="button">−</button><input data-qty="'+esc(s.key)+'" type="number" inputmode="numeric" min="1" max="999" value="'+Math.max(1,Number(s.qty)||1)+'"><button class="plus" data-q="1" data-key="'+esc(s.key)+'" type="button">＋</button></div></div></article>';
+  }).join('');
+  const total=totalQty();totalQtyEl().textContent=total;summaryQty.textContent=total;summaryCount.textContent=sets.length+' ชุดย่อย';
+  const valid=sets.filter(validSet);
+  summaryList.innerHTML=sets.map((s,i)=>{
+    const f=productById(s.foodId)?.name||'ยังไม่เลือกอาหาร';
+    const d=productById(s.dessertId)?.name||'ยังไม่เลือกของหวาน';
+    const r=productById(s.drinkId)?.name||'ยังไม่เลือกเครื่องดื่ม';
+    const combo=mode===2?f+' + '+r:f+' + '+d+' + '+r;
+    return '<div class="sum-row"><span class="sum-num">'+(i+1)+'</span><span>'+esc(combo)+'</span><b>'+Math.max(0,Number(s.qty)||0)+' กล่อง</b></div>';
+  }).join('');
+  next.disabled=valid.length!==sets.length||!sets.length;
+  next.style.opacity=next.disabled?'.5':'1';
+  saveDraft();
+}
+function setsEl(){return document.getElementById('sets')}
+function totalQtyEl(){return document.getElementById('totalQty')}
+
+mode2.onclick=()=>{mode=2;render()}
+mode3.onclick=()=>{mode=3;render()}
+addSet.onclick=()=>{sets.push(makeSet());render();setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),30)}
+setsEl().addEventListener('change',e=>{
+  const sel=e.target.closest('select');if(sel){
+    const s=sets.find(x=>x.key===sel.dataset.key);if(!s)return;
+    s[sel.dataset.field]=sel.value;render();return;
+  }
+  const input=e.target.closest('input[data-qty]');if(input){
+    const s=sets.find(x=>x.key===input.dataset.qty);if(!s)return;
+    s.qty=Math.max(1,Math.min(999,Math.floor(Number(input.value)||1)));render();
+  }
+});
+setsEl().addEventListener('input',e=>{
+  const input=e.target.closest('input[data-qty]');if(!input)return;
+  const s=sets.find(x=>x.key===input.dataset.qty);if(!s)return;
+  s.qty=Math.max(1,Math.min(999,Math.floor(Number(input.value)||1)));
+  totalQtyEl().textContent=totalQty();summaryQty.textContent=totalQty();saveDraft();
+});
+setsEl().addEventListener('click',e=>{
+  const del=e.target.closest('[data-delete]');
+  if(del){if(sets.length===1){alert('ต้องมีอย่างน้อย 1 ชุด');return}sets=sets.filter(x=>x.key!==del.dataset.delete);render();return}
+  const q=e.target.closest('[data-q]');
+  if(q){const s=sets.find(x=>x.key===q.dataset.key);if(!s)return;s.qty=Math.max(1,Math.min(999,(Number(s.qty)||1)+Number(q.dataset.q)));render()}
+});
+next.onclick=()=>{
+  if(next.disabled){alert('กรุณาเลือกเมนูให้ครบทุกชุด');return}
+  saveDraft();go('snack-box-review.html');
+};
+async function load(){
+  try{
+    const r=await fetch(STORE_API+'?action=catalog');const j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.error||'catalog');
+    catalog=j;
+    drink=j.products.filter(isDrink);
+    dessert=j.products.filter(p=>!isDrink(p)&&isDessert(p));
+    savory=j.products.filter(p=>!isDrink(p)&&!isDessert(p));
+    food2=j.products.filter(p=>!isDrink(p));
+    restore();loading.style.display='none';render();
+  }catch(e){console.error(e);loading.textContent='โหลดเมนูไม่สำเร็จ กรุณาลองใหม่'}
+}
+load();
+</script>
+</body>
+</html>
