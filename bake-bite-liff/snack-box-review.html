@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>สรุป Snack Box · Bake & Bite</title>
+<style>
+:root{--brown:#5b2d1b;--green:#557d50;--line:#eadbce;--muted:#7b6a60}
+*{box-sizing:border-box}html,body{margin:0;background:#f4ede4;color:#402d27;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif}
+.shell{width:min(100%,430px);min-height:100vh;margin:auto;background:#fffaf2;padding-bottom:95px}.hero img{width:100%;aspect-ratio:3/1;object-fit:cover;display:block}
+.title{padding:18px}.title h1{font-size:34px;margin:0;color:var(--brown)}.title p{margin:7px 0;color:var(--muted)}
+.card{margin:12px 14px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 6px 16px rgba(70,45,28,.05)}
+.total{font-size:23px;font-weight:950}.total b{color:#315d38;font-size:32px}.type{display:inline-block;margin-top:7px;padding:6px 10px;border-radius:999px;background:#e8f0e2;color:#426341;font-weight:900}
+.row{padding:12px 0;border-top:1px dashed #e6d8cc}.row:first-of-type{margin-top:12px}.combo{font-weight:900;line-height:1.5}.qty{color:#315d38;font-weight:950;margin-top:4px}
+label{display:block;font-weight:900;margin-bottom:7px}textarea{width:100%;min-height:90px;border:1px solid #ddcec2;border-radius:14px;padding:12px;font:inherit}
+.bottom{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:min(calc(100% - 24px),406px);display:grid;grid-template-columns:1fr 1.4fr;gap:8px}.bottom button{border:0;border-radius:18px;padding:15px;font-size:16px;font-weight:950}.back{background:#fff;color:var(--brown);border:1px solid #e3d3c7!important}.confirm{background:var(--green);color:#fff}
+</style></head>
+<body><div class="shell"><header class="hero"><img src="bake-bite-header-v2.png?v=20260927-0810" alt=""></header>
+<section class="title"><h1>สรุป Snack Box</h1><p>ตรวจคู่เมนูและจำนวนก่อนยืนยัน</p></section>
+<section class="card"><div class="total">รวม <b id="total">0</b> กล่อง</div><span class="type" id="type"></span><div id="rows"></div></section>
+<section class="card"><label for="note">หมายเหตุถึงร้าน</label><textarea id="note" placeholder="เช่น จัดใส่กล่องสวย ๆ / รับเวลา 10:00 น."></textarea></section>
+</div><div class="bottom"><button id="back" class="back">← แก้ไข</button><button id="confirm" class="confirm">ยืนยันรายการ</button></div>
+<script>
+const TEST_PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
+function go(url){if(TEST_PREVIEW)url+=(url.includes('?')?'&':'?')+'preview=1';location.href=url}
+let d=null;try{d=JSON.parse(sessionStorage.getItem('snackBuilder')||'null')}catch(_){}
+if(!d||!Array.isArray(d.sets)||!d.sets.length)go('snack-box-builder.html');
+const cat=JSON.parse(sessionStorage.getItem('snackBuilderCatalog')||'null');
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function render(){
+  let catalog=cat;
+  if(!catalog){
+    const r=await fetch("https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api?action=catalog");catalog=await r.json();
+  }
+  const ps=catalog.products||[];const name=id=>ps.find(p=>String(p.id)===String(id))?.name||'-';
+  total.textContent=d.total||d.sets.reduce((s,x)=>s+Number(x.qty||0),0);
+  type.textContent='Snack Box '+d.mode+' Step';
+  rows.innerHTML=d.sets.map((s,i)=>'<div class="row"><div class="combo">'+(i+1)+') '+esc(name(s.foodId))+' + '+(d.mode===3?esc(name(s.dessertId))+' + ':'')+esc(name(s.drinkId))+'</div><div class="qty">'+Number(s.qty||0)+' กล่อง</div></div>').join('');
+}
+back.onclick=()=>go('snack-box-builder.html');
+confirm.onclick=()=>{
+  const note=document.getElementById('note').value.trim();
+  sessionStorage.setItem('snackNote',note);
+  sessionStorage.setItem('snackOrderDraft',JSON.stringify({...d,note,created_at:new Date().toISOString()}));
+  alert('บันทึกรายการ Snack Box แล้ว\nขั้นต่อไปจะเชื่อมการส่งออเดอร์เข้าระบบครัว');
+};
+render();
+</script></body></html>
