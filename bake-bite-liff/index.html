@@ -659,68 +659,73 @@ async function init(){
       if(invite){
         let clearReferral=false;
         try{
-          let friendFlag=false;
-          try{
-            const friendship=await liff.getFriendship();
-            friendFlag=friendship?.friendFlag===true;
-          }catch(friendError){
-            console.error('getFriendship',friendError);
-          }
+          let accepted=await memberApi('accept-referral','POST',{code:invite});
 
-          if(!friendFlag && typeof liff.requestFriendship==='function'){
+          if(accepted.status==='pending_friendship'){
+            let friendFlag=false;
+            let requestError=null;
+
             try{
-              await liff.requestFriendship();
-            }catch(friendError){
-              console.error('requestFriendship',friendError);
+              if(typeof liff.requestFriendship==='function'){
+                await liff.requestFriendship();
+              }else{
+                requestError=new Error('requestFriendship unavailable');
+              }
+            }catch(err){
+              requestError=err;
+              console.error('requestFriendship',err);
             }
 
-            for(let i=0;i<6;i++){
-              await new Promise(resolve=>setTimeout(resolve,700));
-              try{
-                const friendship=await liff.getFriendship();
-                if(friendship?.friendFlag===true){friendFlag=true;break}
-              }catch(friendError){
-                console.error('getFriendship retry',friendError);
-                break;
+            try{
+              const friendship=await liff.getFriendship();
+              friendFlag=friendship?.friendFlag===true;
+            }catch(err){
+              console.error('getFriendship',err);
+            }
+
+            if(!friendFlag && requestError){
+              const go=confirm('ยังไม่ได้เพิ่มเพื่อน Bake&bite\nกด ตกลง เพื่อเปิดหน้า LINE OA และเพิ่มเพื่อนก่อนสั่งอาหาร');
+              if(go){
+                location.href='https://line.me/R/ti/p/@563txfft';
+                return;
               }
             }
-          }
 
-          if(!friendFlag){
-            alert('กรุณาเพิ่มเพื่อน Bake&bite ก่อน แล้วเปิดลิงก์แนะนำนี้อีกครั้ง');
-          }else{
-            let accepted=await memberApi('accept-referral','POST',{code:invite});
-
-            if(accepted.status==='pending_friendship'){
+            if(friendFlag){
               for(let i=0;i<4;i++){
-                await new Promise(resolve=>setTimeout(resolve,900));
                 accepted=await memberApi('accept-referral','POST',{code:invite});
                 if(accepted.status!=='pending_friendship')break;
+                await new Promise(resolve=>setTimeout(resolve,900));
               }
             }
 
-            if(accepted.status==='rewarded'){
-              alert('เพิ่มเพื่อน Bake&bite และบันทึกผู้แนะนำสำเร็จแล้ว');
-              clearReferral=true;
-            }else if(accepted.status==='already_referred'){
-              alert('บัญชี LINE นี้เคยรับสิทธิ์การแนะนำแล้ว จึงไม่นับแต้มซ้ำ');
-              clearReferral=true;
-            }else if(accepted.status==='existing_customer'){
-              alert('บัญชี LINE นี้เป็นลูกค้าเดิมแล้ว จึงไม่สามารถนับเป็นเพื่อนใหม่ได้');
-              clearReferral=true;
-            }else if(accepted.status==='self_referral'){
-              alert('ไม่สามารถใช้ลิงก์แนะนำของตัวเองได้');
-              clearReferral=true;
-            }else if(accepted.status==='invalid_code'){
-              alert('ลิงก์แนะนำนี้ไม่ถูกต้อง กรุณาขอลิงก์ใหม่จากผู้แนะนำ');
-              clearReferral=true;
+            if(accepted.status==='pending_friendship' && !friendFlag){
+              alert('กรุณาเพิ่มเพื่อน Bake&bite ก่อน แล้วเปิดลิงก์แนะนำนี้อีกครั้ง');
             }else if(accepted.status==='pending_friendship'){
               alert('เพิ่มเพื่อนแล้ว ระบบกำลังยืนยันกับ LINE กรุณารอสักครู่');
               clearReferral=true;
             }
           }
+
+          if(accepted.status==='rewarded'){
+            alert('เพิ่มเพื่อน Bake&bite และบันทึกผู้แนะนำสำเร็จแล้ว');
+            clearReferral=true;
+          }else if(accepted.status==='already_referred'){
+            alert('บัญชี LINE นี้เคยรับสิทธิ์การแนะนำแล้ว จึงไม่นับแต้มซ้ำ');
+            clearReferral=true;
+          }else if(accepted.status==='existing_customer'){
+            alert('บัญชี LINE นี้เป็นลูกค้าเดิมแล้ว จึงไม่สามารถนับเป็นเพื่อนใหม่ได้');
+            clearReferral=true;
+          }else if(accepted.status==='self_referral'){
+            alert('ไม่สามารถใช้ลิงก์แนะนำของตัวเองได้');
+            clearReferral=true;
+          }else if(accepted.status==='invalid_code'){
+            alert('ลิงก์แนะนำนี้ไม่ถูกต้อง กรุณาขอลิงก์ใหม่จากผู้แนะนำ');
+            clearReferral=true;
+          }
         }catch(e){
           console.error('referral',e);
+          alert('ระบบแนะนำเพื่อนยังเชื่อมต่อไม่สำเร็จ กรุณาลองเปิดลิงก์อีกครั้ง');
         }finally{
           if(clearReferral){
             const clean=new URL(location.href);
@@ -764,7 +769,7 @@ function closeLiff(){if(window.liff&&liff.isInClient())liff.closeWindow();else h
 async function shareShop(){
   if(!lineToken()||!referralCode){alert("กรุณาเปิดผ่าน LINE เพื่อแชร์ลิงก์สมาชิก");return}
   const button=document.getElementById("shareShopButton");
-  const url=LIFF_URL+"?ref="+encodeURIComponent(referralCode)+"#order";
+  const url=LIFF_URL+"?ref="+encodeURIComponent(referralCode)+"&v=20260930-1515#order";
   const message="ชวนมาสั่งอาหารร้าน Bake & Bite 🥗🥪\nกดลิงก์ → เพิ่มเพื่อน Bake&bite → เข้าสั่งอาหาร\nเพื่อนใหม่ 1 บัญชี LINE ใช้สิทธิ์แนะนำได้ครั้งเดียว\n"+url;
   button.disabled=true;
   try{
