@@ -6,7 +6,7 @@
   <title>ตั้งค่าแต้มแนะนำเพื่อน · Bake & Bite</title>
   <style>
     :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#422b20;background:#f8f1e9}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;visibility:hidden}body.admin-verified{visibility:visible}main{max-width:510px;margin:0 auto;padding:24px 18px 80px}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;visibility:hidden}body.admin-verified{visibility:visible}main{max-width:760px;margin:0 auto;padding:24px 18px 80px}
     header{padding:20px 0 24px}small{font-size:14px;font-weight:800;letter-spacing:.08em;color:#8c684f}
     h1{font-size:30px;line-height:1.2;margin:10px 0 8px;color:#5b2d1b}p{line-height:1.55;color:#705d51;margin:0}
     section{background:#fffefa;border:1px solid #ecddce;border-radius:24px;padding:20px;margin:14px 0;box-shadow:0 7px 20px #643e220b}
@@ -18,17 +18,47 @@
     #settings{display:none}#message{min-height:26px;font-weight:700;margin:14px 3px;color:#4d7834}
     .error{color:#b13e38!important}.foot{font-size:14px;margin-top:18px}
     nav{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}nav a{font-weight:800;color:#5b2d1b;background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:10px;text-decoration:none}nav a.active{background:#5b2d1b;color:#fff}
+    .section-title{margin:34px 0 8px;color:#5b2d1b;font-size:26px}.section-sub{margin-bottom:12px}
+    .reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.reward-grid .full{grid-column:1/-1}
+    textarea{width:100%;min-height:86px;border:1px solid #d9c7b8;border-radius:14px;padding:14px;font:inherit;background:#fff;color:#422b20;resize:vertical}
+    .image-row{display:flex;gap:12px;align-items:center}.image-preview{width:96px;height:78px;border-radius:14px;background:#f4ede5;display:grid;place-items:center;overflow:hidden;font-size:36px;flex:0 0 auto}.image-preview img{width:100%;height:100%;object-fit:cover}
+    .reward-card{display:grid;grid-template-columns:92px 1fr auto;gap:14px;align-items:center;background:#fffefa;border:1px solid #ecddce;border-radius:20px;padding:14px;margin:10px 0}
+    .reward-card img,.reward-placeholder{width:92px;height:72px;border-radius:13px;object-fit:cover;background:#f4ede5;display:grid;place-items:center;font-size:34px}
+    .reward-card h3{margin:0 0 5px}.reward-meta{font-size:13px;color:#725f53;line-height:1.5}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef3e8;color:#4f6d42;font-weight:800;margin:4px 4px 0 0}.pill.off{background:#eee;color:#777}
+    .reward-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.reward-actions button{width:auto}.muted-btn{background:#efe5db;color:#5b2d1b}
+    @media(max-width:640px){.reward-grid{grid-template-columns:1fr}.reward-grid .full{grid-column:auto}.reward-card{grid-template-columns:74px 1fr}.reward-card img,.reward-placeholder{width:74px;height:64px}.reward-card .edit-reward{grid-column:1/-1}.image-row{align-items:flex-start}}
   </style>
 </head>
 <body><main>
-  <header><small>BAKE & BITE · ADMIN</small><h1>ตั้งค่าแต้มแนะนำเพื่อน</h1><p>กำหนดคะแนนที่ผู้ชวนจะได้รับจากเพื่อนที่ชวนเข้าร้าน</p></header>
-  <nav aria-label="หน้าผู้ดูแล"><a href="admin-main.html">หน้าหลัก</a><a href="admin-orders.html">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a class="active" href="admin.html">ตั้งค่าแต้ม</a></nav>
+  <header><small>BAKE & BITE · ADMIN</small><h1>จัดการแต้มสะสม / ของรางวัล</h1><p>จัดการแต้มแนะนำเพื่อน รายการแลกแต้ม และจำนวนสิทธิ์ของรางวัลต่อวันในหน้าเดียว</p></header>
+  <nav aria-label="หน้าผู้ดูแล"><a href="admin-main.html">หน้าหลัก</a><a href="admin-orders.html">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a class="active" href="admin.html">จัดการแต้ม / ของรางวัล</a></nav>
   <form id="settings">
     <section><div class="row"><div><label for="sharePoints">เพื่อนเปิดลิงก์แชร์</label><p>แต้มต่อเพื่อน 1 คน</p></div><input id="sharePoints" type="number" min="0" max="100" step="1" required></div></section>
     <section><div class="row"><div><label for="firstPoints">เพื่อนสั่งซื้อครั้งแรก</label><p>เพิ่มเมื่อชำระเงินและออเดอร์เสร็จสิ้น</p></div><input id="firstPoints" type="number" min="0" max="100" step="1" required></div></section>
     <button class="primary" id="saveButton" type="submit">บันทึกคะแนน</button>
     <p class="foot">กำหนดได้ 0–100 แต้มต่อรายการ ค่าใหม่ใช้กับการแนะนำและออเดอร์ที่เข้าเงื่อนไขหลังบันทึก</p>
   </form>
+  <h2 class="section-title">รายการแลกแต้ม / ของรางวัล</h2>
+  <p class="section-sub">เพิ่มหรือแก้ไขของรางวัล กำหนดแต้มที่ใช้ รูป และจำนวนสิทธิ์ที่แลกได้ต่อวัน</p>
+
+  <section id="rewardFormSection">
+    <h2 id="rewardFormTitle">เพิ่มรายการแลกแต้ม</h2>
+    <input id="rewardId" type="hidden">
+    <div class="reward-grid">
+      <div><label for="rewardName">ชื่อของรางวัล</label><input id="rewardName" maxlength="120" placeholder="เช่น น้ำดื่มฟรี 1 ขวด"></div>
+      <div><label for="rewardPoints">ใช้กี่แต้ม</label><input id="rewardPoints" type="number" min="1" max="100000" inputmode="numeric" placeholder="5"></div>
+      <div class="full"><label for="rewardDescription">รายละเอียด</label><textarea id="rewardDescription" maxlength="500" placeholder="รายละเอียดหรือเงื่อนไขของรางวัล"></textarea></div>
+      <div><label for="rewardDailyLimit">จำนวนสิทธิ์แลกต่อวัน</label><input id="rewardDailyLimit" type="number" min="1" max="100000" inputmode="numeric" placeholder="เช่น 20"><p class="hint">เว้นว่าง = ไม่จำกัดสิทธิ์ต่อวัน</p></div>
+      <div><label for="rewardStock">จำนวนคงเหลือทั้งหมด</label><input id="rewardStock" type="number" min="0" max="1000000" inputmode="numeric" placeholder="เว้นว่าง = ไม่จำกัด"></div>
+      <div class="full"><label>รูปของรางวัล</label><div class="image-row"><div id="rewardImagePreview" class="image-preview">🎁</div><div style="flex:1"><input id="rewardImageFile" type="file" accept="image/jpeg,image/png,image/webp"><input id="rewardImageUrl" type="hidden"><p class="hint">รองรับ JPG / PNG / WEBP ไม่เกิน 5 MB</p></div></div></div>
+      <div class="full"><label><input id="rewardActive" type="checkbox" checked style="width:auto;max-width:none"> เปิดให้ลูกค้าเห็นและแลกได้</label></div>
+    </div>
+    <div class="reward-actions"><button id="saveRewardButton" type="button">บันทึกรายการแลกแต้ม</button><button id="clearRewardButton" class="muted-btn" type="button">ล้างฟอร์ม</button></div>
+  </section>
+
+  <div id="rewardList"></div>
+  <p role="status" aria-live="polite" id="rewardMessage"></p>
+
   <p role="status" aria-live="polite" id="message"></p>
   <button class="secondary" type="button" onclick="logoutAdmin()">ออกจากระบบ</button>
 </main>
@@ -44,9 +74,103 @@ async function start(){
     document.getElementById('firstPoints').value=settings.first_purchase_points;
     document.getElementById('settings').style.display='block';
     showMessage('โหลดค่าคะแนนปัจจุบันแล้ว');
+    await loadAdminRewards();
   }catch(e){showMessage(e.message,true)}
 }
 start();
+
+let adminRewards=[];
+const rewardMessage=document.getElementById('rewardMessage');
+function rewardSafe(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function showRewardMessage(text,error=false){rewardMessage.textContent=text;rewardMessage.classList.toggle('error',error)}
+function setRewardPreview(url){
+  document.getElementById('rewardImagePreview').innerHTML=url?'<img src="'+rewardSafe(url)+'" alt="">':'🎁';
+}
+function clearRewardForm(){
+  document.getElementById('rewardId').value='';
+  document.getElementById('rewardName').value='';
+  document.getElementById('rewardPoints').value='';
+  document.getElementById('rewardDescription').value='';
+  document.getElementById('rewardDailyLimit').value='';
+  document.getElementById('rewardStock').value='';
+  document.getElementById('rewardImageFile').value='';
+  document.getElementById('rewardImageUrl').value='';
+  document.getElementById('rewardActive').checked=true;
+  document.getElementById('rewardFormTitle').textContent='เพิ่มรายการแลกแต้ม';
+  setRewardPreview('');
+}
+function renderAdminRewards(){
+  const root=document.getElementById('rewardList');
+  root.innerHTML=adminRewards.length?adminRewards.map(r=>{
+    const daily=r.daily_limit==null?'ไม่จำกัด/วัน':Number(r.daily_limit)+' สิทธิ์/วัน';
+    const remain=r.daily_limit==null?'ไม่จำกัดวันนี้':'เหลือวันนี้ '+Number(r.remaining_today||0)+' / '+Number(r.daily_limit);
+    const stock=r.stock==null?'สต็อกไม่จำกัด':'คงเหลือ '+Number(r.stock);
+    return '<article class="reward-card">'+
+      (r.image_url?'<img src="'+rewardSafe(r.image_url)+'" alt="">':'<div class="reward-placeholder">🎁</div>')+
+      '<div><h3>'+rewardSafe(r.name)+'</h3><div class="reward-meta">'+rewardSafe(r.description||'')+'</div>'+
+      '<span class="pill">⭐ '+Number(r.points_required)+' แต้ม</span><span class="pill">'+rewardSafe(daily)+'</span><span class="pill">'+rewardSafe(remain)+'</span><span class="pill">'+rewardSafe(stock)+'</span>'+
+      (!r.is_active?'<span class="pill off">ปิดใช้งาน</span>':'')+'</div>'+
+      '<button type="button" class="muted-btn edit-reward" data-edit-reward="'+rewardSafe(r.id)+'">แก้ไข</button></article>';
+  }).join(''):'<section>ยังไม่มีรายการแลกแต้ม</section>';
+}
+async function loadAdminRewards(){
+  const data=await adminRequest('admin-rewards');
+  adminRewards=data.rewards||[];
+  renderAdminRewards();
+  showRewardMessage('โหลดรายการแลกแต้มแล้ว '+adminRewards.length+' รายการ');
+}
+async function uploadRewardImage(file){
+  const form=new FormData();form.append('image',file);
+  const response=await fetch(ADMIN_API+'?action=admin-upload-image',{method:'POST',headers:{authorization:'Bearer '+adminToken()},body:form});
+  const data=await response.json();
+  if(response.status===401){clearAdminToken();location.replace('admin-login.html');throw new Error('กรุณาเข้าสู่ระบบใหม่')}
+  if(!response.ok||!data.ok)throw new Error(data.error||'อัปโหลดรูปไม่สำเร็จ');
+  return data.image_url;
+}
+document.getElementById('rewardImageFile').onchange=()=>{
+  const file=document.getElementById('rewardImageFile').files[0];if(!file)return;
+  if(file.size>5*1024*1024){showRewardMessage('รูปต้องไม่เกิน 5 MB',true);document.getElementById('rewardImageFile').value='';return}
+  setRewardPreview(URL.createObjectURL(file));
+};
+document.getElementById('clearRewardButton').onclick=clearRewardForm;
+document.getElementById('saveRewardButton').onclick=async()=>{
+  const button=document.getElementById('saveRewardButton');button.disabled=true;showRewardMessage('กำลังบันทึก...');
+  try{
+    let imageUrl=document.getElementById('rewardImageUrl').value;
+    const file=document.getElementById('rewardImageFile').files[0];
+    if(file)imageUrl=await uploadRewardImage(file);
+    const id=document.getElementById('rewardId').value;
+    const body={
+      id:id||undefined,
+      name:document.getElementById('rewardName').value.trim(),
+      description:document.getElementById('rewardDescription').value.trim(),
+      points_required:Number(document.getElementById('rewardPoints').value),
+      daily_limit:document.getElementById('rewardDailyLimit').value===''?null:Number(document.getElementById('rewardDailyLimit').value),
+      stock:document.getElementById('rewardStock').value===''?null:Number(document.getElementById('rewardStock').value),
+      image_url:imageUrl||null,
+      is_active:document.getElementById('rewardActive').checked
+    };
+    await adminRequest('admin-save-reward',id?'PUT':'POST',body);
+    clearRewardForm();await loadAdminRewards();showRewardMessage('บันทึกรายการแลกแต้มแล้ว');
+  }catch(e){showRewardMessage(e.message,true)}finally{button.disabled=false}
+};
+document.getElementById('rewardList').onclick=e=>{
+  const button=e.target.closest('[data-edit-reward]');if(!button)return;
+  const r=adminRewards.find(x=>x.id===button.dataset.editReward);if(!r)return;
+  document.getElementById('rewardId').value=r.id;
+  document.getElementById('rewardName').value=r.name||'';
+  document.getElementById('rewardPoints').value=r.points_required||'';
+  document.getElementById('rewardDescription').value=r.description||'';
+  document.getElementById('rewardDailyLimit').value=r.daily_limit??'';
+  document.getElementById('rewardStock').value=r.stock??'';
+  document.getElementById('rewardImageUrl').value=r.image_url||'';
+  document.getElementById('rewardImageFile').value='';
+  document.getElementById('rewardActive').checked=r.is_active!==false;
+  document.getElementById('rewardFormTitle').textContent='แก้ไขรายการแลกแต้ม';
+  setRewardPreview(r.image_url);
+  document.getElementById('rewardFormSection').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
 document.getElementById('settings').onsubmit=async event=>{
   event.preventDefault();
   const share=Number(document.getElementById('sharePoints').value);
