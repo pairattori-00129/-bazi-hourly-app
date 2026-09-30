@@ -14,17 +14,17 @@ button{font:inherit;font-weight:850;border:0;border-radius:13px;padding:12px 15p
 #message{min-height:24px;font-weight:850}.error{color:#b64239!important}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.reward{grid-template-columns:76px 1fr}.reward img,.reward .placeholder{width:76px;height:68px}.reward .edit{grid-column:1/-1}.imageRow{align-items:flex-start}}
 </style></head><body><main>
-<small>BAKE & BITE · ADMIN</small><h1>จัดการแต้มสะสม / ของรางวัล</h1><p>กำหนดของรางวัล รูป จำนวนแต้ม และจำนวนสิทธิ์ที่ให้แลกได้ต่อวัน</p>
+<small>BAKE & BITE · ADMIN</small><h1>จัดการแต้มสะสม / ของรางวัล</h1><p>กำหนดรายการแลกแต้ม รูปของรางวัล จำนวนแต้มที่ใช้ และจำนวนสิทธิ์ที่แลกได้ต่อวัน</p>
 <nav><a href="admin-main.html">หน้าหลัก</a><a href="admin-orders.html">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a class="active" href="admin-rewards.html">ของรางวัล</a><a href="admin.html">ตั้งค่าแต้ม</a></nav>
 
 <section>
-<h2 id="formTitle">เพิ่มของรางวัล</h2>
+<h2 id="formTitle">เพิ่มรายการแลกแต้ม</h2>
 <input id="rewardId" type="hidden">
 <div class="grid">
 <div><label>ชื่อของรางวัล</label><input id="name" maxlength="120" placeholder="เช่น น้ำเก๊กฮวยฟรี 1 ขวด"></div>
 <div><label>ใช้กี่แต้ม</label><input id="points" type="number" min="1" max="100000" inputmode="numeric" placeholder="5"></div>
 <div class="full"><label>รายละเอียด</label><textarea id="description" maxlength="500" placeholder="รายละเอียดหรือเงื่อนไขของรางวัล"></textarea></div>
-<div><label>สิทธิ์รวมต่อวัน</label><input id="dailyLimit" type="number" min="1" max="100000" inputmode="numeric" placeholder="เว้นว่าง = ไม่จำกัด"></div>
+<div><label>จำนวนสิทธิ์แลกต่อวัน</label><input id="dailyLimit" type="number" min="1" max="100000" inputmode="numeric" placeholder="เช่น 20"><p style="font-size:12px;margin:6px 0 0">เว้นว่าง = ไม่จำกัดสิทธิ์ต่อวัน</p></div>
 <div><label>จำนวนคงเหลือทั้งหมด</label><input id="stock" type="number" min="0" max="1000000" inputmode="numeric" placeholder="เว้นว่าง = ไม่จำกัด"></div>
 <div class="full"><label>รูปของรางวัล</label><div class="imageRow"><div id="imagePreview" class="preview">🎁</div><div style="flex:1"><input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp"><input id="imageUrl" type="hidden"><p style="font-size:12px;margin:6px 0 0">รองรับ JPG / PNG / WEBP ไม่เกิน 5 MB</p></div></div></div>
 <div class="full"><label><input id="active" type="checkbox" checked style="width:auto"> เปิดให้ลูกค้าเห็นและแลกได้</label></div>
@@ -32,7 +32,7 @@ button{font:inherit;font-weight:850;border:0;border-radius:13px;padding:12px 15p
 <div class="actions"><button id="saveBtn" class="primary" type="button">บันทึกของรางวัล</button><button id="clearBtn" class="secondary" type="button">ล้างฟอร์ม</button></div>
 </section>
 
-<h2>รายการของรางวัล</h2><div id="list"></div><p id="message" role="status"></p>
+<h2>รายการแลกแต้ม</h2><div id="list"></div><p id="message" role="status"></p>
 </main><script src="admin-session.js"></script><script>
 let rewards=[];
 const $=id=>document.getElementById(id);
@@ -40,7 +40,7 @@ function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 function notice(t,e=false){$('message').textContent=t;$('message').classList.toggle('error',e)}
 function resetForm(){
   $('rewardId').value='';$('name').value='';$('points').value='';$('description').value='';$('dailyLimit').value='';$('stock').value='';$('imageUrl').value='';$('imageFile').value='';$('active').checked=true;
-  $('imagePreview').innerHTML='🎁';$('formTitle').textContent='เพิ่มของรางวัล';window.scrollTo({top:0,behavior:'smooth'});
+  $('imagePreview').innerHTML='🎁';$('formTitle').textContent='เพิ่มรายการแลกแต้ม';window.scrollTo({top:0,behavior:'smooth'});
 }
 function imagePreview(url){
   $('imagePreview').innerHTML=url?'<img src="'+safe(url)+'" alt="">':'🎁';
@@ -93,7 +93,7 @@ $('list').onclick=e=>{
   const r=rewards.find(x=>x.id===b.dataset.edit);if(!r)return;
   $('rewardId').value=r.id;$('name').value=r.name||'';$('points').value=r.points_required||'';$('description').value=r.description||'';
   $('dailyLimit').value=r.daily_limit??'';$('stock').value=r.stock??'';$('imageUrl').value=r.image_url||'';$('imageFile').value='';$('active').checked=r.is_active!==false;
-  imagePreview(r.image_url);$('formTitle').textContent='แก้ไขของรางวัล';window.scrollTo({top:0,behavior:'smooth'});
+  imagePreview(r.image_url);$('formTitle').textContent='แก้ไขรายการแลกแต้ม';window.scrollTo({top:0,behavior:'smooth'});
 };
 requireAdmin().then(async ok=>{if(ok)try{await load()}catch(e){notice(e.message,true)}});
 </script></body></html>
