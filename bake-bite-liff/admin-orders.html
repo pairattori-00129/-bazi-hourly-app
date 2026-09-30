@@ -5,7 +5,7 @@ h1{font-size:30px;color:#5b2d1b;margin:8px 0}p{line-height:1.5;color:#705d51}sma
 section,.card{background:#fffefa;border:1px solid #e9dacb;border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 7px 18px #643e220b}
 input,select{font:inherit;font-size:17px;padding:12px;border:1px solid #d8c7b7;border-radius:13px;background:white;max-width:100%}label{display:block;font-weight:800;margin:10px 0 7px}
 button{font:inherit;font-size:16px;font-weight:800;border:0;border-radius:13px;background:#669348;color:#fff;padding:13px 17px;cursor:pointer}button:disabled{opacity:.6}nav{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}nav a{font-weight:800;color:#5b2d1b;background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:10px;text-decoration:none}nav a.active{background:#5b2d1b;color:#fff}
-#panel{display:none}.filterbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.filterbar button{background:#efe5db;color:#5b2d1b}.filterbar button.active{background:#5b2d1b;color:#fff}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.muted{font-size:14px;color:#786659}.items{padding:10px 0;border-top:1px solid #eaded1}.error{color:#ba4039!important}#message{min-height:24px;font-weight:800}strong{overflow-wrap:anywhere}@media(max-width:500px){.grid{grid-template-columns:1fr}}
+#panel{display:none}.filterbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.filterbar button{background:#efe5db;color:#5b2d1b}.filterbar button.active{background:#5b2d1b;color:#fff}.history-tools{display:none;align-items:end;gap:10px;flex-wrap:wrap;margin:10px 0 14px}.history-tools.show{display:flex}.history-tools label{margin:0}.history-tools input{display:block;margin-top:6px}.daily-summary{background:#fff3dd;border:2px solid #d4a35d;border-radius:16px;padding:16px;margin:18px 0;font-size:18px;font-weight:900;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.print-title{display:none}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.muted{font-size:14px;color:#786659}.items{padding:10px 0;border-top:1px solid #eaded1}.error{color:#ba4039!important}#message{min-height:24px;font-weight:800}strong{overflow-wrap:anywhere}@media(max-width:500px){.grid{grid-template-columns:1fr}}@media print{body{visibility:visible!important;background:#fff}main{max-width:none;padding:0}nav,#refreshButton,.filterbar,.history-tools,#message,small,main>h1,main>p{display:none!important}.print-title{display:block!important;margin:0 0 14px;text-align:center}.card{box-shadow:none;break-inside:avoid;border-radius:8px;margin:8px 0}.daily-summary{break-inside:avoid}.history-only{display:block!important}}
 </style></head><body><main>
 <small>BAKE & BITE · ADMIN</small><h1>จัดการออเดอร์</h1><p>ตรวจรายการ เปลี่ยนสถานะ และยืนยันการชำระเงิน</p>
 <nav aria-label="หน้าผู้ดูแล"><a href="admin-main.html">หน้าหลัก</a><a class="active" href="admin-orders.html?v=20260930-1710">ออเดอร์</a><a href="admin-products.html">เมนูสินค้า</a><a href="admin.html">ตั้งค่าแต้ม</a></nav>
@@ -15,12 +15,26 @@ button{font:inherit;font-size:16px;font-weight:800;border:0;border-radius:13px;b
     <button id="activeOrdersButton" class="active" type="button">ออเดอร์ปัจจุบัน</button>
     <button id="historyOrdersButton" type="button">ประวัติออเดอร์</button>
   </div>
+  <div id="historyTools" class="history-tools">
+    <label>วันที่สรุปยอด
+      <input id="historyDate" type="date">
+    </label>
+    <button id="printDailyButton" type="button">🖨️ พิมพ์สรุปยอดขายรายวัน</button>
+  </div>
+  <h2 id="printTitle" class="print-title">สรุปยอดขายรายวัน</h2>
   <div id="orders"></div>
 </div><p role="status" aria-live="polite" id="message"></p>
 </main><script src="admin-session.js"></script><script>
 let orders=[];
 let orderView='active';
 const message=document.getElementById('message');
+const historyDate=document.getElementById('historyDate');
+function bangkokDateKey(value){
+ const parts=new Intl.DateTimeFormat('en-US',{year:'numeric',month:'2-digit',day:'2-digit',timeZone:'Asia/Bangkok'}).formatToParts(new Date(value));
+ const get=t=>parts.find(p=>p.type===t)?.value||'';
+ return get('year')+'-'+get('month')+'-'+get('day');
+}
+historyDate.value=bangkokDateKey(new Date());
 function notice(value,error=false){message.textContent=value;message.classList.toggle('error',error)}
 function safe(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function api(action,method='GET',body){
@@ -30,34 +44,50 @@ const statusList=[['pending','รอรับออเดอร์'],['confirmed
 const paymentList=[['pending','รอชำระ'],['paid','ชำระแล้ว'],['refunded','คืนเงิน']];
 function options(list,current){return list.map(([v,t])=>'<option value="'+v+'"'+(current===v?' selected':'')+'>'+t+'</option>').join('')}
 function render(){
- const visible=orders.filter(o=>orderView==='active'?!['completed','cancelled'].includes(o.status):['completed','cancelled'].includes(o.status));
+ const activeVisible=orders.filter(o=>!['completed','cancelled'].includes(o.status));
+ const selectedDate=historyDate.value||bangkokDateKey(new Date());
+ const historyVisible=orders.filter(o=>o.status==='completed' && o.payment_status==='paid' && bangkokDateKey(o.created_at)===selectedDate);
+ const visible=orderView==='active'?activeVisible:historyVisible;
+
+ document.getElementById('historyTools').classList.toggle('show',orderView==='history');
+ const titleDate=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Bangkok'}).format(new Date(selectedDate+'T12:00:00+07:00'));
+ document.getElementById('printTitle').textContent='สรุปยอดขายรายวัน · '+titleDate;
+
+ if(orderView==='history'){
+   const cards=visible.map(o=>{
+     const lines=(o.order_items||[]).map(i=>safe(i.product_name)+' × '+Number(i.quantity)).join(' · ');
+     const when=new Date(o.created_at);
+     const orderDate=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(when);
+     const orderTime=new Intl.DateTimeFormat('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'}).format(when);
+     return '<article class="card history-only">'+
+       '<div class="grid"><div><label>วันที่สั่ง</label><div>'+safe(orderDate)+'</div></div><div><label>เวลาสั่ง</label><div>'+safe(orderTime)+' น.</div></div></div>'+
+       '<div class="items" style="margin-top:12px"><strong>รายการที่สั่ง</strong><div style="margin-top:6px">'+(lines||'ไม่มีรายการสินค้า')+'</div></div>'+
+       '<div style="margin-top:10px"><strong>ยอดเงิน</strong> ฿'+Number(o.total).toLocaleString('th-TH')+'</div>'+
+       '<div style="margin-top:7px"><strong>คะแนนที่ได้ครั้งนี้</strong> '+Number(o.points_earned||0)+' แต้ม</div>'+
+       '<div style="margin-top:7px"><strong>คะแนนสะสม</strong> '+Number(o.points_balance||0)+' แต้ม</div>'+
+     '</article>';
+   }).join('');
+   const total=visible.reduce((sum,o)=>sum+Number(o.total||0),0);
+   const summary='<div class="daily-summary"><span>จำนวนออเดอร์ '+visible.length+' ออเดอร์</span><span>ยอดเงินรวม ฿'+total.toLocaleString('th-TH')+'</span></div>';
+   document.getElementById('orders').innerHTML=(cards||'<section class="history-only">ไม่มีออเดอร์ที่ชำระแล้วและเสร็จสิ้นในวันที่เลือก</section>')+summary;
+   return;
+ }
+
  document.getElementById('orders').innerHTML=visible.length?visible.map(o=>{
   const lines=(o.order_items||[]).map(i=>safe(i.product_name)+' × '+Number(i.quantity)).join(' · ');
   const when=new Date(o.created_at);
-  const orderDate=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(when);
-  const orderTime=new Intl.DateTimeFormat('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'}).format(when);
-  if(orderView==='history'){
-    return '<article class="card">'+
-      '<div class="grid"><div><label>วันที่สั่ง</label><div>'+safe(orderDate)+'</div></div><div><label>เวลาสั่ง</label><div>'+safe(orderTime)+' น.</div></div></div>'+
-      '<div class="items" style="margin-top:12px"><strong>รายการที่สั่ง</strong><div style="margin-top:6px">'+(lines||'ไม่มีรายการสินค้า')+'</div></div>'+
-      '<div style="margin-top:10px"><strong>ยอดเงิน</strong> ฿'+Number(o.total).toLocaleString('th-TH')+'</div>'+
-      '<div style="margin-top:7px"><strong>คะแนนที่ได้ครั้งนี้</strong> '+Number(o.points_earned||0)+' แต้ม</div>'+
-      '<div style="margin-top:7px"><strong>คะแนนสะสม</strong> '+Number(o.points_balance||0)+' แต้ม</div>'+
-    '</article>';
-  }
   return '<article class="card" data-order="'+safe(o.id)+'"><strong>'+safe(o.order_no)+'</strong> <span class="muted">'+safe(when.toLocaleString('th-TH'))+'</span><p>'+safe(o.customer_name||'ไม่ระบุชื่อ')+' · ฿'+Number(o.total).toLocaleString('th-TH')+'</p><div class="items">'+(lines||'ไม่มีรายการสินค้า')+'</div>'+
   '<p class="muted">'+(o.fulfillment_method==='lineman'?'จัดส่ง LINE MAN · '+safe(o.delivery_address||'ไม่ระบุที่อยู่'):'รับเองที่ร้าน')+'</p>'+
   (o.payment_notified_at?'<p style="margin:8px 0;font-weight:800;color:#a56a27">💳 ลูกค้าแจ้งชำระเงินแล้ว · รอตรวจสอบ</p>':'')+
   '<div class="grid"><div><label>สถานะออเดอร์</label><select class="orderStatus">'+options(statusList,o.status)+'</select></div><div><label>การชำระเงิน</label><select class="paymentStatus">'+options(paymentList,o.payment_status==='unpaid'?'pending':o.payment_status)+'</select></div></div><button class="save" style="margin-top:14px">บันทึกออเดอร์</button></article>'
- }).join(''):(orderView==='active'?'<section>ไม่มีออเดอร์ที่กำลังดำเนินการ</section>':'<section>ยังไม่มีประวัติออเดอร์</section>');
+ }).join(''):'<section>ไม่มีออเดอร์ที่กำลังดำเนินการ</section>';
 }
 async function load(){
  const result=await api('admin-orders');
  orders=result.orders||[];
  render();
  const activeCount=orders.filter(o=>!['completed','cancelled'].includes(o.status)).length;
- const historyCount=orders.length-activeCount;
- notice('ออเดอร์ปัจจุบัน '+activeCount+' รายการ · ประวัติ '+historyCount+' รายการ');
+ notice('ออเดอร์ปัจจุบัน '+activeCount+' รายการ');
 }
 requireAdmin().then(async ok=>{if(ok){document.getElementById('panel').style.display='block';try{await load()}catch(e){notice(e.message,true)}}});
 document.getElementById('refreshButton').onclick=async()=>{try{await load()}catch(e){notice(e.message,true)}};
@@ -73,6 +103,8 @@ document.getElementById('historyOrdersButton').onclick=()=>{
  document.getElementById('activeOrdersButton').classList.remove('active');
  render();
 };
+historyDate.onchange=render;
+document.getElementById('printDailyButton').onclick=()=>window.print();
 document.getElementById('orders').onclick=async event=>{
  const button=event.target.closest('button.save');if(!button)return;
  const card=button.closest('[data-order]');button.disabled=true;
