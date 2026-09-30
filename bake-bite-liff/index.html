@@ -218,7 +218,7 @@ body{min-height:100vh}
     <button class="btn" onclick="saveContact()">บันทึกข้อมูลติดต่อ</button>
   </section>
   <section class="card" style="margin:12px">
-    <h2 style="margin:0 0 6px">สถานะออเดอร์</h2>
+    <h2 style="margin:0 0 6px">ประวัติออเดอร์</h2>
     <div id="orderHistory" class="sub">เข้าสู่ระบบ LINE เพื่อดูออเดอร์ของคุณ</div>
   </section>
   <section class="delivery">
@@ -407,13 +407,20 @@ async function loadMember(){
     history.innerHTML=result.orders?.length?result.orders.map(o=>{
       const items=(o.order_items||[]).map(i=>i.product_name+' × '+i.quantity).join(', ');
       const earned=Number(o.points_earned||0);
+      const when=new Date(o.created_at);
+      const orderDate=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(when);
+      const orderTime=new Intl.DateTimeFormat('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'}).format(when);
       return '<div style="padding:14px 0;border-bottom:1px solid #ead8c7">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
+          '<div><strong>วันที่สั่ง</strong><br>'+escapeHtml(orderDate)+'</div>'+
+          '<div><strong>เวลาสั่ง</strong><br>'+escapeHtml(orderTime)+' น.</div>'+
+        '</div>'+
         '<div><strong>รายการที่สั่ง</strong><br>'+escapeHtml(items||'-')+'</div>'+
         '<div style="margin-top:8px"><strong>ยอดเงิน</strong> '+money(o.total)+'</div>'+
         '<div style="margin-top:6px"><strong>คะแนนที่ได้ครั้งนี้</strong> '+earned+' แต้ม</div>'+
         '<div style="margin-top:6px"><strong>คะแนนสะสม</strong> '+currentMemberPoints+' แต้ม</div>'+
       '</div>';
-    }).join(""):"ยังไม่มีออเดอร์ที่เชื่อมกับบัญชี LINE นี้";
+    }).join(""):"ยังไม่มีประวัติออเดอร์";
     document.getElementById("pointRequestHistory").innerHTML=result.point_requests?.length?
       "คำขอล่าสุด: "+result.point_requests.map(r=>escapeHtml(r.platform+" #"+r.order_no+" · "+r.points_calculated+" แต้ม · "+({pending:"รอตรวจสอบ",approved:"อนุมัติ",rejected:"ไม่อนุมัติ"}[r.status]||r.status))).join("<br>"):"";
   }catch(e){console.error("member load",e);document.getElementById("orderHistory").textContent="ยังโหลดข้อมูลสมาชิกไม่ได้ กรุณาลองใหม่"}
