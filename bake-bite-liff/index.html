@@ -219,6 +219,7 @@ body{min-height:100vh}
       <div id="transferHelp" class="sub" style="margin-top:8px">โอนเงิน / QR แล้วกด “แจ้งชำระเงินแล้ว” จากนั้นร้านจะตรวจสอบและยืนยันการชำระ</div>
     </div>
     <div id="paymentNotice" class="note" style="margin-top:12px">สถานะ: รอการแจ้งชำระเงิน</div>
+    <div id="pointsLineNotice" class="note" style="display:none;margin-top:10px;background:#eef9ef;border-color:#b7dfba;font-weight:800">⭐ กรุณาเปิด LINE Official ของ Bake & Bite และกด “รับคะแนนสะสม” เพื่อรับแต้มจากออเดอร์นี้</div>
     <button class="btn" id="notifyPaymentButton" type="button" onclick="notifyPayment()">แจ้งชำระเงินแล้ว</button>
     <button class="btn" style="background:#8f8178" type="button" onclick="showPage('points')">ดูประวัติออเดอร์</button>
   </div>
@@ -623,15 +624,20 @@ function renderPaymentPage(orderData){
   const btn=document.getElementById('notifyPaymentButton');
   btn.style.display=cash?'none':'block';
   document.getElementById('paymentNotice').textContent=cash?'สถานะ: ชำระเงินที่ร้านเมื่อรับสินค้า':'สถานะ: รอการแจ้งชำระเงิน';
+  const pointsNotice=document.getElementById('pointsLineNotice');
+  if(pointsNotice) pointsNotice.style.display='none';
 }
 async function notifyPayment(){
   if(!currentPaymentOrder?.id){alert('ไม่พบข้อมูลออเดอร์ กรุณาเปิดประวัติออเดอร์แล้วลองใหม่');return}
   const btn=document.getElementById('notifyPaymentButton');btn.disabled=true;
   try{
     const result=await memberApi('notify-payment','POST',{order_id:currentPaymentOrder.id});
-    document.getElementById('paymentNotice').textContent=result.already_paid?'สถานะ: ร้านยืนยันชำระเงินแล้ว':'สถานะ: แจ้งชำระเงินแล้ว รอร้านตรวจสอบ';
+    document.getElementById('paymentNotice').textContent=result.already_paid?'สถานะ: ร้านยืนยันชำระเงินแล้ว':'สถานะ: แจ้งชำระเงินแล้ว ✓';
+    const pointsNotice=document.getElementById('pointsLineNotice');
+    if(pointsNotice) pointsNotice.style.display='block';
     btn.textContent=result.already_paid?'ชำระเงินแล้ว':'แจ้งชำระเงินแล้ว ✓';
     btn.disabled=true;
+    alert('แจ้งชำระเงินแล้ว ✓\nกรุณาเปิด LINE Official ของ Bake & Bite และกด “รับคะแนนสะสม” เพื่อรับแต้ม');
     await loadMember();
   }catch(e){
     alert('แจ้งชำระเงินไม่สำเร็จ: '+e.message);
