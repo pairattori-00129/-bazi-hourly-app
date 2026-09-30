@@ -657,25 +657,73 @@ async function init(){
       lineUserId=p.userId||"";
       lineDisplayName=p.displayName||"";
       if(invite){
+        let clearReferral=false;
         try{
-          const accepted=await memberApi('accept-referral','POST',{code:invite});
-          if(accepted.status==='rewarded'){
-            alert('ยินดีต้อนรับสู่ Bake & Bite! บันทึกผู้แนะนำสำเร็จแล้ว');
+          let accepted=await memberApi('accept-referral','POST',{code:invite});
+
+          if(accepted.status==='pending_friendship'){
+            let friendFlag=false;
+            try{
+              const friendship=await liff.getFriendship();
+              friendFlag=friendship?.friendFlag===true;
+            }catch(friendError){
+              console.error('getFriendship',friendError);
+            }
+
+            if(!friendFlag && typeof liff.requestFriendship==='function'){
+              try{
+                await liff.requestFriendship();
+              }catch(friendError){
+                console.error('requestFriendship',friendError);
+              }
+
+              for(let i=0;i<5;i++){
+                await new Promise(resolve=>setTimeout(resolve,700));
+                try{
+                  const friendship=await liff.getFriendship();
+                  if(friendship?.friendFlag===true){friendFlag=true;break}
+                }catch(friendError){
+                  console.error('getFriendship retry',friendError);
+                  break;
+                }
+              }
+            }
+
+            if(friendFlag){
+              try{
+                accepted=await memberApi('accept-referral','POST',{code:invite});
+              }catch(e){
+                console.error('referral confirm',e);
+              }
+              alert('เพิ่มเพื่อน Bake&bite สำเร็จแล้ว ระบบบันทึกสิทธิ์แนะนำเรียบร้อย');
+              clearReferral=true;
+            }else{
+              alert('กรุณาเพิ่มเพื่อน Bake&bite ก่อน เพื่อรับสิทธิ์แนะนำ แล้วเปิดลิงก์นี้อีกครั้ง');
+            }
+          }else if(accepted.status==='rewarded'){
+            alert('เพิ่มเพื่อน Bake&bite และบันทึกผู้แนะนำสำเร็จแล้ว');
+            clearReferral=true;
           }else if(accepted.status==='already_referred'){
             alert('บัญชี LINE นี้เคยรับสิทธิ์การแนะนำแล้ว จึงไม่นับแต้มซ้ำ');
+            clearReferral=true;
           }else if(accepted.status==='existing_customer'){
             alert('บัญชี LINE นี้เป็นลูกค้าเดิมแล้ว จึงไม่สามารถนับเป็นเพื่อนใหม่ได้');
+            clearReferral=true;
           }else if(accepted.status==='self_referral'){
             alert('ไม่สามารถใช้ลิงก์แนะนำของตัวเองได้');
+            clearReferral=true;
           }else if(accepted.status==='invalid_code'){
             alert('ลิงก์แนะนำนี้ไม่ถูกต้อง กรุณาขอลิงก์ใหม่จากผู้แนะนำ');
+            clearReferral=true;
           }
         }catch(e){
           console.error('referral',e);
         }finally{
-          const clean=new URL(location.href);
-          clean.searchParams.delete('ref');
-          history.replaceState({},'',clean.pathname+(clean.search||'')+clean.hash);
+          if(clearReferral){
+            const clean=new URL(location.href);
+            clean.searchParams.delete('ref');
+            history.replaceState({},'',clean.pathname+(clean.search||'')+clean.hash);
+          }
         }
       }
       const n=document.getElementById('memberName');
@@ -714,7 +762,7 @@ async function shareShop(){
   if(!lineToken()||!referralCode){alert("กรุณาเปิดผ่าน LINE เพื่อแชร์ลิงก์สมาชิก");return}
   const button=document.getElementById("shareShopButton");
   const url=LIFF_URL+"?ref="+encodeURIComponent(referralCode)+"#order";
-  const message="ชวนมาสั่งอาหารร้าน Bake & Bite 🥗🥪\nเพื่อนใหม่ 1 บัญชี LINE ใช้สิทธิ์แนะนำได้ครั้งเดียว\n"+url;
+  const message="ชวนมาสั่งอาหารร้าน Bake & Bite 🥗🥪\nกดลิงก์ → เพิ่มเพื่อน Bake&bite → เข้าสั่งอาหาร\nเพื่อนใหม่ 1 บัญชี LINE ใช้สิทธิ์แนะนำได้ครั้งเดียว\n"+url;
   button.disabled=true;
   try{
     if(liff.isApiAvailable("shareTargetPicker")){
