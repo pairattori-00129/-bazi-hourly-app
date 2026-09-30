@@ -220,6 +220,7 @@ body{min-height:100vh}
     </div>
     <div id="paymentNotice" class="note" style="margin-top:12px">สถานะ: รอการแจ้งชำระเงิน</div>
     <div id="pointsLineNotice" class="note" style="display:none;margin-top:10px;background:#eef9ef;border-color:#b7dfba;font-weight:800">⭐ กรุณาเปิด LINE Official ของ Bake & Bite และกด “รับคะแนนสะสม” เพื่อรับแต้มจากออเดอร์นี้</div>
+    <a id="openLineChatButton" class="btn" href="https://line.me/R/oaMessage/%40563txfft" style="display:none;text-decoration:none;text-align:center;background:#06c755">💬 เปิด LINE Official เพื่อรับแต้ม</a>
     <button class="btn" id="notifyPaymentButton" type="button" onclick="notifyPayment()">แจ้งชำระเงินแล้ว</button>
     <button class="btn" style="background:#8f8178" type="button" onclick="showPage('points')">ดูประวัติออเดอร์</button>
   </div>
@@ -626,7 +627,9 @@ function renderPaymentPage(orderData){
   const paymentNotified=orderData.payment_notified===true;
   document.getElementById('paymentNotice').textContent=cash?'สถานะ: ชำระเงินที่ร้านเมื่อรับสินค้า':(paymentNotified?'สถานะ: แจ้งชำระเงินแล้ว ✓':'สถานะ: รอการแจ้งชำระเงิน');
   const pointsNotice=document.getElementById('pointsLineNotice');
+  const lineChatButton=document.getElementById('openLineChatButton');
   if(pointsNotice) pointsNotice.style.display=(!cash && paymentNotified)?'block':'none';
+  if(lineChatButton) lineChatButton.style.display=(!cash && paymentNotified)?'block':'none';
   if(paymentNotified){
     btn.textContent='แจ้งชำระเงินแล้ว ✓';
     btn.disabled=true;
@@ -641,7 +644,9 @@ async function notifyPayment(){
     sessionStorage.setItem('bakeBiteLastPaymentOrder',JSON.stringify(currentPaymentOrder));
     document.getElementById('paymentNotice').textContent=result.already_paid?'สถานะ: ร้านยืนยันชำระเงินแล้ว':'สถานะ: แจ้งชำระเงินแล้ว ✓';
     const pointsNotice=document.getElementById('pointsLineNotice');
+    const lineChatButton=document.getElementById('openLineChatButton');
     if(pointsNotice) pointsNotice.style.display='block';
+    if(lineChatButton) lineChatButton.style.display='block';
     btn.textContent=result.already_paid?'ชำระเงินแล้ว':'แจ้งชำระเงินแล้ว ✓';
     btn.disabled=true;
     alert('แจ้งชำระเงินแล้ว ✓\nกรุณาเปิด LINE Official ของ Bake & Bite และกด “รับคะแนนสะสม” เพื่อรับแต้ม');
