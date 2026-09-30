@@ -644,6 +644,26 @@ async function submitOrder(){
   }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
   finally{button.disabled=false}
 }
+async function claimOrderPointsFromLink(){
+  const orderId=new URLSearchParams(location.search).get('claim_order');
+  if(!orderId||!lineToken())return;
+  try{
+    const result=await memberApi('claim-order-points','POST',{order_id:orderId});
+    const msg=result.already_claimed
+      ? 'ออเดอร์นี้รับคะแนนแล้ว\nคะแนนสะสม '+Number(result.points_total||0)+' แต้ม'
+      : 'รับคะแนนสำเร็จ ⭐\nได้ '+Number(result.points_earned||0)+' แต้ม\nคะแนนสะสม '+Number(result.points_total||0)+' แต้ม';
+    alert(msg);
+    const clean=new URL(location.href);
+    clean.searchParams.delete('claim_order');
+    history.replaceState({},'',clean.pathname+(clean.search||'')+'#points');
+    await loadMember();
+    showPage('points');
+  }catch(e){
+    const map={order_not_ready:'ออเดอร์นี้ยังไม่พร้อมรับคะแนน',order_not_found:'ไม่พบออเดอร์นี้',no_points:'ออเดอร์นี้ยังไม่มีคะแนนให้รับ'};
+    alert(map[e.message]||('รับคะแนนไม่สำเร็จ: '+e.message));
+  }
+}
+
 async function init(){
   const validPages=['order','points','redeem','contact','checkout'];
   const previewMode=new URLSearchParams(location.search).get('preview')==='1';
@@ -750,6 +770,7 @@ async function init(){
       const n=document.getElementById('memberName');
       if(n) n.textContent=p.displayName||'สมาชิก Bake & Bite';
       await loadMember();
+      await claimOrderPointsFromLink();
     }else if(previewMode){
       const n=document.getElementById('memberName');
       if(n) n.textContent='โหมดทดสอบ';
