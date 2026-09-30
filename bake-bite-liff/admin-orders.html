@@ -36,6 +36,7 @@ function render(){
   const date=new Date(o.created_at).toLocaleString('th-TH');
   return '<article class="card" data-order="'+safe(o.id)+'"><strong>'+safe(o.order_no)+'</strong> <span class="muted">'+safe(date)+'</span><p>'+safe(o.customer_name||'ไม่ระบุชื่อ')+' · ฿'+Number(o.total).toLocaleString('th-TH')+'</p><div class="items">'+(lines||'ไม่มีรายการสินค้า')+'</div>'+
   '<p class="muted">'+(o.fulfillment_method==='lineman'?'จัดส่ง LINE MAN · '+safe(o.delivery_address||'ไม่ระบุที่อยู่'):'รับเองที่ร้าน')+'</p>'+
+  (o.payment_notified_at?'<p style="margin:8px 0;font-weight:800;color:#a56a27">💳 ลูกค้าแจ้งชำระเงินแล้ว · รอตรวจสอบ</p>':'')+
   '<div class="grid"><div><label>สถานะออเดอร์</label><select class="orderStatus">'+options(statusList,o.status)+'</select></div><div><label>การชำระเงิน</label><select class="paymentStatus">'+options(paymentList,o.payment_status==='unpaid'?'pending':o.payment_status)+'</select></div></div><button class="save" style="margin-top:14px">บันทึกออเดอร์</button></article>'
  }).join(''):(orderView==='active'?'<section>ไม่มีออเดอร์ที่กำลังดำเนินการ</section>':'<section>ยังไม่มีประวัติออเดอร์</section>');
 }
