@@ -315,6 +315,14 @@ function rewardImage(r){
     ? '<img src="'+escapeHtml(u)+'" alt="'+escapeHtml(r.name)+'">'
     : '🎁';
 }
+function updateNextRewardMessage(){
+  const el=document.getElementById('nextReward');if(!el)return;
+  const active=[...rewardCatalog].filter(r=>r.is_active!==false).sort((a,b)=>Number(a.points_required)-Number(b.points_required));
+  if(!active.length){el.textContent='ทุก 50 บาท = 1 แต้ม';return}
+  const next=active.find(r=>Number(r.points_required)>currentMemberPoints);
+  if(!next){el.textContent='แต้มของคุณสามารถแลกรางวัลได้แล้ว';return}
+  el.textContent='อีก '+(Number(next.points_required)-currentMemberPoints)+' แต้ม แลก '+next.name;
+}
 function renderRewards(){
   const root=document.getElementById('rewardList');if(!root)return;
   if(!rewardCatalog.length){root.innerHTML='<div class="reward-empty">ยังไม่มีของรางวัลที่เปิดให้แลก</div>';return}
@@ -343,7 +351,7 @@ async function loadRewards(){
     const response=await fetch(STORE_API+'?action=rewards');
     const data=await response.json();
     if(!response.ok||!data.ok)throw new Error(data.error||'โหลดของรางวัลไม่สำเร็จ');
-    rewardCatalog=data.rewards||[];renderRewards();
+    rewardCatalog=data.rewards||[];renderRewards();updateNextRewardMessage();
   }catch(e){console.error('rewards',e);const root=document.getElementById('rewardList');if(root)root.innerHTML='<div class="reward-empty">โหลดของรางวัลไม่สำเร็จ กรุณาลองใหม่</div>'}
 }
 async function redeemReward(id){
@@ -383,8 +391,9 @@ async function loadMember(){
     currentMemberPoints=Number(m.points||0);
     document.getElementById("redeemPoints").textContent=currentMemberPoints;
     renderRewards();
-    document.getElementById("pointsProgress").style.width=Math.min(100,(m.points/20)*100)+"%";
-    document.getElementById("nextReward").textContent=m.points>=20?"แต้มถึงเกณฑ์รับแซนด์วิชฟรี 1 ชิ้นแล้ว":"อีก "+(20-m.points)+" แต้ม รับแซนด์วิชฟรี 1 ชิ้น";
+    const firstRewardPoints=rewardCatalog.length?Math.max(1,Number([...rewardCatalog].sort((a,b)=>Number(a.points_required)-Number(b.points_required))[0].points_required||5)):5;
+    document.getElementById("pointsProgress").style.width=Math.min(100,(currentMemberPoints/firstRewardPoints)*100)+"%";
+    updateNextRewardMessage();
     document.getElementById("memberPhone").value=m.phone||"";
     document.getElementById("memberEmail").value=m.email||"";
     savedAddresses=result.addresses||[];
