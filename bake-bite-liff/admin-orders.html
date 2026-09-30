@@ -60,7 +60,10 @@ function render(){
      const orderDate=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(when);
      const orderTime=new Intl.DateTimeFormat('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'}).format(when);
      return '<article class="card history-only">'+
-       '<div class="grid"><div><label>วันที่สั่ง</label><div>'+safe(orderDate)+'</div></div><div><label>เวลาสั่ง</label><div>'+safe(orderTime)+' น.</div></div></div>'+
+       '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:15px;margin-bottom:8px">'+
+         '<span><strong>วันที่สั่ง</strong> '+safe(orderDate)+'</span>'+
+         '<span><strong>เวลาสั่ง</strong> '+safe(orderTime)+' น.</span>'+
+       '</div>'+
        '<div class="items" style="margin-top:12px"><strong>รายการที่สั่ง</strong><div style="margin-top:6px">'+(lines||'ไม่มีรายการสินค้า')+'</div></div>'+
        '<div class="history-metrics">'+
          '<div class="history-metric"><strong>ยอดเงิน</strong><span>฿'+Number(o.total).toLocaleString('th-TH')+'</span></div>'+
