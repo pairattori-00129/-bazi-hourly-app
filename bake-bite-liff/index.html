@@ -202,6 +202,28 @@ body{min-height:100vh}
   </div>
 </section>
 
+<section id="payment" class="page">
+  <div class="title"><h1>ชำระเงิน</h1><p>ตรวจสอบยอดและแจ้งชำระเงินสำหรับออเดอร์นี้</p></div>
+  <div class="card" style="margin:12px">
+    <div style="text-align:center;margin-bottom:14px">
+      <div class="sub">เลขที่ออเดอร์</div>
+      <strong id="paymentOrderNo" style="font-size:21px;color:#5b2d1b">—</strong>
+    </div>
+    <div id="paymentItems" style="padding:10px 0;border-top:1px solid #ead8c7;border-bottom:1px solid #ead8c7"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:22px">
+      <strong>ยอดชำระ</strong><strong id="paymentTotal" style="color:#a8522e">฿0</strong>
+    </div>
+    <div class="card" style="margin-top:14px;background:#fff8ef">
+      <strong>วิธีชำระเงิน</strong>
+      <div id="paymentMethodText" style="margin-top:7px;font-size:17px">—</div>
+      <div id="transferHelp" class="sub" style="margin-top:8px">โอนเงิน / QR แล้วกด “แจ้งชำระเงินแล้ว” จากนั้นร้านจะตรวจสอบและยืนยันการชำระ</div>
+    </div>
+    <div id="paymentNotice" class="note" style="margin-top:12px">สถานะ: รอการแจ้งชำระเงิน</div>
+    <button class="btn" id="notifyPaymentButton" type="button" onclick="notifyPayment()">แจ้งชำระเงินแล้ว</button>
+    <button class="btn" style="background:#8f8178" type="button" onclick="showPage('points')">ดูประวัติออเดอร์</button>
+  </div>
+</section>
+
 <section id="points" class="page active">
   <div class="title"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
   <section class="member-card">
@@ -286,6 +308,7 @@ let referralCode="";
 let referralSettings={share_points:1,first_purchase_points:5};
 let currentMemberPoints=0;
 let rewardCatalog=[];
+let currentPaymentOrder=null;
 function renderReferralSettings(){
   document.getElementById('shareRewardText').textContent='รับ '+referralSettings.share_points+' แต้มต่อเพื่อนใหม่ 1 คน · ถ้าเพื่อนสั่งซื้อครั้งแรก รับเพิ่ม '+referralSettings.first_purchase_points+' แต้ม';
 }
@@ -449,7 +472,7 @@ function selectSavedAddress(){
 function toggleSaveAddress(){document.getElementById("addressLabel").style.display=document.getElementById("saveAddressCheck").checked?"block":"none"}
 function showPage(id){
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));
-  const navPage=id==='checkout'?'order':id;
+  const navPage=(id==='checkout'||id==='payment')?'order':id;
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===navPage));
   const navin=document.querySelector('.navin');
   if(navin){
@@ -586,6 +609,36 @@ function useCurrentLocation(){
     {enableHighAccuracy:true,timeout:10000,maximumAge:60000}
   );
 }
+function renderPaymentPage(orderData){
+  if(!orderData)return;
+  currentPaymentOrder=orderData;
+  document.getElementById('paymentOrderNo').textContent=orderData.order_no||'—';
+  document.getElementById('paymentTotal').textContent=money(orderData.total||0);
+  document.getElementById('paymentItems').innerHTML=(orderData.items||[]).map(i=>
+    '<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0"><span>'+escapeHtml(i.name)+' × '+Number(i.quantity)+'</span><strong>'+money(i.line_total)+'</strong></div>'
+  ).join('')||'<div class="sub">ไม่มีรายการสินค้า</div>';
+  const cash=orderData.payment_method==='cash';
+  document.getElementById('paymentMethodText').textContent=cash?'เงินสดที่ร้าน':'โอนเงิน / QR';
+  document.getElementById('transferHelp').style.display=cash?'none':'block';
+  const btn=document.getElementById('notifyPaymentButton');
+  btn.style.display=cash?'none':'block';
+  document.getElementById('paymentNotice').textContent=cash?'สถานะ: ชำระเงินที่ร้านเมื่อรับสินค้า':'สถานะ: รอการแจ้งชำระเงิน';
+}
+async function notifyPayment(){
+  if(!currentPaymentOrder?.id){alert('ไม่พบข้อมูลออเดอร์ กรุณาเปิดประวัติออเดอร์แล้วลองใหม่');return}
+  const btn=document.getElementById('notifyPaymentButton');btn.disabled=true;
+  try{
+    const result=await memberApi('notify-payment','POST',{order_id:currentPaymentOrder.id});
+    document.getElementById('paymentNotice').textContent=result.already_paid?'สถานะ: ร้านยืนยันชำระเงินแล้ว':'สถานะ: แจ้งชำระเงินแล้ว รอร้านตรวจสอบ';
+    btn.textContent=result.already_paid?'ชำระเงินแล้ว':'แจ้งชำระเงินแล้ว ✓';
+    btn.disabled=true;
+    await loadMember();
+  }catch(e){
+    alert('แจ้งชำระเงินไม่สำเร็จ: '+e.message);
+    btn.disabled=false;
+  }
+}
+
 async function submitOrder(){
   const items=cartItems(); if(!items.length) return;
   const fulfillment=document.querySelector('input[name="fulfillment"]:checked').value;
@@ -637,9 +690,14 @@ async function submitOrder(){
     });
     const result=await r.json();if(!r.ok||!result.ok)throw new Error(result.error||"ส่งออเดอร์ไม่สำเร็จ");
     const order=result.order;
-    const deliveryText=fulfillment==="lineman"?"\nจัดส่ง: LINE MAN\nสถานะ: รอยืนยันการชำระเงิน":"\nรับสินค้า: รับเองที่ร้าน";
-    alert("รับคำสั่งซื้อแล้ว\nเลขที่ "+order.order_no+"\nยอดรวม "+money(order.total)+deliveryText);
-    cart={}; renderCatalog(); showPage("order");
+    const paymentData={
+      id:order.id,order_no:order.order_no,total:Number(order.total||0),
+      payment_method:body.payment_method,fulfillment_method:fulfillment,
+      items:items.map(i=>({name:i.name,quantity:i.quantity,line_total:Number(i.price)*Number(i.quantity)}))
+    };
+    sessionStorage.setItem('bakeBiteLastPaymentOrder',JSON.stringify(paymentData));
+    renderPaymentPage(paymentData);
+    cart={}; renderCatalog(); showPage("payment");
     loadMember();
   }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
   finally{button.disabled=false}
@@ -665,7 +723,7 @@ async function claimOrderPointsFromLink(){
 }
 
 async function init(){
-  const validPages=['order','points','redeem','contact','checkout'];
+  const validPages=['order','points','redeem','contact','checkout','payment'];
   const previewMode=new URLSearchParams(location.search).get('preview')==='1';
   try{
     await liff.init({liffId:LIFF_ID});
@@ -683,6 +741,12 @@ async function init(){
       return;
     }
 
+    if(page==='payment'){
+      const savedPayment=sessionStorage.getItem('bakeBiteLastPaymentOrder');
+      if(savedPayment){
+        try{renderPaymentPage(JSON.parse(savedPayment))}catch(e){console.error('payment restore',e)}
+      }
+    }
     showPage(page);
 
     if(liff.isLoggedIn()){
