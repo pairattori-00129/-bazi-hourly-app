@@ -152,6 +152,8 @@ const seaStation=document.getElementById("seaStation");
 const seaText=document.getElementById("seaText");
 const countEl=document.getElementById("viewCount");
 const base="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1";
+const supabaseAnon="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbHdybGxqcXdneG5ycXJkdWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMTA2NTMsImV4cCI6MjEwNTg4NjY1M30.tAb2Qi1d1k5_SRVK9oNlcYUSSIP0stJynuTZm3l9Lu0";
+let seaData=null;
 let lastPoint=null;
 
 function setStatus(text,error){
@@ -196,6 +198,7 @@ async function showResult(lat,lon,label,accuracy){
   if(Number.isFinite(accuracy)) coordText+=" • ความแม่นยำ GPS ±"+Math.round(accuracy)+" ม.";
   coordsEl.textContent=coordText;
   lastPoint={lat,lon,h,label:label||"ตำแหน่งที่ตรวจสอบ"};
+  seaData=null;
   historyPanel.classList.remove("show");
   result.classList.add("show");
   setStatus("ตรวจสำเร็จ ✓",false);
@@ -255,16 +258,54 @@ function distanceKm(lat1,lon1,lat2,lon2){
   return 2*R*Math.asin(Math.sqrt(a));
 }
 
-function showSeaHistory(years){
+async function loadSeaData(){
+  if(!lastPoint) throw new Error("กรุณาเช็คตำแหน่งก่อน");
+  const r=await fetch(base+"/sea-level-history",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "apikey":supabaseAnon,
+      "Authorization":"Bearer "+supabaseAnon
+    },
+    body:JSON.stringify({lat:lastPoint.lat,lon:lastPoint.lon})
+  });
+  const j=await r.json();
+  if(!r.ok) throw new Error(j.error||"ดึงข้อมูลระดับน้ำทะเลไม่ได้");
+  seaData=j;
+  return j;
+}
+
+async function showSeaHistory(years){
   if(!lastPoint){setStatus("กรุณาเช็คตำแหน่งก่อนดูระดับน้ำทะเลย้อนหลัง",true);return}
   seaPanel.classList.add("show");
   seaYearBtns.forEach(b=>b.classList.toggle("secondary",Number(b.dataset.years)!==years));
   seaCurrentLevel.textContent=Number(lastPoint.h).toFixed(2);
   seaPastLabel.textContent="เทียบ "+years+" ปีก่อน";
-  seaPastLevel.textContent="ไม่มีข้อมูล";
+  seaPastLevel.textContent="กำลังโหลด";
   seaDelta.textContent="--";
-  seaStation.textContent="สถานีอ้างอิง: กำลังตรวจสอบความพร้อมของข้อมูลรายปี";
-  seaText.textContent="ระบบยังไม่ใช้ค่าประมาณแทนข้อมูลรายปี หากสถานีที่เหมาะสมไม่มีข้อมูลของปีเป้าหมายจะขึ้นว่า ไม่มีข้อมูลปีนี้";
+  seaStation.textContent="สถานีอ้างอิง: กำลังค้นหา";
+  seaText.textContent="กำลังดึงข้อมูลระดับน้ำทะเลเฉลี่ยรายปี…";
+  try{
+    const d=seaData||await loadSeaData();
+    const targetYear=d.latest_year-years;
+    const target=d.annual.find(x=>Number(x.year)===targetYear);
+    if(!target){
+      seaPastLevel.textContent="ไม่มีข้อมูล";
+      seaStation.textContent="สถานีอ้างอิง: "+d.station.name+" • "+d.station.distance_km+" กม.";
+      seaText.textContent="ไม่มีข้อมูลรายปีสำหรับ พ.ศ./ค.ศ. เป้าหมาย "+targetYear+" ในชุดข้อมูลสถานีนี้";
+      return;
+    }
+    const deltaMm=Number(d.latest_msl_mm)-Number(target.mm);
+    const pastHeight=Number(lastPoint.h)+(deltaMm/1000);
+    seaPastLevel.textContent=pastHeight.toFixed(2);
+    seaDelta.textContent=(deltaMm>=0?"+":"")+deltaMm.toFixed(1)+" มม.";
+    seaStation.textContent="สถานีอ้างอิง: "+d.station.name+" • "+d.station.distance_km+" กม.";
+    seaText.textContent="เทียบระดับน้ำทะเลเฉลี่ยปี "+d.latest_year+" กับปี "+targetYear+" • ความสูงย้อนหลังคำนวณจากความต่างระดับน้ำทะเลของสถานี ไม่ใช่ค่าระดับสำรวจของจุดนี้โดยตรง";
+  }catch(e){
+    seaPastLevel.textContent="ดึงไม่ได้";
+    seaStation.textContent="สถานีอ้างอิง: --";
+    seaText.textContent=e.message||"ไม่สามารถดึงข้อมูลระดับน้ำทะเลได้";
+  }
 }
 
 function showHistory(years){
