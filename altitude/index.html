@@ -55,6 +55,7 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
 <div class="place" id="place">--</div>
 <div class="coords" id="coords">--</div>
 <button id="historyBtn" class="historyBtn" type="button">📉 เช็คการทรุดตัว 1–5 ปี</button>
+<button id="seaBtn" class="historyBtn" type="button">🌊 เทียบระดับน้ำทะเลย้อนหลัง 1–5 ปี</button>
 <div class="history" id="historyPanel">
   <h3>เปรียบเทียบระดับพื้นที่</h3>
   <div class="historyTabs" id="historyTabs">
@@ -85,6 +86,35 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
   <p id="historyText">ระบบพร้อมเปรียบเทียบเมื่อเชื่อมข้อมูลการทรุดตัวจริงของพิกัดนี้</p>
   <p class="sourceNote"><b>หมายเหตุ:</b> หน้าจอรองรับการแสดงผลละเอียด เช่น 5.30 ซม. / 53.00 มม. แต่ความละเอียดที่แสดงไม่เท่ากับความแม่นยำของข้อมูล ค่าปัจจุบันจาก DEM ไม่ใช่การสำรวจระดับเซนติเมตร ส่วนค่าการทรุดตัวต้องมาจาก InSAR/หมุดระดับจริง ระบบจะไม่สร้างตัวเลขย้อนหลังแบบสมมติ</p>
 </div>
+<div class="history" id="seaPanel">
+  <h3>🌊 เทียบระดับน้ำทะเลย้อนหลัง</h3>
+  <div class="historyTabs" id="seaTabs">
+    <button class="seaYearBtn" data-years="1" type="button">1 ปี</button>
+    <button class="seaYearBtn secondary" data-years="2" type="button">2 ปี</button>
+    <button class="seaYearBtn secondary" data-years="3" type="button">3 ปี</button>
+    <button class="seaYearBtn secondary" data-years="4" type="button">4 ปี</button>
+    <button class="seaYearBtn secondary" data-years="5" type="button">5 ปี</button>
+  </div>
+  <div class="compareGrid">
+    <div class="compareCard">
+      <div class="k">ความสูงปัจจุบัน</div>
+      <div class="v" id="seaCurrentLevel">--</div>
+      <div class="u">เมตรจากระดับน้ำทะเล</div>
+    </div>
+    <div class="compareCard">
+      <div class="k" id="seaPastLabel">เทียบ 1 ปีก่อน</div>
+      <div class="v pending" id="seaPastLevel">รอข้อมูล</div>
+      <div class="u">เมตรจากระดับน้ำทะเลของปีอ้างอิง</div>
+    </div>
+  </div>
+  <div class="deltaBox">
+    <span>ความต่างของระดับน้ำทะเลเฉลี่ย</span>
+    <b id="seaDelta">--</b>
+    <span id="seaStation">สถานีอ้างอิง: --</span>
+  </div>
+  <p id="seaText">เลือกช่วง 1–5 ปีเพื่อเปรียบเทียบ</p>
+  <p class="sourceNote"><b>หมายเหตุ:</b> ค่านี้ต้องใช้ระดับน้ำทะเลเฉลี่ยรายปีจากสถานีวัดน้ำทะเลที่มีข้อมูลจริง ไม่ได้คำนวณจากภาพดาวเทียม และไม่ควรนำสถานีที่อยู่ไกลมาแทนโดยไม่ระบุ</p>
+</div>
 </div>
 </section>
 
@@ -111,6 +141,15 @@ const pastLevel=document.getElementById("pastLevel");
 const subsidenceTotal=document.getElementById("subsidenceTotal");
 const subsidenceAvg=document.getElementById("subsidenceAvg");
 const subsidenceMm=document.getElementById("subsidenceMm");
+const seaBtn=document.getElementById("seaBtn");
+const seaPanel=document.getElementById("seaPanel");
+const seaYearBtns=[...document.querySelectorAll(".seaYearBtn")];
+const seaCurrentLevel=document.getElementById("seaCurrentLevel");
+const seaPastLabel=document.getElementById("seaPastLabel");
+const seaPastLevel=document.getElementById("seaPastLevel");
+const seaDelta=document.getElementById("seaDelta");
+const seaStation=document.getElementById("seaStation");
+const seaText=document.getElementById("seaText");
 const countEl=document.getElementById("viewCount");
 const base="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1";
 let lastPoint=null;
@@ -216,6 +255,18 @@ function distanceKm(lat1,lon1,lat2,lon2){
   return 2*R*Math.asin(Math.sqrt(a));
 }
 
+function showSeaHistory(years){
+  if(!lastPoint){setStatus("กรุณาเช็คตำแหน่งก่อนดูระดับน้ำทะเลย้อนหลัง",true);return}
+  seaPanel.classList.add("show");
+  seaYearBtns.forEach(b=>b.classList.toggle("secondary",Number(b.dataset.years)!==years));
+  seaCurrentLevel.textContent=Number(lastPoint.h).toFixed(2);
+  seaPastLabel.textContent="เทียบ "+years+" ปีก่อน";
+  seaPastLevel.textContent="ไม่มีข้อมูล";
+  seaDelta.textContent="--";
+  seaStation.textContent="สถานีอ้างอิง: กำลังตรวจสอบความพร้อมของข้อมูลรายปี";
+  seaText.textContent="ระบบยังไม่ใช้ค่าประมาณแทนข้อมูลรายปี หากสถานีที่เหมาะสมไม่มีข้อมูลของปีเป้าหมายจะขึ้นว่า ไม่มีข้อมูลปีนี้";
+}
+
 function showHistory(years){
   if(!lastPoint){setStatus("กรุณาเช็คตำแหน่งก่อนดูข้อมูลย้อนหลัง",true);return}
   historyPanel.classList.add("show");
@@ -236,6 +287,8 @@ function showHistory(years){
     historyText.textContent="พิกัด "+lastPoint.lat.toFixed(6)+", "+lastPoint.lon.toFixed(6)+" • ยังไม่พบชุดข้อมูล InSAR ที่ประมวลผลพร้อมใช้สำหรับจุดนี้";
   }
 }
+seaBtn.addEventListener("click",()=>showSeaHistory(1));
+seaYearBtns.forEach(b=>b.addEventListener("click",()=>showSeaHistory(Number(b.dataset.years))));
 historyBtn.addEventListener("click",()=>showHistory(1));
 yearBtns.forEach(b=>b.addEventListener("click",()=>showHistory(Number(b.dataset.years))));
 currentBtn.addEventListener("click",checkCurrent);
