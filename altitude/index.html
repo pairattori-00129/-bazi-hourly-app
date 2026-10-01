@@ -14,7 +14,7 @@ h1{font-size:25px;line-height:1.25;margin:7px 0}.sub{color:var(--muted);font-siz
 textarea{width:100%;min-height:145px;border:1px solid #c9dcda;border-radius:16px;padding:14px;font:inherit;font-size:16px;line-height:1.5;color:var(--text);background:#fff;outline:none;resize:vertical}textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
 button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;background:var(--accent);color:#fff;font:inherit;font-size:16px;font-weight:800}button:disabled{opacity:.55}.currentBox{margin:0 0 18px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f8fcfb}.currentBox h2{margin:0 0 4px}.currentBox p{margin:0 0 10px}.currentBtn{margin-top:0;background:#0b5f59}.or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:12px;font-weight:700}.or:before,.or:after{content:"";height:1px;background:var(--line);flex:1}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:9px}
 .status{margin-top:12px;padding:11px 12px;border-radius:14px;background:#f3f8f7;color:var(--muted);font-size:13px;line-height:1.45}.status.error{background:#fff2f0;color:var(--danger)}
-.result{display:none;border-top:1px solid var(--line);padding:20px;text-align:center;background:linear-gradient(#fff,#f8fffd)}.result.show{display:block}.label{font-size:13px;color:var(--muted)}.height{font-size:58px;font-weight:850;letter-spacing:-2px;color:var(--accent);line-height:1;margin:7px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.place{font-size:14px;font-weight:700;line-height:1.45;margin:8px 0 4px}.coords{font-size:12px;color:var(--muted)}
+.result{display:none;border-top:1px solid var(--line);padding:20px;text-align:center;background:linear-gradient(#fff,#f8fffd)}.result.show{display:block}.historyBtn{margin-top:16px;background:#134e4a}.history{display:none;margin-top:14px;padding:14px;text-align:left;border:1px solid var(--line);border-radius:16px;background:#fff}.history.show{display:block}.history h3{margin:0 0 8px;font-size:16px}.history p{margin:6px 0;color:var(--muted);font-size:12px;line-height:1.55}.historyTabs{display:flex;gap:8px;margin:10px 0}.historyTabs button{min-height:42px;margin:0;font-size:14px}.historyTabs button.secondary{background:#e7f7f4;color:var(--accent)}.label{font-size:13px;color:var(--muted)}.height{font-size:58px;font-weight:850;letter-spacing:-2px;color:var(--accent);line-height:1;margin:7px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.place{font-size:14px;font-weight:700;line-height:1.45;margin:8px 0 4px}.coords{font-size:12px;color:var(--muted)}
 .footer{text-align:center;font-size:11px;color:var(--muted);line-height:1.55;margin:15px 7px 0}
 </style>
 </head>
@@ -54,6 +54,16 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
 <div class="height" id="height">-- <span class="unit">เมตร</span></div>
 <div class="place" id="place">--</div>
 <div class="coords" id="coords">--</div>
+<button id="historyBtn" class="historyBtn" type="button">📊 ดูข้อมูลย้อนหลัง 5–10 ปี</button>
+<div class="history" id="historyPanel">
+  <h3>ข้อมูลย้อนหลังของตำแหน่งนี้</h3>
+  <div class="historyTabs">
+    <button id="fiveYearBtn" type="button">5 ปี</button>
+    <button id="tenYearBtn" class="secondary" type="button">10 ปี</button>
+  </div>
+  <p id="historyText">กดเลือกช่วงเวลาเพื่อดูข้อมูลย้อนหลัง</p>
+  <p><b>หมายเหตุ:</b> ความสูงพื้นดินจาก DEM เป็นค่าภูมิประเทศปัจจุบัน ระบบจะไม่สร้างค่าความสูงย้อนหลังแบบสมมติ ข้อมูลย้อนหลังเชิงน้ำท่วม/การทรุดตัวต้องเชื่อมฐานข้อมูลเฉพาะเพิ่มเติม</p>
+</div>
 </div>
 </section>
 
@@ -70,8 +80,14 @@ const result=document.getElementById("result");
 const heightEl=document.getElementById("height");
 const placeEl=document.getElementById("place");
 const coordsEl=document.getElementById("coords");
+const historyBtn=document.getElementById("historyBtn");
+const historyPanel=document.getElementById("historyPanel");
+const fiveYearBtn=document.getElementById("fiveYearBtn");
+const tenYearBtn=document.getElementById("tenYearBtn");
+const historyText=document.getElementById("historyText");
 const countEl=document.getElementById("viewCount");
 const base="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1";
+let lastPoint=null;
 
 function setStatus(text,error){
   status.textContent=text;
@@ -114,6 +130,8 @@ async function showResult(lat,lon,label,accuracy){
   let coordText="Lat "+lat.toFixed(6)+" • Lon "+lon.toFixed(6);
   if(Number.isFinite(accuracy)) coordText+=" • ความแม่นยำ GPS ±"+Math.round(accuracy)+" ม.";
   coordsEl.textContent=coordText;
+  lastPoint={lat,lon,h,label:label||"ตำแหน่งที่ตรวจสอบ"};
+  historyPanel.classList.remove("show");
   result.classList.add("show");
   setStatus("ตรวจสำเร็จ ✓",false);
 }
@@ -164,6 +182,16 @@ async function check(){
   }
 }
 
+function showHistory(years){
+  if(!lastPoint){setStatus("กรุณาเช็คตำแหน่งก่อนดูข้อมูลย้อนหลัง",true);return}
+  historyPanel.classList.add("show");
+  fiveYearBtn.classList.toggle("secondary",years!==5);
+  tenYearBtn.classList.toggle("secondary",years!==10);
+  historyText.textContent="ช่วงย้อนหลัง "+years+" ปี • จุดนี้มีความสูงภูมิประเทศปัจจุบันประมาณ "+Math.round(lastPoint.h)+" เมตรจากระดับน้ำทะเล ขณะนี้กำลังเปิดโหมดทดสอบหน้าประวัติ โดยยังไม่แสดงค่าการทรุดตัวหรือน้ำท่วมย้อนหลังจนกว่าจะเชื่อมฐานข้อมูลเฉพาะ";
+}
+historyBtn.addEventListener("click",()=>showHistory(5));
+fiveYearBtn.addEventListener("click",()=>showHistory(5));
+tenYearBtn.addEventListener("click",()=>showHistory(10));
 currentBtn.addEventListener("click",checkCurrent);
 btn.addEventListener("click",check);
 countVisit();
