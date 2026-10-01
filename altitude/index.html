@@ -14,7 +14,7 @@ h1{font-size:25px;line-height:1.25;margin:7px 0}.sub{color:var(--muted);font-siz
 textarea{width:100%;min-height:145px;border:1px solid #c9dcda;border-radius:16px;padding:14px;font:inherit;font-size:16px;line-height:1.5;color:var(--text);background:#fff;outline:none;resize:vertical}textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
 button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;background:var(--accent);color:#fff;font:inherit;font-size:16px;font-weight:800}button:disabled{opacity:.55}.currentBox{margin:0 0 18px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f8fcfb}.currentBox h2{margin:0 0 4px}.currentBox p{margin:0 0 10px}.currentBtn{margin-top:0;background:#0b5f59}.or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:12px;font-weight:700}.or:before,.or:after{content:"";height:1px;background:var(--line);flex:1}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:9px}
 .status{margin-top:12px;padding:11px 12px;border-radius:14px;background:#f3f8f7;color:var(--muted);font-size:13px;line-height:1.45}.status.error{background:#fff2f0;color:var(--danger)}
-.result{display:none;border-top:1px solid var(--line);padding:20px;text-align:center;background:linear-gradient(#fff,#f8fffd)}.result.show{display:block}.historyBtn{margin-top:16px;background:#134e4a}.history{display:none;margin-top:14px;padding:14px;text-align:left;border:1px solid var(--line);border-radius:16px;background:#fff}.history.show{display:block}.history h3{margin:0 0 8px;font-size:16px}.history p{margin:6px 0;color:var(--muted);font-size:12px;line-height:1.55}.historyTabs{display:flex;gap:8px;margin:10px 0}.historyTabs button{min-height:42px;margin:0;font-size:14px}.historyTabs button.secondary{background:#e7f7f4;color:var(--accent)}.label{font-size:13px;color:var(--muted)}.height{font-size:58px;font-weight:850;letter-spacing:-2px;color:var(--accent);line-height:1;margin:7px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.place{font-size:14px;font-weight:700;line-height:1.45;margin:8px 0 4px}.coords{font-size:12px;color:var(--muted)}
+.result{display:none;border-top:1px solid var(--line);padding:20px;text-align:center;background:linear-gradient(#fff,#f8fffd)}.result.show{display:block}.historyBtn{margin-top:16px;background:#134e4a}.history{display:none;margin-top:14px;padding:14px;text-align:left;border:1px solid var(--line);border-radius:16px;background:#fff}.history.show{display:block}.history h3{margin:0 0 8px;font-size:16px}.history p{margin:6px 0;color:var(--muted);font-size:12px;line-height:1.55}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.compareCard{padding:14px;border:1px solid var(--line);border-radius:14px;background:#f8fcfb;text-align:center}.compareCard .k{font-size:11px;color:var(--muted);margin-bottom:4px}.compareCard .v{font-size:25px;font-weight:850;color:var(--accent);line-height:1.15}.compareCard .u{font-size:12px;color:var(--muted);margin-top:3px}.deltaBox{padding:12px;border-radius:14px;background:#f3f8f7;text-align:center;margin-top:10px}.deltaBox b{display:block;font-size:18px;margin:3px 0}.pending{color:#8a5a00!important}.sourceNote{margin-top:10px!important;padding-top:10px;border-top:1px solid var(--line)}.historyTabs{display:flex;gap:8px;margin:10px 0}.historyTabs button{min-height:42px;margin:0;font-size:14px}.historyTabs button.secondary{background:#e7f7f4;color:var(--accent)}.label{font-size:13px;color:var(--muted)}.height{font-size:58px;font-weight:850;letter-spacing:-2px;color:var(--accent);line-height:1;margin:7px 0}.unit{font-size:18px;color:var(--text);letter-spacing:0}.place{font-size:14px;font-weight:700;line-height:1.45;margin:8px 0 4px}.coords{font-size:12px;color:var(--muted)}
 .footer{text-align:center;font-size:11px;color:var(--muted);line-height:1.55;margin:15px 7px 0}
 </style>
 </head>
@@ -54,15 +54,32 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
 <div class="height" id="height">-- <span class="unit">เมตร</span></div>
 <div class="place" id="place">--</div>
 <div class="coords" id="coords">--</div>
-<button id="historyBtn" class="historyBtn" type="button">📊 ดูข้อมูลย้อนหลัง 5–10 ปี</button>
+<button id="historyBtn" class="historyBtn" type="button">📉 เช็คการทรุดตัว 5–10 ปี</button>
 <div class="history" id="historyPanel">
-  <h3>ข้อมูลย้อนหลังของตำแหน่งนี้</h3>
+  <h3>เปรียบเทียบระดับพื้นที่</h3>
   <div class="historyTabs">
-    <button id="fiveYearBtn" type="button">5 ปี</button>
-    <button id="tenYearBtn" class="secondary" type="button">10 ปี</button>
+    <button id="fiveYearBtn" type="button">ย้อนหลัง 5 ปี</button>
+    <button id="tenYearBtn" class="secondary" type="button">ย้อนหลัง 10 ปี</button>
   </div>
-  <p id="historyText">กดเลือกช่วงเวลาเพื่อดูข้อมูลย้อนหลัง</p>
-  <p><b>หมายเหตุ:</b> ความสูงพื้นดินจาก DEM เป็นค่าภูมิประเทศปัจจุบัน ระบบจะไม่สร้างค่าความสูงย้อนหลังแบบสมมติ ข้อมูลย้อนหลังเชิงน้ำท่วม/การทรุดตัวต้องเชื่อมฐานข้อมูลเฉพาะเพิ่มเติม</p>
+  <div class="compareGrid">
+    <div class="compareCard">
+      <div class="k">ระดับปัจจุบัน</div>
+      <div class="v" id="currentLevel">--</div>
+      <div class="u">เมตรจากระดับน้ำทะเล</div>
+    </div>
+    <div class="compareCard">
+      <div class="k" id="pastLabel">ระดับเมื่อ 5 ปีก่อน</div>
+      <div class="v pending" id="pastLevel">รอข้อมูล</div>
+      <div class="u">จากฐานข้อมูล InSAR</div>
+    </div>
+  </div>
+  <div class="deltaBox">
+    <span>การทรุดตัวสะสม</span>
+    <b id="subsidenceTotal">รอข้อมูล InSAR</b>
+    <span id="subsidenceAvg">เฉลี่ยต่อปี: --</span>
+  </div>
+  <p id="historyText">ระบบพร้อมเปรียบเทียบเมื่อเชื่อมข้อมูลการทรุดตัวจริงของพิกัดนี้</p>
+  <p class="sourceNote"><b>หมายเหตุ:</b> ค่าปัจจุบันมาจาก DEM ส่วนค่าย้อนหลังต้องมาจากข้อมูล InSAR/การสำรวจจริง ระบบจะไม่สร้างตัวเลขย้อนหลังแบบสมมติ</p>
 </div>
 </div>
 </section>
@@ -85,6 +102,11 @@ const historyPanel=document.getElementById("historyPanel");
 const fiveYearBtn=document.getElementById("fiveYearBtn");
 const tenYearBtn=document.getElementById("tenYearBtn");
 const historyText=document.getElementById("historyText");
+const currentLevel=document.getElementById("currentLevel");
+const pastLabel=document.getElementById("pastLabel");
+const pastLevel=document.getElementById("pastLevel");
+const subsidenceTotal=document.getElementById("subsidenceTotal");
+const subsidenceAvg=document.getElementById("subsidenceAvg");
 const countEl=document.getElementById("viewCount");
 const base="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1";
 let lastPoint=null;
@@ -187,7 +209,12 @@ function showHistory(years){
   historyPanel.classList.add("show");
   fiveYearBtn.classList.toggle("secondary",years!==5);
   tenYearBtn.classList.toggle("secondary",years!==10);
-  historyText.textContent="ช่วงย้อนหลัง "+years+" ปี • จุดนี้มีความสูงภูมิประเทศปัจจุบันประมาณ "+Math.round(lastPoint.h)+" เมตรจากระดับน้ำทะเล ขณะนี้กำลังเปิดโหมดทดสอบหน้าประวัติ โดยยังไม่แสดงค่าการทรุดตัวหรือน้ำท่วมย้อนหลังจนกว่าจะเชื่อมฐานข้อมูลเฉพาะ";
+  currentLevel.textContent=Number(lastPoint.h).toFixed(1);
+  pastLabel.textContent="ระดับเมื่อ "+years+" ปีก่อน";
+  pastLevel.textContent="รอข้อมูล";
+  subsidenceTotal.textContent="รอข้อมูล InSAR";
+  subsidenceAvg.textContent="เฉลี่ยต่อปี: --";
+  historyText.textContent="พิกัด "+lastPoint.lat.toFixed(6)+", "+lastPoint.lon.toFixed(6)+" • เลือกย้อนหลัง "+years+" ปีแล้ว ระบบพร้อมคำนวณทันทีเมื่อเชื่อมฐานข้อมูลการทรุดตัวจริง";
 }
 historyBtn.addEventListener("click",()=>showHistory(5));
 fiveYearBtn.addEventListener("click",()=>showHistory(5));
