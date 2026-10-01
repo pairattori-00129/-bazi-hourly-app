@@ -65,21 +65,22 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
     <div class="compareCard">
       <div class="k">ระดับปัจจุบัน</div>
       <div class="v" id="currentLevel">--</div>
-      <div class="u">เมตรจากระดับน้ำทะเล</div>
+      <div class="u">เมตรจากระดับน้ำทะเล (แสดง 2 ตำแหน่ง)</div>
     </div>
     <div class="compareCard">
       <div class="k" id="pastLabel">ระดับเมื่อ 5 ปีก่อน</div>
       <div class="v pending" id="pastLevel">รอข้อมูล</div>
-      <div class="u">จากฐานข้อมูล InSAR</div>
+      <div class="u">เมตรจากระดับน้ำทะเล / เทียบ InSAR</div>
     </div>
   </div>
   <div class="deltaBox">
     <span>การทรุดตัวสะสม</span>
     <b id="subsidenceTotal">รอข้อมูล InSAR</b>
-    <span id="subsidenceAvg">เฉลี่ยต่อปี: --</span>
+    <span id="subsidenceMm">เทียบเท่า: -- มม.</span><br>
+    <span id="subsidenceAvg">เฉลี่ยต่อปี: -- มม./ปี</span>
   </div>
   <p id="historyText">ระบบพร้อมเปรียบเทียบเมื่อเชื่อมข้อมูลการทรุดตัวจริงของพิกัดนี้</p>
-  <p class="sourceNote"><b>หมายเหตุ:</b> ค่าปัจจุบันมาจาก DEM ส่วนค่าย้อนหลังต้องมาจากข้อมูล InSAR/การสำรวจจริง ระบบจะไม่สร้างตัวเลขย้อนหลังแบบสมมติ</p>
+  <p class="sourceNote"><b>หมายเหตุ:</b> หน้าจอรองรับการแสดงผลละเอียด เช่น 5.30 ซม. / 53.00 มม. แต่ความละเอียดที่แสดงไม่เท่ากับความแม่นยำของข้อมูล ค่าปัจจุบันจาก DEM ไม่ใช่การสำรวจระดับเซนติเมตร ส่วนค่าการทรุดตัวต้องมาจาก InSAR/หมุดระดับจริง ระบบจะไม่สร้างตัวเลขย้อนหลังแบบสมมติ</p>
 </div>
 </div>
 </section>
@@ -107,6 +108,7 @@ const pastLabel=document.getElementById("pastLabel");
 const pastLevel=document.getElementById("pastLevel");
 const subsidenceTotal=document.getElementById("subsidenceTotal");
 const subsidenceAvg=document.getElementById("subsidenceAvg");
+const subsidenceMm=document.getElementById("subsidenceMm");
 const countEl=document.getElementById("viewCount");
 const base="https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1";
 let lastPoint=null;
@@ -209,11 +211,12 @@ function showHistory(years){
   historyPanel.classList.add("show");
   fiveYearBtn.classList.toggle("secondary",years!==5);
   tenYearBtn.classList.toggle("secondary",years!==10);
-  currentLevel.textContent=Number(lastPoint.h).toFixed(1);
+  currentLevel.textContent=Number(lastPoint.h).toFixed(2);
   pastLabel.textContent="ระดับเมื่อ "+years+" ปีก่อน";
   pastLevel.textContent="รอข้อมูล";
   subsidenceTotal.textContent="รอข้อมูล InSAR";
-  subsidenceAvg.textContent="เฉลี่ยต่อปี: --";
+  subsidenceMm.textContent="เทียบเท่า: -- มม.";
+  subsidenceAvg.textContent="เฉลี่ยต่อปี: -- มม./ปี";
   historyText.textContent="พิกัด "+lastPoint.lat.toFixed(6)+", "+lastPoint.lon.toFixed(6)+" • เลือกย้อนหลัง "+years+" ปีแล้ว ระบบพร้อมคำนวณทันทีเมื่อเชื่อมฐานข้อมูลการทรุดตัวจริง";
 }
 historyBtn.addEventListener("click",()=>showHistory(5));
