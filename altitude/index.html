@@ -149,7 +149,7 @@ async function countVisit(){
 async function showResult(lat,lon,label,accuracy){
   setStatus("พบตำแหน่งแล้ว กำลังคำนวณความสูง…",false);
   const h=await getElevation(lat,lon);
-  heightEl.innerHTML=Math.round(h)+' <span class="unit">เมตร</span>';
+  heightEl.innerHTML=Number(h).toFixed(2)+' <span class="unit">เมตร</span>';
   placeEl.textContent=label||"ตำแหน่งที่ตรวจสอบ";
   let coordText="Lat "+lat.toFixed(6)+" • Lon "+lon.toFixed(6);
   if(Number.isFinite(accuracy)) coordText+=" • ความแม่นยำ GPS ±"+Math.round(accuracy)+" ม.";
@@ -206,6 +206,14 @@ async function check(){
   }
 }
 
+function distanceKm(lat1,lon1,lat2,lon2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
 function showHistory(years){
   if(!lastPoint){setStatus("กรุณาเช็คตำแหน่งก่อนดูข้อมูลย้อนหลัง",true);return}
   historyPanel.classList.add("show");
@@ -217,7 +225,17 @@ function showHistory(years){
   subsidenceTotal.textContent="รอข้อมูล InSAR";
   subsidenceMm.textContent="เทียบเท่า: -- มม.";
   subsidenceAvg.textContent="เฉลี่ยต่อปี: -- มม./ปี";
-  historyText.textContent="พิกัด "+lastPoint.lat.toFixed(6)+", "+lastPoint.lon.toFixed(6)+" • เลือกย้อนหลัง "+years+" ปีแล้ว ระบบพร้อมคำนวณทันทีเมื่อเชื่อมฐานข้อมูลการทรุดตัวจริง";
+  const d=distanceKm(lastPoint.lat,lastPoint.lon,13.76281,100.6384);
+  if(years===5 && d<=5){
+    subsidenceTotal.textContent="9.11 ซม.*";
+    subsidenceMm.textContent="เทียบเท่า: 91.05 มม.";
+    subsidenceAvg.textContent="ข้อมูลอ้างอิงพื้นที่บางกะปิ";
+    historyText.textContent="*งาน PSInSAR ช่วง 2017–2022 รายงานการทรุดสะสม 91.05 มม. จากปี 2017 ถึงต้นปี 2019 ในพื้นที่บางกะปิ เป็นค่าอ้างอิงระดับพื้นที่ ไม่ใช่ค่าการทรุดของพิกัดนี้โดยตรง";
+  }else if(years===10){
+    historyText.textContent="ยังไม่มีชุดข้อมูล 10 ปีที่ประมวลผลพร้อมใช้สำหรับพิกัดนี้ ระบบจึงไม่แสดงตัวเลขสมมติ";
+  }else{
+    historyText.textContent="พิกัด "+lastPoint.lat.toFixed(6)+", "+lastPoint.lon.toFixed(6)+" • ยังไม่พบชุดข้อมูล InSAR ที่ประมวลผลพร้อมใช้สำหรับจุดนี้";
+  }
 }
 historyBtn.addEventListener("click",()=>showHistory(5));
 fiveYearBtn.addEventListener("click",()=>showHistory(5));
