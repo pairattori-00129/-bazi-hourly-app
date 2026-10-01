@@ -54,12 +54,15 @@ button{width:100%;min-height:54px;margin-top:12px;border:0;border-radius:16px;ba
 <div class="height" id="height">-- <span class="unit">เมตร</span></div>
 <div class="place" id="place">--</div>
 <div class="coords" id="coords">--</div>
-<button id="historyBtn" class="historyBtn" type="button">📉 เช็คการทรุดตัว 5–10 ปี</button>
+<button id="historyBtn" class="historyBtn" type="button">📉 เช็คการทรุดตัว 1–5 ปี</button>
 <div class="history" id="historyPanel">
   <h3>เปรียบเทียบระดับพื้นที่</h3>
-  <div class="historyTabs">
-    <button id="fiveYearBtn" type="button">ย้อนหลัง 5 ปี</button>
-    <button id="tenYearBtn" class="secondary" type="button">ย้อนหลัง 10 ปี</button>
+  <div class="historyTabs" id="historyTabs">
+    <button class="yearBtn" data-years="1" type="button">1 ปี</button>
+    <button class="yearBtn secondary" data-years="2" type="button">2 ปี</button>
+    <button class="yearBtn secondary" data-years="3" type="button">3 ปี</button>
+    <button class="yearBtn secondary" data-years="4" type="button">4 ปี</button>
+    <button class="yearBtn secondary" data-years="5" type="button">5 ปี</button>
   </div>
   <div class="compareGrid">
     <div class="compareCard">
@@ -100,8 +103,7 @@ const placeEl=document.getElementById("place");
 const coordsEl=document.getElementById("coords");
 const historyBtn=document.getElementById("historyBtn");
 const historyPanel=document.getElementById("historyPanel");
-const fiveYearBtn=document.getElementById("fiveYearBtn");
-const tenYearBtn=document.getElementById("tenYearBtn");
+const yearBtns=[...document.querySelectorAll(".yearBtn")];
 const historyText=document.getElementById("historyText");
 const currentLevel=document.getElementById("currentLevel");
 const pastLabel=document.getElementById("pastLabel");
@@ -217,8 +219,7 @@ function distanceKm(lat1,lon1,lat2,lon2){
 function showHistory(years){
   if(!lastPoint){setStatus("กรุณาเช็คตำแหน่งก่อนดูข้อมูลย้อนหลัง",true);return}
   historyPanel.classList.add("show");
-  fiveYearBtn.classList.toggle("secondary",years!==5);
-  tenYearBtn.classList.toggle("secondary",years!==10);
+  yearBtns.forEach(b=>b.classList.toggle("secondary",Number(b.dataset.years)!==years));
   currentLevel.textContent=Number(lastPoint.h).toFixed(2);
   pastLabel.textContent="ระดับเมื่อ "+years+" ปีก่อน";
   pastLevel.textContent="รอข้อมูล";
@@ -231,15 +232,12 @@ function showHistory(years){
     subsidenceMm.textContent="เทียบเท่า: 91.05 มม.";
     subsidenceAvg.textContent="ข้อมูลอ้างอิงพื้นที่บางกะปิ";
     historyText.textContent="*งาน PSInSAR ช่วง 2017–2022 รายงานการทรุดสะสม 91.05 มม. จากปี 2017 ถึงต้นปี 2019 ในพื้นที่บางกะปิ เป็นค่าอ้างอิงระดับพื้นที่ ไม่ใช่ค่าการทรุดของพิกัดนี้โดยตรง";
-  }else if(years===10){
-    historyText.textContent="ยังไม่มีชุดข้อมูล 10 ปีที่ประมวลผลพร้อมใช้สำหรับพิกัดนี้ ระบบจึงไม่แสดงตัวเลขสมมติ";
   }else{
     historyText.textContent="พิกัด "+lastPoint.lat.toFixed(6)+", "+lastPoint.lon.toFixed(6)+" • ยังไม่พบชุดข้อมูล InSAR ที่ประมวลผลพร้อมใช้สำหรับจุดนี้";
   }
 }
-historyBtn.addEventListener("click",()=>showHistory(5));
-fiveYearBtn.addEventListener("click",()=>showHistory(5));
-tenYearBtn.addEventListener("click",()=>showHistory(10));
+historyBtn.addEventListener("click",()=>showHistory(1));
+yearBtns.forEach(b=>b.addEventListener("click",()=>showHistory(Number(b.dataset.years))));
 currentBtn.addEventListener("click",checkCurrent);
 btn.addEventListener("click",check);
 countVisit();
