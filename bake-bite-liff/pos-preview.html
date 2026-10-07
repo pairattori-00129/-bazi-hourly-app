@@ -8,13 +8,10 @@
 <style>
 :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;--brown:#5b2d1b;--green:#5f8e4e;--cream:#fff9ef;--line:#eadbca;--muted:#7b6b61}
 *{box-sizing:border-box}body{margin:0;background:#f5eee6;color:#3d2b24;min-width:1100px}.hidden{display:none!important}
-.hero{height:160px;position:relative;overflow:hidden;background:#fffaf2;border-bottom:1px solid #e7d8c8}
-.heroBg{position:absolute;top:0;bottom:0;width:40%;background-image:url('bake-bite-header-v2.png?v=20261007');background-repeat:no-repeat;background-size:250% 100%;pointer-events:none}
-.heroBg.left{left:0;background-position:left center}
-.heroBg.right{right:0;background-position:right center}
-.heroCenter{position:absolute;left:38%;right:38%;top:0;bottom:0;background:radial-gradient(ellipse at center,#fffaf2 0%,#fffaf2 52%,rgba(255,250,242,.96) 70%,rgba(255,250,242,0) 100%);pointer-events:none}
-.heroLogoWrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:235px;height:156px;display:grid;place-items:center;pointer-events:none}
-.heroLogo{width:150px;height:150px;object-fit:contain;object-position:center;display:block;filter:drop-shadow(0 2px 2px rgba(91,45,27,.08))}
+.hero{height:160px;position:relative;overflow:hidden;background:#fffaf2 url('bake-bite-header-v2.png?v=20261007') center center/cover no-repeat;border-bottom:1px solid #e7d8c8}
+.heroCenterMask{position:absolute;left:50%;top:0;bottom:0;transform:translateX(-50%);width:420px;background:linear-gradient(90deg,rgba(255,250,242,0) 0%,rgba(255,250,242,.97) 13%,#fffaf2 28%,#fffaf2 72%,rgba(255,250,242,.97) 87%,rgba(255,250,242,0) 100%);pointer-events:none}
+.heroLogoWrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:240px;height:156px;display:grid;place-items:center;pointer-events:none}
+.heroLogo{width:152px;height:152px;object-fit:contain;object-position:center;display:block;filter:drop-shadow(0 2px 2px rgba(91,45,27,.08))}
 .posbar{height:92px;background:#fffaf3;border-bottom:1px solid #eadbca;display:flex;align-items:center;justify-content:space-between;padding:10px 22px;gap:18px}
 .titlebox{flex:1;text-align:center}.titlebox h1{margin:0;color:var(--brown);font-size:34px;line-height:1}.titlebox p{margin:8px 0 0;color:#806a5d;font-weight:700}
 .sysbox{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ecdfd2;border-radius:18px;padding:10px 14px;box-shadow:0 5px 16px #6a45100d}
@@ -50,9 +47,7 @@
 </head>
 <body>
 <div class="hero">
-  <div class="heroBg left" aria-hidden="true"></div>
-  <div class="heroBg right" aria-hidden="true"></div>
-  <div class="heroCenter" aria-hidden="true"></div>
+  <div class="heroCenterMask" aria-hidden="true"></div>
   <div class="heroLogoWrap"><img class="heroLogo" src="logo.svg?v=20261007" alt="Bake & Bite"></div>
 </div>
 <div class="posbar">
