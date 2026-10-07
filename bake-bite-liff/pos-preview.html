@@ -8,7 +8,9 @@
 <style>
 :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;--brown:#5b2d1b;--green:#5f8e4e;--cream:#fff9ef;--line:#eadbca;--muted:#7b6b61}
 *{box-sizing:border-box}body{margin:0;background:#f5eee6;color:#3d2b24;min-width:1100px}.hidden{display:none!important}
-.hero{height:150px;background:#fff url('bake-bite-header-v2.png?v=20261007') center center/cover no-repeat;border-bottom:1px solid #e7d8c8}
+.hero{height:150px;position:relative;overflow:hidden;background:#fff url('bake-bite-header-v2.png?v=20261007') center center/cover no-repeat;border-bottom:1px solid #e7d8c8}
+.heroLogoWrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:250px;height:146px;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(255,250,242,.98) 0%,rgba(255,250,242,.94) 52%,rgba(255,250,242,0) 78%);pointer-events:none}
+.heroLogo{width:138px;height:138px;object-fit:contain;display:block}
 .posbar{height:92px;background:#fffaf3;border-bottom:1px solid #eadbca;display:flex;align-items:center;justify-content:space-between;padding:10px 22px;gap:18px}
 .titlebox{flex:1;text-align:center}.titlebox h1{margin:0;color:var(--brown);font-size:34px;line-height:1}.titlebox p{margin:8px 0 0;color:#806a5d;font-weight:700}
 .sysbox{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ecdfd2;border-radius:18px;padding:10px 14px;box-shadow:0 5px 16px #6a45100d}
@@ -43,7 +45,7 @@
 </style>
 </head>
 <body>
-<div class="hero"></div>
+<div class="hero"><div class="heroLogoWrap"><img class="heroLogo" src="logo.svg?v=20261007" alt="Bake & Bite"></div></div>
 <div class="posbar">
   <div style="width:330px"></div>
   <div class="titlebox"><h1>ระบบขายหน้าร้าน POS</h1><p>สดใหม่ อร่อย ดีต่อสุขภาพ กับ Bake & Bite</p></div>
