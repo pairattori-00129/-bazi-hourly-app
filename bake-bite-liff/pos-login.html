@@ -1,0 +1,28 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>เข้าสู่ระบบ BAKE & BITE POS</title>
+<style>:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#422b20;background:#f5eee7}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px}main{width:min(440px,100%);background:#fff;border:1px solid #e6d7c8;border-radius:28px;padding:30px;box-shadow:0 24px 60px #57381b18}.brand{font-size:13px;font-weight:900;letter-spacing:.08em;color:#8a694f}h1{font-size:30px;margin:10px 0 6px;color:#5b2d1b}p{color:#746054;line-height:1.5}.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}.role{border:2px solid #e3d3c4;background:#fff8ef;border-radius:15px;padding:13px;font-weight:900;cursor:pointer}.role.active{border-color:#659348;background:#eef7e9;color:#365d2d}label{display:block;font-weight:800;margin:12px 0 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border:1px solid #d8c6b6;border-radius:13px}button.submit{width:100%;border:0;border-radius:14px;background:#659348;color:#fff;font:inherit;font-weight:900;font-size:18px;padding:15px;margin-top:16px;cursor:pointer}button:disabled{opacity:.55}#message{min-height:24px;color:#ae4038;font-weight:800;margin-top:12px}.hint{background:#fff8ef;border-radius:13px;padding:10px 12px;font-size:14px;color:#7a6557;margin-top:12px}</style></head><body>
+<main><div class="brand">BAKE & BITE</div><h1>เข้าสู่ระบบ BAKE & BITE POS</h1><p>เลือกระดับการเข้าถึงก่อนเข้าสู่หน้าขาย</p>
+<div class="roles"><button type="button" class="role active" data-role="user">USER<br><small>POS เท่านั้น</small></button><button type="button" class="role" data-role="admin">ADMIN<br><small>POS + Admin</small></button></div>
+<form id="form"><label id="passwordLabel" for="password">รหัสผู้ใช้</label><input id="password" type="password" autocomplete="current-password" required autofocus><button id="submit" class="submit" type="submit">เข้าสู่หน้า POS</button></form>
+<div id="roleHint" class="hint">USER เข้าได้เฉพาะหน้า POS และไม่สามารถเข้าสู่ระบบ Admin ได้</div><div id="message" role="alert"></div></main>
+<script>
+const POS_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/pos-api';
+const ADMIN_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
+let role='user';
+const buttons=[...document.querySelectorAll('.role')];
+function chooseRole(next){role=next;buttons.forEach(b=>b.classList.toggle('active',b.dataset.role===role));document.getElementById('passwordLabel').textContent=role==='admin'?'รหัสผู้ดูแล':'รหัสผู้ใช้';document.getElementById('roleHint').textContent=role==='admin'?'ADMIN เข้าได้ทั้งหน้า POS และระบบ Admin':'USER เข้าได้เฉพาะหน้า POS และไม่สามารถเข้าสู่ระบบ Admin ได้';document.getElementById('message').textContent='';document.getElementById('password').focus()}
+buttons.forEach(b=>b.onclick=()=>chooseRole(b.dataset.role));
+document.getElementById('form').onsubmit=async e=>{
+ e.preventDefault();const btn=document.getElementById('submit');btn.disabled=true;const password=document.getElementById('password').value;const msg=document.getElementById('message');msg.textContent='';
+ try{
+  const r=await fetch(POS_API+'?action=login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role,password})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error==='invalid_credentials'?'รหัสไม่ถูกต้อง':'เข้าสู่ระบบไม่สำเร็จ');
+  sessionStorage.setItem('bake_bite_pos_session',j.token);sessionStorage.setItem('bake_bite_pos_role',j.role);
+  if(j.role==='admin'){
+    const ar=await fetch(ADMIN_API+'?action=admin-login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});const aj=await ar.json();if(ar.ok&&aj.ok)sessionStorage.setItem('bake_bite_admin_session',aj.token);else sessionStorage.removeItem('bake_bite_admin_session');
+  }else{
+    sessionStorage.removeItem('bake_bite_admin_session');
+  }
+  location.replace('pos.html');
+ }catch(err){msg.textContent=err.message}
+ finally{btn.disabled=false}
+};
+</script></body></html>
