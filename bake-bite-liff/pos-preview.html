@@ -26,6 +26,19 @@
 .checkout{border-top:1px solid #e9ddd2;padding-top:10px}.totalline{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:19px}.totalline strong{font-size:30px;color:#8b2418}.paylabel{font-size:13px;font-weight:900;margin:8px 0}.paymethods{display:grid;grid-template-columns:1fr 1fr;gap:8px}.paymethods label{border:2px solid #e2d6ca;border-radius:13px;padding:10px;text-align:center;font-weight:900;cursor:pointer}.paymethods label:has(input:checked){border-color:#5f8e4e;background:#f1f8ed}.paymethods input{margin-right:6px}
 .note{width:100%;border:1px solid #e3d4c7;border-radius:12px;padding:10px;font:inherit;margin-top:8px}.status{margin-top:8px;padding:9px 11px;border-radius:11px;background:#fff6e8;font-size:13px;font-weight:800;min-height:38px}.paybtn{width:100%;border:0;border-radius:14px;background:#4d8b43;color:#fff;padding:13px;font-size:17px;font-weight:900;margin-top:9px;cursor:pointer}.paybtn:disabled{opacity:.45}.clearbtn{width:100%;border:0;border-radius:14px;background:#eee0d1;color:#6a321f;padding:10px;font-weight:900;margin-top:7px;cursor:pointer}
 .loginmask{position:fixed;inset:0;background:rgba(45,29,20,.66);z-index:50;display:grid;place-items:center;padding:20px}.loginbox{width:min(440px,95vw);background:#fff;border-radius:26px;padding:26px;box-shadow:0 25px 80px #0005}.loginbox h2{margin:5px 0;color:#5b2d1b}.loginroles{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.loginrole{border:2px solid #e2d3c4;background:#fff8ef;border-radius:13px;padding:11px;font-weight:900}.loginrole.active{border-color:#62934c;background:#edf7e8}.loginbox input{width:100%;padding:13px;border:1px solid #d9c8b8;border-radius:12px;font:inherit}.loginbox .submit{width:100%;border:0;border-radius:13px;background:#61904e;color:#fff;padding:13px;font-weight:900;font-size:17px;margin-top:12px}.loginmsg{min-height:22px;color:#b54437;font-weight:800;margin-top:9px}
+
+.paymask{position:fixed;inset:0;z-index:80;background:rgba(35,24,18,.72);display:grid;place-items:center;padding:22px}
+.paycard{width:min(660px,96vw);max-height:94vh;overflow:auto;background:#fff;border-radius:28px;padding:24px;box-shadow:0 30px 90px #0006;text-align:center}
+.paycard h2{margin:4px 0 3px;color:#4e2d20;font-size:30px}.paycard .orderno{font-weight:900;color:#7e5c49}.payamount{font-size:54px;font-weight:950;color:#145f35;margin:5px 0 10px}
+.qrbox{width:292px;min-height:292px;margin:0 auto 12px;padding:14px;border-radius:22px;border:2px solid #e5d8cb;background:#fff;display:grid;place-items:center}
+.qrbox img,.qrbox canvas{max-width:260px!important;max-height:260px!important}
+.waitpay{display:flex;justify-content:center;align-items:center;gap:9px;font-weight:900;color:#6a594e;margin:8px 0}.pulse{width:12px;height:12px;border-radius:50%;background:#e19a35;box-shadow:0 0 0 0 rgba(225,154,53,.6);animation:pulse 1.5s infinite}@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(225,154,53,0)}100%{box-shadow:0 0 0 0 rgba(225,154,53,0)}}
+.testnote{background:#fff4d9;border:1px solid #efd9a6;border-radius:13px;padding:10px 12px;text-align:left;font-size:13px;color:#765326;margin:12px 0}
+.payactions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.simulate{border:0;border-radius:14px;background:#258a4b;color:#fff;padding:14px;font-weight:950;font-size:16px;cursor:pointer}.cancelpay{border:0;border-radius:14px;background:#eee3d8;color:#653c2c;padding:14px;font-weight:900;cursor:pointer}
+.successmark{font-size:72px;line-height:1}.successbox{background:#eaf8eb;border:1px solid #c7e7c9;border-radius:18px;padding:16px;color:#265f31;font-weight:900;margin:12px 0}.flowsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.flowstep{border-radius:12px;background:#f5eee7;padding:9px 5px;font-size:12px;font-weight:800;color:#79685e}.flowstep.done{background:#e5f5e4;color:#2f6833}
+.printactions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.printactions button{border:1px solid #dacabd;background:#fff9f2;color:#5b3425;border-radius:13px;padding:11px;font-weight:900;cursor:pointer}
+@media(max-width:700px){.payactions,.printactions{grid-template-columns:1fr}.flowsteps{grid-template-columns:1fr 1fr}}
+
 @media(max-width:1280px){.products{grid-template-columns:repeat(3,minmax(150px,1fr))}.layout{grid-template-columns:190px minmax(560px,1fr) 360px}}
 </style>
 </head>
@@ -69,17 +82,53 @@
     </div>
   </aside>
 </div>
+<div id="paymentMask" class="paymask hidden" aria-live="polite">
+  <div class="paycard">
+    <div id="payWaiting">
+      <div style="font-size:13px;font-weight:900;color:#8a6d58">PROMPTPAY · BAKE & BITE</div>
+      <h2>สแกน QR เพื่อชำระเงิน</h2>
+      <div id="qrOrder" class="orderno">-</div>
+      <div id="qrAmount" class="payamount">฿0</div>
+      <div id="qrCode" class="qrbox"><span>กำลังสร้าง QR...</span></div>
+      <div class="waitpay"><span class="pulse"></span><span>รอธนาคารยืนยันการชำระเงิน</span></div>
+      <div class="testnote"><b>โหมดทดสอบ:</b> QR สร้างตามยอดออเดอร์ได้ แต่การตรวจว่าเงินเข้าจริงต้องเชื่อม Payment Gateway / Webhook ก่อน ตอนนี้ใช้ปุ่มจำลองด้านล่างแทนสัญญาณจากธนาคาร</div>
+      <div class="payactions">
+        <button class="simulate" onclick="simulateBankPaid()">🧪 จำลองธนาคารยืนยันเงินเข้า</button>
+        <button class="cancelpay" onclick="closePayment()">ปิดหน้าชำระเงิน</button>
+      </div>
+    </div>
+    <div id="paySuccess" class="hidden">
+      <div class="successmark">✅</div>
+      <h2>รับชำระเงินเรียบร้อย</h2>
+      <div id="successOrder" class="orderno">-</div>
+      <div id="successAmount" class="payamount">฿0</div>
+      <div class="successbox">ออเดอร์ถูกยืนยันและส่งเข้าคิวห้องครัวแล้ว</div>
+      <div class="flowsteps">
+        <div id="stepPaid" class="flowstep">✓ รับชำระ</div>
+        <div id="stepDrawer" class="flowstep">ลิ้นชักเงิน</div>
+        <div id="stepReceipt" class="flowstep">ใบเสร็จ</div>
+        <div id="stepKitchen" class="flowstep">ใบครัว</div>
+      </div>
+      <div class="printactions">
+        <button onclick="printReceipt()">🖨 พิมพ์ใบเสร็จ</button>
+        <button onclick="printKitchen()">🖨 พิมพ์ใบครัว</button>
+      </div>
+      <button class="simulate" style="width:100%;margin-top:12px" onclick="finishPayment()">เสร็จสิ้น / ออเดอร์ใหม่</button>
+    </div>
+  </div>
+</div>
 <div id="loginMask" class="loginmask">
   <div class="loginbox"><div style="font-size:12px;font-weight:900;color:#8b6a56">BAKE & BITE · POS PREVIEW</div><h2>เข้าสู่ระบบหน้าทดลอง</h2>
   <div class="loginroles"><button class="loginrole active" data-role="user">USER</button><button class="loginrole" data-role="admin">ADMIN</button></div>
   <input id="loginPassword" type="password" placeholder="รหัสผ่าน">
   <button class="submit" onclick="login()">เข้าสู่ POS ทดลอง</button><div id="loginMsg" class="loginmsg"></div></div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 const POS_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/pos-api';
 const STORE_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
 const PT='bake_bite_pos_session',PR='bake_bite_pos_role',AT='bake_bite_admin_session';
-let loginRole='user',catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,voiceEnabled=false,lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
+let loginRole='user',catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=false,lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
 const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
 const token=()=>sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
 document.querySelectorAll('.loginrole').forEach(b=>b.onclick=()=>{loginRole=b.dataset.role;document.querySelectorAll('.loginrole').forEach(x=>x.classList.toggle('active',x===b));loginMsg.textContent='';loginPassword.focus()});
@@ -100,11 +149,22 @@ function addItem(id){cart[id]=(cart[id]||0)+1;renderCart()}
 function changeQty(id,d){cart[id]=Math.max(0,(cart[id]||0)+d);if(!cart[id])delete cart[id];renderCart()}
 function cartItems(){return Object.entries(cart).map(([id,q])=>{const p=catalog.products.find(x=>x.id===id);return p?{...p,quantity:q}:null}).filter(Boolean)}
 function renderCart(){const items=cartItems();cartList.innerHTML=items.length?items.map(i=>'<div class="cartrow"><div class="cartname">'+esc(i.name)+'</div><div style="text-align:center">'+money(i.price)+'</div><div class="qty"><button onclick="changeQty(\''+i.id+'\',-1)">−</button><b>'+i.quantity+'</b><button onclick="changeQty(\''+i.id+'\',1)">+</button></div><div style="text-align:right;font-weight:900">'+money(Number(i.price)*i.quantity)+'</div></div>').join(''):'<div class="empty">ยังไม่มีสินค้าในบิล</div>';const t=items.reduce((s,i)=>s+Number(i.price)*i.quantity,0);total.textContent=money(t);actionBtn.disabled=!items.length&&!currentOrder}
-async function createOrder(){const items=cartItems();if(!items.length)return;actionBtn.disabled=true;try{const pay=document.querySelector('input[name="pay"]:checked').value;const r=await request('order','POST',{items:items.map(i=>({product_id:i.id,quantity:i.quantity})),payment_method:pay,customer_name:customerName.value.trim(),note:note.value.trim()});currentOrder=r.order;billNo.textContent='#'+r.order.order_no;status.textContent=pay==='cash'?'รับเงินสดแล้วกด “ยืนยันรับชำระ”':'ให้ลูกค้าสแกน QR และตรวจยอดก่อนยืนยัน';actionBtn.textContent='ยืนยันรับชำระ '+money(r.order.total);actionBtn.onclick=confirmPaid}catch(e){alert(e.message)}finally{actionBtn.disabled=false}}
-async function confirmPaid(){if(!currentOrder)return;actionBtn.disabled=true;try{const r=await request('pay','POST',{id:currentOrder.id});announce(r.order);status.textContent='✅ รับชำระแล้ว '+money(r.order.total);cart={};currentOrder=null;billNo.textContent='ชำระสำเร็จ';customerName.value='';note.value='';actionBtn.textContent='สร้างออเดอร์';actionBtn.onclick=createOrder;renderCart()}catch(e){alert(e.message)}finally{actionBtn.disabled=false}}
-function clearCart(){cart={};currentOrder=null;billNo.textContent='ยังไม่สร้างบิล';status.textContent='พร้อมรับออเดอร์';actionBtn.textContent='สร้างออเดอร์';actionBtn.onclick=createOrder;renderCart()}
+async function createOrder(){const items=cartItems();if(!items.length)return;actionBtn.disabled=true;try{const pay=document.querySelector('input[name="pay"]:checked').value;const r=await request('order','POST',{items:items.map(i=>({product_id:i.id,quantity:i.quantity})),payment_method:pay,customer_name:customerName.value.trim(),note:note.value.trim()});currentOrder=r.order;currentOrderItems=items.map(i=>({name:i.name,price:Number(i.price),quantity:i.quantity,line_total:Number(i.price)*i.quantity}));billNo.textContent='#'+r.order.order_no;if(pay==='promptpay'){status.textContent='กำลังรอ PromptPay';showPromptPay(r.order);actionBtn.textContent='กำลังรอชำระ';actionBtn.onclick=()=>showPromptPay(currentOrder)}else{status.textContent='รับเงินสดแล้วกด “ยืนยันรับชำระ”';actionBtn.textContent='ยืนยันรับชำระ '+money(r.order.total);actionBtn.onclick=confirmPaid}}catch(e){alert(e.message)}finally{actionBtn.disabled=false}}
+async function confirmPaid(){if(!currentOrder)return;actionBtn.disabled=true;try{const r=await request('pay','POST',{id:currentOrder.id});afterPaid(r.order,false)}catch(e){alert(e.message)}finally{actionBtn.disabled=false}}
+const PROMPTPAY_BASE='00020101021229370016A000000677010111021331021000251245303764';
+function crc16(text){let crc=0xFFFF;for(let i=0;i<text.length;i++){crc^=text.charCodeAt(i)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?((crc<<1)^0x1021):(crc<<1),crc&=0xFFFF}return crc.toString(16).toUpperCase().padStart(4,'0')}
+function buildPromptPayPayload(amount){const amt=Number(amount||0).toFixed(2);const amountField='54'+String(amt.length).padStart(2,'0')+amt;const body=PROMPTPAY_BASE+amountField+'5802TH6304';return body+crc16(body)}
+function showPromptPay(order){if(!order)return;payWaiting.classList.remove('hidden');paySuccess.classList.add('hidden');qrOrder.textContent='ออเดอร์ '+order.order_no;qrAmount.textContent=money(order.total);qrCode.innerHTML='';paymentMask.classList.remove('hidden');const payload=buildPromptPayPayload(order.total);if(window.QRCode){new QRCode(qrCode,{text:payload,width:260,height:260,correctLevel:QRCode.CorrectLevel.M})}else{qrCode.innerHTML='<b>โหลดตัวสร้าง QR ไม่สำเร็จ</b>'}}
+function closePayment(){paymentMask.classList.add('hidden')}
+async function simulateBankPaid(){if(!currentOrder)return;const btn=document.querySelector('#payWaiting .simulate');btn.disabled=true;btn.textContent='กำลังยืนยัน...';try{const r=await request('pay','POST',{id:currentOrder.id});afterPaid(r.order,true)}catch(e){alert(e.message);btn.disabled=false;btn.textContent='🧪 จำลองธนาคารยืนยันเงินเข้า'}}
+function afterPaid(order,fromPromptPay){announce(order);status.textContent='✅ รับชำระแล้ว '+money(order.total);successOrder.textContent='ออเดอร์ '+order.order_no;successAmount.textContent=money(order.total);stepPaid.classList.add('done');stepDrawer.classList.add('done');stepDrawer.textContent='✓ ลิ้นชัก (ทดสอบ)';stepReceipt.classList.add('done');stepReceipt.textContent='พร้อมพิมพ์ใบเสร็จ';stepKitchen.classList.add('done');stepKitchen.textContent='✓ ส่งเข้าครัว';if(fromPromptPay){payWaiting.classList.add('hidden');paySuccess.classList.remove('hidden')}billNo.textContent='#'+order.order_no;window.dispatchEvent(new CustomEvent('bakebite:drawer-open',{detail:{order_no:order.order_no,total:order.total}}))}
+function finishPayment(){paymentMask.classList.add('hidden');cart={};currentOrder=null;currentOrderItems=[];billNo.textContent='ยังไม่สร้างบิล';customerName.value='';note.value='';status.textContent='พร้อมรับออเดอร์';actionBtn.textContent='สร้างออเดอร์';actionBtn.onclick=createOrder;renderCart()}
+function printHtml(kind){if(!currentOrder)return;const isKitchen=kind==='kitchen';const rows=currentOrderItems.map(i=>'<tr><td>'+esc(i.name)+'</td><td style="text-align:center">× '+i.quantity+'</td><td style="text-align:right">'+(isKitchen?'':money(i.line_total))+'</td></tr>').join('');const title=isKitchen?'ใบครัว':'ใบเสร็จรับเงิน';const html='<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:80mm auto;margin:4mm}body{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;margin:0;color:#000;font-size:13px}.c{text-align:center}.big{font-size:20px;font-weight:900}.dash{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top}</style></head><body><div class="c big">BAKE & BITE</div><div class="c">'+title+'</div><div class="dash"></div><b>'+esc(currentOrder.order_no)+'</b><div>'+new Date().toLocaleString('th-TH')+'</div><div class="dash"></div><table>'+rows+'</table>'+(isKitchen?'':'<div class="dash"></div><div class="big" style="text-align:right">รวม '+money(currentOrder.total)+'</div>')+'<div class="dash"></div><div class="c">'+(isKitchen?'Kitchen Copy':'ขอบคุณที่ใช้บริการ')+'</div></body></html>';const w=window.open('','_blank','width=430,height=720');if(!w){alert('เบราว์เซอร์บล็อกหน้าต่างพิมพ์');return}w.document.open();w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),250)}
+function printReceipt(){printHtml('receipt');stepReceipt.textContent='✓ ส่งพิมพ์ใบเสร็จ';stepReceipt.classList.add('done')}
+function printKitchen(){printHtml('kitchen');stepKitchen.textContent='✓ ส่งพิมพ์ใบครัว';stepKitchen.classList.add('done')}
+function clearCart(){cart={};currentOrder=null;currentOrderItems=[];paymentMask.classList.add('hidden');billNo.textContent='ยังไม่สร้างบิล';status.textContent='พร้อมรับออเดอร์';actionBtn.textContent='สร้างออเดอร์';actionBtn.onclick=createOrder;renderCart()}
 function enableVoice(){voiceEnabled=true;const u=new SpeechSynthesisUtterance('เปิดระบบประกาศยอดชำระเงินแล้ว');u.lang='th-TH';speechSynthesis.cancel();speechSynthesis.speak(u);voiceBtn.textContent='🔊 เสียงเปิด';voiceBtn.classList.add('voice-on')}
-function announce(o){if(!voiceEnabled||!o)return;const txt=o.order_source==='pos'?'ได้รับชำระจากหน้าร้าน '+Number(o.total).toLocaleString('th-TH')+' บาท':'ได้รับชำระจากลูกค้า '+(o.customer_name||'ออนไลน์')+' ยอดเงิน '+Number(o.total).toLocaleString('th-TH')+' บาท';const u=new SpeechSynthesisUtterance(txt);u.lang='th-TH';speechSynthesis.cancel();speechSynthesis.speak(u)}
+function announce(o){if(!o)return;const txt='ได้รับชำระเงิน ออเดอร์เลขที่ '+String(o.order_no||'').replace(/^POS/i,'พี โอ เอส ')+' ยอดเงิน '+Number(o.total).toLocaleString('th-TH')+' บาท';if(!voiceEnabled){voiceEnabled=true;voiceBtn.textContent='🔊 เสียงเปิด';voiceBtn.classList.add('voice-on')}const u=new SpeechSynthesisUtterance(txt);u.lang='th-TH';u.rate=.92;speechSynthesis.cancel();speechSynthesis.speak(u)}
 async function checkPaidFeed(){if(!token())return;try{const r=await request('paid-feed&since='+encodeURIComponent(lastFeedTime));for(const o of r.orders||[]){if(!announced.has(o.id)){announced.add(o.id);announce(o)}if(o.paid_at&&o.paid_at>lastFeedTime)lastFeedTime=o.paid_at}if(r.server_time&&r.server_time>lastFeedTime)lastFeedTime=r.server_time}catch(e){}}
 function goAdmin(){if(role()!=='admin'){alert('บัญชี USER ไม่มีสิทธิ์เข้าสู่ระบบ Admin');return}location.href=sessionStorage.getItem(AT)?'admin-main.html':'admin-login.html'}
 function openHistory(){if(role()!=='admin'){alert('ประวัติการขายสำหรับ ADMIN');return}location.href='admin-orders.html'}
