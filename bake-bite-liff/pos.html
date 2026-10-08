@@ -1,49 +1,180 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bake & Bite POS</title>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>BAKE & BITE POS Preview</title>
 <style>
-:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#3f2b21;background:#f5eee7}
-*{box-sizing:border-box}body{margin:0;visibility:hidden}body.pos-verified{visibility:visible}
-.brand-header{height:110px;background:#fff;overflow:hidden;border-bottom:1px solid #ead8c7}.brand-header img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
-header{height:70px;background:#fff;border-bottom:1px solid #e5d6c7;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:5;box-shadow:0 3px 12px rgba(80,50,30,.06)}
-header h1{margin:0;color:#5b2d1b;font-size:25px}.top-actions{display:flex;gap:10px;align-items:center}.smallbtn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}.rolebadge{padding:8px 12px;border-radius:999px;background:#fff3dd;font-weight:900;font-size:13px}
-.layout{display:grid;grid-template-columns:180px minmax(0,1fr) 380px;height:calc(100vh - 180px)}
-.categories{background:#fff;border-right:1px solid #e5d6c7;padding:14px;overflow:auto}.cat{width:100%;border:0;border-radius:14px;padding:13px 10px;margin-bottom:9px;background:#f3e9df;font-weight:800;text-align:left;cursor:pointer}.cat.active{background:#5b2d1b;color:#fff}
-.products{padding:16px;overflow:auto}.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}.product{background:#fff;border:1px solid #e7d8c9;border-radius:18px;padding:12px;cursor:pointer;box-shadow:0 5px 16px #4f31130c}.product img{width:100%;aspect-ratio:1.25/1;object-fit:cover;border-radius:13px;background:#eee}.product h3{font-size:17px;margin:10px 0 5px}.price{font-size:20px;font-weight:900;color:#a8522e}
-.cart{background:#fff;border-left:1px solid #e5d6c7;padding:16px;display:flex;flex-direction:column;min-width:0}.cart h2{margin:0 0 12px}.cart-list{flex:1;overflow:auto;border-top:1px solid #eee;border-bottom:1px solid #eee}.row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:11px 0;border-bottom:1px solid #f0e7df}.qty{display:flex;align-items:center;gap:7px}.qty button{width:30px;height:30px;border:0;border-radius:9px;font-weight:900;cursor:pointer}
-.summary{padding-top:12px}.total{display:flex;justify-content:space-between;font-size:28px;font-weight:900;margin:6px 0 12px}.field{width:100%;padding:12px;border:1px solid #dac8b8;border-radius:12px;font:inherit;margin-bottom:9px}
-.paymethods{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:8px 0 10px}.paymethods label{border:2px solid #e0d1c3;border-radius:13px;padding:11px;text-align:center;font-weight:800;cursor:pointer}.paymethods input{margin-right:5px}
-.primary{width:100%;border:0;border-radius:14px;background:#659348;color:#fff;font-size:18px;font-weight:900;padding:14px;cursor:pointer}.primary:disabled{opacity:.45}.secondary{width:100%;border:0;border-radius:14px;background:#8f8178;color:#fff;font-weight:800;padding:11px;margin-top:8px;cursor:pointer}
-.status{margin:9px 0;padding:10px;border-radius:12px;background:#fff8ef;font-weight:800;min-height:42px}.voice-on{background:#e9f6e7;color:#365d2d}.voice-off{background:#f3e9df;color:#715d51}
-@media(max-width:980px){.brand-header{height:90px}.layout{grid-template-columns:150px 1fr 330px;height:calc(100vh - 160px)}.product-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
-</style></head>
-<body><div class="brand-header"><img src="bake-bite-header-v2.png?v=20261007-1035" alt="Bake & Bite"></div><header><div><div style="font-size:12px;font-weight:900;color:#8a694f">BAKE & BITE · POINT OF SALE</div><h1>POS หน้าร้าน</h1></div><div class="top-actions"><span id="roleBadge" class="rolebadge">USER</span><button id="voiceBtn" class="smallbtn voice-off" onclick="enableVoice()">🔇 เปิดเสียงประกาศ</button><button class="smallbtn" onclick="goAdmin()">Admin</button><button class="smallbtn" onclick="logoutPos()">ออกจากระบบ</button></div></header>
-<div class="layout"><aside class="categories" id="categories"></aside><main class="products"><div class="product-grid" id="products"></div></main><aside class="cart">
-<h2>ออเดอร์หน้าร้าน</h2><input id="customerName" class="field" placeholder="ชื่อลูกค้า (ไม่บังคับ)">
-<div id="cartList" class="cart-list"></div>
-<div class="summary"><div class="total"><span>รวม</span><span id="total">฿0</span></div>
-<div class="paymethods"><label><input type="radio" name="pay" value="cash" checked>เงินสด</label><label><input type="radio" name="pay" value="promptpay">PromptPay / QR</label></div>
-<div id="status" class="status">พร้อมรับออเดอร์</div>
-<button id="createBtn" class="primary" onclick="createOrder()">สร้างออเดอร์</button>
-<button class="secondary" onclick="clearCart()">ล้างรายการ</button></div></aside></div>
-<script src="pos-session.js"></script>
+:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;--brown:#5b2d1b;--green:#5f8e4e;--cream:#fff9ef;--line:#eadbca;--muted:#7b6b61}
+*{box-sizing:border-box}body{margin:0;background:#f5eee6;color:#3d2b24;min-width:1100px}.hidden{display:none!important}
+.hero{height:160px;position:relative;overflow:hidden;background:#fffaf2 url('bake-bite-header-v2.png?v=20261007') center center/cover no-repeat;border-bottom:1px solid #e7d8c8}
+.heroCenterMask{position:absolute;left:50%;top:0;bottom:0;transform:translateX(-50%);width:420px;background:linear-gradient(90deg,rgba(255,250,242,0) 0%,rgba(255,250,242,.97) 13%,#fffaf2 28%,#fffaf2 72%,rgba(255,250,242,.97) 87%,rgba(255,250,242,0) 100%);pointer-events:none}
+.heroLogoWrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:240px;height:156px;display:grid;place-items:center;pointer-events:none}
+.heroLogo{width:152px;height:152px;object-fit:contain;object-position:center;display:block;filter:drop-shadow(0 2px 2px rgba(91,45,27,.08))}
+.posbar{height:92px;background:#fffaf3;border-bottom:1px solid #eadbca;display:flex;align-items:center;justify-content:space-between;padding:10px 22px;gap:18px}
+.titlebox{flex:1;text-align:center}.titlebox h1{margin:0;color:var(--brown);font-size:34px;line-height:1}.titlebox p{margin:8px 0 0;color:#806a5d;font-weight:700}
+.sysbox{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ecdfd2;border-radius:18px;padding:10px 14px;box-shadow:0 5px 16px #6a45100d}
+.clock{min-width:130px;text-align:center}.clock small{display:block;color:#806a5d;font-weight:800}.clock strong{font-size:22px;color:#762817}.role{padding:8px 12px;border-radius:999px;background:#fff1dc;font-weight:900;color:#8a5a2d}
+.topbtn{border:0;border-radius:12px;padding:10px 13px;font-weight:900;cursor:pointer;background:#f2e7dc;color:#5b2d1b}.voice-on{background:#e8f5e3;color:#39662d}
+.layout{display:grid;grid-template-columns:220px minmax(620px,1fr) 390px;height:calc(100vh - 252px);min-height:520px}
+.sidebar{background:#fffaf4;border-right:1px solid var(--line);padding:14px;overflow:auto}.side-title{font-size:13px;font-weight:900;color:#947767;margin:4px 4px 12px}
+.cat{width:100%;border:0;border-radius:14px;padding:13px 14px;margin-bottom:9px;background:#f6eadf;color:#5a2f1f;font-weight:900;text-align:left;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:10px}.cat.active{background:#6c351d;color:#fff}.cat img{width:28px;height:28px;border-radius:8px;object-fit:cover}
+.history{margin-top:18px;border-top:1px solid #eadfd5;padding-top:14px}.history button{width:100%;border:0;border-radius:14px;padding:12px;background:#fff;border:1px solid #e6d8ca;font-weight:900;color:#694334;cursor:pointer}
+.center{padding:14px 16px;overflow:auto;background:#fbf5ee}.toolbar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}.search{background:#fff;border:1px solid #e6d7c9;border-radius:15px;padding:0 15px;display:flex;align-items:center;gap:10px}.search input{width:100%;border:0;outline:0;font:inherit;padding:13px 0;font-size:16px}.viewtog{display:flex;background:#fff;border:1px solid #e6d7c9;border-radius:15px;overflow:hidden}.viewtog button{border:0;background:#fff;padding:0 16px;font-size:21px;cursor:pointer}.viewtog button.active{background:#6c351d;color:#fff}
+.products{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.product{background:#fff;border:1px solid #eaded3;border-radius:17px;padding:9px;box-shadow:0 4px 14px #70451b0a;cursor:pointer}.product img,.ph{width:100%;height:165px;object-fit:contain;object-position:center;border-radius:12px;background:#fffaf4;display:grid;place-items:center;font-size:42px}.product h3{font-size:15px;line-height:1.3;min-height:39px;margin:8px 2px 4px}.prodfoot{display:flex;align-items:center;justify-content:space-between}.price{font-size:20px;font-weight:900;color:#9c3f1d}.add{width:35px;height:35px;border:0;border-radius:50%;background:#5f964c;color:#fff;font-size:25px;line-height:1;cursor:pointer}
+.products.list{grid-template-columns:1fr}.products.list .product{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:12px}.products.list .product img,.products.list .ph{height:92px;object-fit:contain;background:#fffaf4}.products.list .product h3{min-height:auto}
+.cartpanel{background:#fff;border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;overflow:hidden}.billtop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.billno small{color:#8d7769;font-weight:800}.billno strong{display:block;color:#742714;font-size:18px;margin-top:2px}.customer{width:100%;border:1px solid #e4d5c7;border-radius:13px;padding:11px 12px;font:inherit;margin:12px 0}
+.carthead{display:grid;grid-template-columns:1fr 55px 74px 62px;font-size:12px;font-weight:900;background:#f8f0e8;padding:8px 6px;border-radius:10px}.cartlist{flex:1;overflow:auto}.cartrow{display:grid;grid-template-columns:1fr 55px 74px 62px;align-items:center;border-bottom:1px solid #eee4da;padding:9px 6px;font-size:13px}.cartname{font-weight:800}.qty{display:flex;align-items:center;justify-content:center;gap:5px}.qty button{width:23px;height:23px;border:1px solid #e0d2c5;border-radius:7px;background:#fff;font-weight:900}.empty{padding:35px 10px;text-align:center;color:#9b897d}
+.checkout{border-top:1px solid #e9ddd2;padding-top:10px}.totalline{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:19px}.totalline strong{font-size:30px;color:#8b2418}.paylabel{font-size:13px;font-weight:900;margin:8px 0}.paymethods{display:grid;grid-template-columns:1fr 1fr;gap:8px}.paymethods label{border:2px solid #e2d6ca;border-radius:13px;padding:10px;text-align:center;font-weight:900;cursor:pointer}.paymethods label:has(input:checked){border-color:#5f8e4e;background:#f1f8ed}.paymethods input{margin-right:6px}
+.note{width:100%;border:1px solid #e3d4c7;border-radius:12px;padding:10px;font:inherit;margin-top:8px}.status{margin-top:8px;padding:9px 11px;border-radius:11px;background:#fff6e8;font-size:13px;font-weight:800;min-height:38px}.paybtn{width:100%;border:0;border-radius:14px;background:#4d8b43;color:#fff;padding:13px;font-size:17px;font-weight:900;margin-top:9px;cursor:pointer}.paybtn:disabled{opacity:.45}.clearbtn{width:100%;border:0;border-radius:14px;background:#eee0d1;color:#6a321f;padding:10px;font-weight:900;margin-top:7px;cursor:pointer}
+.loginmask{position:fixed;inset:0;background:rgba(45,29,20,.66);z-index:50;display:grid;place-items:center;padding:20px}.loginbox{width:min(440px,95vw);background:#fff;border-radius:26px;padding:26px;box-shadow:0 25px 80px #0005}.loginbox h2{margin:5px 0;color:#5b2d1b}.loginroles{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.loginrole{border:2px solid #e2d3c4;background:#fff8ef;border-radius:13px;padding:11px;font-weight:900}.loginrole.active{border-color:#62934c;background:#edf7e8}.loginbox input{width:100%;padding:13px;border:1px solid #d9c8b8;border-radius:12px;font:inherit}.loginbox .submit{width:100%;border:0;border-radius:13px;background:#61904e;color:#fff;padding:13px;font-weight:900;font-size:17px;margin-top:12px}.loginmsg{min-height:22px;color:#b54437;font-weight:800;margin-top:9px}
+
+.paymask{position:fixed;inset:0;z-index:80;background:rgba(35,24,18,.72);display:grid;place-items:center;padding:22px}
+.paycard{width:min(660px,96vw);max-height:94vh;overflow:auto;background:#fff;border-radius:28px;padding:24px;box-shadow:0 30px 90px #0006;text-align:center}
+.paycard h2{margin:4px 0 3px;color:#4e2d20;font-size:30px}.paycard .orderno{font-weight:900;color:#7e5c49}.payamount{font-size:54px;font-weight:950;color:#145f35;margin:5px 0 10px}
+.qrbox{width:292px;min-height:292px;margin:0 auto 12px;padding:14px;border-radius:22px;border:2px solid #e5d8cb;background:#fff;display:grid;place-items:center}
+.qrbox img,.qrbox canvas{max-width:260px!important;max-height:260px!important}
+.waitpay{display:flex;justify-content:center;align-items:center;gap:9px;font-weight:900;color:#6a594e;margin:8px 0}.pulse{width:12px;height:12px;border-radius:50%;background:#e19a35;box-shadow:0 0 0 0 rgba(225,154,53,.6);animation:pulse 1.5s infinite}@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(225,154,53,0)}100%{box-shadow:0 0 0 0 rgba(225,154,53,0)}}
+.testnote{background:#fff4d9;border:1px solid #efd9a6;border-radius:13px;padding:10px 12px;text-align:left;font-size:13px;color:#765326;margin:12px 0}
+.payactions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.simulate{border:0;border-radius:14px;background:#258a4b;color:#fff;padding:14px;font-weight:950;font-size:16px;cursor:pointer}.cancelpay{border:0;border-radius:14px;background:#eee3d8;color:#653c2c;padding:14px;font-weight:900;cursor:pointer}
+.successmark{font-size:72px;line-height:1}.successbox{background:#eaf8eb;border:1px solid #c7e7c9;border-radius:18px;padding:16px;color:#265f31;font-weight:900;margin:12px 0}.flowsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.flowstep{border-radius:12px;background:#f5eee7;padding:9px 5px;font-size:12px;font-weight:800;color:#79685e}.flowstep.done{background:#e5f5e4;color:#2f6833}
+.printactions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.printactions button{border:1px solid #dacabd;background:#fff9f2;color:#5b3425;border-radius:13px;padding:11px;font-weight:900;cursor:pointer}
+@media(max-width:700px){.payactions,.printactions{grid-template-columns:1fr}.flowsteps{grid-template-columns:1fr 1fr}}
+
+@media(max-width:1280px){.products{grid-template-columns:repeat(3,minmax(150px,1fr))}.layout{grid-template-columns:190px minmax(560px,1fr) 360px}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="heroCenterMask" aria-hidden="true"></div>
+  <div class="heroLogoWrap"><img class="heroLogo" src="logo.svg?v=20261007" alt="Bake & Bite"></div>
+</div>
+<div class="posbar">
+  <div style="width:330px"></div>
+  <div class="titlebox"><h1>ระบบขายหน้าร้าน POS</h1><p>สดใหม่ อร่อย ดีต่อสุขภาพ กับ Bake & Bite</p></div>
+  <div class="sysbox">
+    <div class="clock"><small id="today">-</small><strong id="clock">--:--:--</strong></div>
+    <span id="roleBadge" class="role">USER</span>
+    <button id="voiceBtn" class="topbtn" onclick="enableVoice()">🔇 เปิดเสียง</button>
+    <button class="topbtn" onclick="goAdmin()">Admin</button>
+    <button class="topbtn" onclick="logout()">ออก</button>
+  </div>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-title">หมวดสินค้า</div>
+    <div id="categories"></div>
+    <div class="history"><button onclick="openHistory()">📄 ประวัติการขาย</button></div>
+  </aside>
+  <main class="center">
+    <div class="toolbar"><div class="search">🔎 <input id="search" placeholder="ค้นหาสินค้า..." oninput="renderProducts()"></div>
+    <div class="viewtog"><button id="gridBtn" class="active" onclick="setView('grid')">▦</button><button id="listBtn" onclick="setView('list')">☷</button></div></div>
+    <div id="products" class="products"></div>
+  </main>
+  <aside class="cartpanel">
+    <div class="billtop"><div class="billno"><small>หมายเลขบิล</small><strong id="billNo">ยังไม่สร้างบิล</strong></div><span style="font-size:24px">🧾</span></div>
+    <input id="customerName" class="customer" placeholder="ชื่อลูกค้า (ถ้ามี)">
+    <div class="carthead"><span>สินค้า</span><span style="text-align:center">ราคา</span><span style="text-align:center">จำนวน</span><span style="text-align:right">รวม</span></div>
+    <div id="cartList" class="cartlist"></div>
+    <div class="checkout">
+      <div class="totalline"><span>รวมทั้งหมด</span><strong id="total">฿0</strong></div>
+      <div class="paylabel">ช่องทางการชำระเงิน</div>
+      <div class="paymethods"><label><input type="radio" name="pay" value="cash" checked>💵 เงินสด</label><label><input type="radio" name="pay" value="promptpay">▣ PromptPay / QR</label></div>
+      <input id="note" class="note" placeholder="หมายเหตุ (ถ้ามี)">
+      <div id="status" class="status">พร้อมรับออเดอร์</div>
+      <button id="actionBtn" class="paybtn" onclick="createOrder()">สร้างออเดอร์</button>
+      <button class="clearbtn" onclick="clearCart()">🗑 ล้างรายการ</button>
+    </div>
+  </aside>
+</div>
+<div id="paymentMask" class="paymask hidden" aria-live="polite">
+  <div class="paycard">
+    <div id="payWaiting">
+      <div style="font-size:13px;font-weight:900;color:#8a6d58">PROMPTPAY · BAKE & BITE</div>
+      <h2>สแกน QR เพื่อชำระเงิน</h2>
+      <div id="qrOrder" class="orderno">-</div>
+      <div id="qrAmount" class="payamount">฿0</div>
+      <div id="qrCode" class="qrbox"><span>กำลังสร้าง QR...</span></div>
+      <div class="waitpay"><span class="pulse"></span><span>รอธนาคารยืนยันการชำระเงิน</span></div>
+      <div class="testnote"><b>โหมดทดสอบ:</b> QR สร้างตามยอดออเดอร์ได้ แต่การตรวจว่าเงินเข้าจริงต้องเชื่อม Payment Gateway / Webhook ก่อน ตอนนี้ใช้ปุ่มจำลองด้านล่างแทนสัญญาณจากธนาคาร</div>
+      <div class="payactions">
+        <button class="simulate" onclick="simulateBankPaid()">🧪 จำลองธนาคารยืนยันเงินเข้า</button>
+        <button class="cancelpay" onclick="closePayment()">ปิดหน้าชำระเงิน</button>
+      </div>
+    </div>
+    <div id="paySuccess" class="hidden">
+      <div class="successmark">✅</div>
+      <h2>รับชำระเงินเรียบร้อย</h2>
+      <div id="successOrder" class="orderno">-</div>
+      <div id="successAmount" class="payamount">฿0</div>
+      <div class="successbox">ออเดอร์ถูกยืนยันและส่งเข้าคิวห้องครัวแล้ว</div>
+      <div class="flowsteps">
+        <div id="stepPaid" class="flowstep">✓ รับชำระ</div>
+        <div id="stepDrawer" class="flowstep">ลิ้นชักเงิน</div>
+        <div id="stepReceipt" class="flowstep">ใบเสร็จ</div>
+        <div id="stepKitchen" class="flowstep">ใบครัว</div>
+      </div>
+      <div class="printactions">
+        <button onclick="printReceipt()">🖨 พิมพ์ใบเสร็จ</button>
+        <button onclick="printKitchen()">🖨 พิมพ์ใบครัว</button>
+      </div>
+      <button class="simulate" style="width:100%;margin-top:12px" onclick="finishPayment()">เสร็จสิ้น / ออเดอร์ใหม่</button>
+    </div>
+  </div>
+</div>
+<div id="loginMask" class="loginmask">
+  <div class="loginbox"><div style="font-size:12px;font-weight:900;color:#8b6a56">BAKE & BITE · POS PREVIEW</div><h2>เข้าสู่ระบบหน้าทดลอง</h2>
+  <div class="loginroles"><button class="loginrole active" data-role="user">USER</button><button class="loginrole" data-role="admin">ADMIN</button></div>
+  <input id="loginPassword" type="password" placeholder="รหัสผ่าน">
+  <button class="submit" onclick="login()">เข้าสู่ POS ทดลอง</button><div id="loginMsg" class="loginmsg"></div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
+const POS_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/pos-api';
 const STORE_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
-let catalog={categories:[],products:[]},cart={},activeCategory=null,currentOrder=null,voiceEnabled=false,lastFeedTime=new Date().toISOString(),announced=new Set();
+const PT='bake_bite_pos_session',PR='bake_bite_pos_role',AT='bake_bite_admin_session';
+let loginRole='user',catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=false,lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
 const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
+const token=()=>sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
+document.querySelectorAll('.loginrole').forEach(b=>b.onclick=()=>{loginRole=b.dataset.role;document.querySelectorAll('.loginrole').forEach(x=>x.classList.toggle('active',x===b));loginMsg.textContent='';loginPassword.focus()});
+async function request(action,method='GET',body){const r=await fetch(POS_API+'?action='+action,{method,headers:{authorization:'Bearer '+token(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'เชื่อมต่อ POS ไม่สำเร็จ');return j}
+async function login(){loginMsg.textContent='';try{const password=loginPassword.value;const r=await fetch(POS_API+'?action=login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role:loginRole,password})});const j=await r.json();if(!r.ok||!j.ok)throw new Error('รหัสไม่ถูกต้อง');sessionStorage.setItem(PT,j.token);sessionStorage.setItem(PR,j.role);if(j.role==='admin'){const ar=await fetch(STORE_API+'?action=admin-login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});const aj=await ar.json();if(ar.ok&&aj.ok)sessionStorage.setItem(AT,aj.token)}else sessionStorage.removeItem(AT);loginMask.classList.add('hidden');await start()}catch(e){loginMsg.textContent=e.message}}
+async function validate(){if(!token())return false;try{const s=await request('session');sessionStorage.setItem(PR,s.role);return true}catch(e){sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);return false}}
+async function start(){roleBadge.textContent=(role()||'user').toUpperCase();await loadCatalog();renderAll();setInterval(checkPaidFeed,4000)}
+async function boot(){tick();setInterval(tick,1000);if(await validate()){loginMask.classList.add('hidden');await start()}}
+async function loadCatalog(){const r=await fetch(STORE_API+'?action=catalog');const j=await r.json();if(!r.ok||!j.ok)throw new Error('โหลดเมนูไม่สำเร็จ');catalog=j}
+function tick(){const d=new Date();clock.textContent=d.toLocaleTimeString('th-TH',{hour12:false});today.textContent=d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function boot(){if(!await requirePos())return;document.getElementById('roleBadge').textContent=posRole().toUpperCase();await loadCatalog();renderAll();setInterval(checkPaidFeed,4000)}
-async function loadCatalog(){const r=await fetch(STORE_API+'?action=catalog');const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'โหลดเมนูไม่สำเร็จ');catalog=j;activeCategory=catalog.categories[0]?.id||null}
 function renderAll(){renderCats();renderProducts();renderCart()}
-function renderCats(){document.getElementById('categories').innerHTML=catalog.categories.map(c=>'<button class="cat '+(c.id===activeCategory?'active':'')+'" onclick="activeCategory=\''+c.id+'\';renderAll()">'+esc(c.name)+'</button>').join('')}
-function renderProducts(){const list=catalog.products.filter(p=>!activeCategory||p.category_id===activeCategory);document.getElementById('products').innerHTML=list.map(p=>'<div class="product" onclick="addItem(\''+p.id+'\')">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<div style="aspect-ratio:1.25/1;border-radius:13px;background:#f1e9e2;display:grid;place-items:center;font-size:42px">🥪</div>')+'<h3>'+esc(p.name)+'</h3><div class="price">'+money(p.price)+'</div></div>').join('')}
+function renderCats(){let html='<button class="cat '+(activeCategory==='all'?'active':'')+'" onclick="activeCategory=\'all\';renderAll()">🍽️ ทั้งหมด</button>';html+=catalog.categories.map(c=>'<button class="cat '+(c.id===activeCategory?'active':'')+'" onclick="activeCategory=\''+c.id+'\';renderAll()">'+(c.icon_url?'<img src="'+esc(c.icon_url)+'">':'🥪')+'<span>'+esc(c.name)+'</span></button>').join('');categories.innerHTML=html}
+function filtered(){const q=search.value.trim().toLowerCase();return catalog.products.filter(p=>(activeCategory==='all'||p.category_id===activeCategory)&&(!q||String(p.name).toLowerCase().includes(q)))}
+function renderProducts(){products.className='products'+(view==='list'?' list':'');products.innerHTML=filtered().map(p=>'<div class="product" onclick="addItem(\''+p.id+'\')">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<div class="ph">🥪</div>')+'<h3>'+esc(p.name)+'</h3><div class="prodfoot"><span class="price">'+money(p.price)+'</span><button class="add" onclick="event.stopPropagation();addItem(\''+p.id+'\')">+</button></div></div>').join('')||'<div class="empty">ไม่พบสินค้า</div>'}
+function setView(v){view=v;gridBtn.classList.toggle('active',v==='grid');listBtn.classList.toggle('active',v==='list');renderProducts()}
 function addItem(id){cart[id]=(cart[id]||0)+1;renderCart()}
 function changeQty(id,d){cart[id]=Math.max(0,(cart[id]||0)+d);if(!cart[id])delete cart[id];renderCart()}
-function clearCart(){cart={};currentOrder=null;document.getElementById('status').textContent='พร้อมรับออเดอร์';document.getElementById('createBtn').textContent='สร้างออเดอร์';document.getElementById('createBtn').onclick=createOrder;renderCart()}
 function cartItems(){return Object.entries(cart).map(([id,q])=>{const p=catalog.products.find(x=>x.id===id);return p?{...p,quantity:q}:null}).filter(Boolean)}
-function renderCart(){const items=cartItems();document.getElementById('cartList').innerHTML=items.length?items.map(i=>'<div class="row"><div><strong>'+esc(i.name)+'</strong><div>'+money(i.price)+' × '+i.quantity+'</div></div><div class="qty"><button onclick="changeQty(\''+i.id+'\',-1)">−</button><strong>'+i.quantity+'</strong><button onclick="changeQty(\''+i.id+'\',1)">+</button></div></div>').join(''):'<div style="padding:24px;text-align:center;color:#8a796d">แตะสินค้าเพื่อเพิ่มรายการ</div>';const total=items.reduce((s,i)=>s+Number(i.price)*i.quantity,0);document.getElementById('total').textContent=money(total);document.getElementById('createBtn').disabled=!items.length&&!currentOrder}
-async function createOrder(){const items=cartItems();if(!items.length)return;const pay=document.querySelector('input[name="pay"]:checked').value;const btn=document.getElementById('createBtn');btn.disabled=true;try{const r=await posRequest('order','POST',{items:items.map(i=>({product_id:i.id,quantity:i.quantity})),payment_method:pay,customer_name:document.getElementById('customerName').value.trim()});currentOrder=r.order;document.getElementById('status').innerHTML='ออเดอร์ <b>'+esc(r.order.order_no)+'</b> · '+money(r.order.total)+'<br>'+ (pay==='cash'?'รับเงินสดแล้วกดปุ่มยืนยัน':'แสดง QR ให้ลูกค้าสแกน แล้วกดยืนยันหลังตรวจยอด');document.getElementById('createBtn').textContent='ยืนยันรับชำระ '+money(r.order.total);document.getElementById('createBtn').onclick=confirmPaid;btn.disabled=false}catch(e){alert(e.message);btn.disabled=false}}
-async function confirmPaid(){if(!currentOrder)return;const btn=document.getElementById('createBtn');btn.disabled=true;try{const r=await posRequest('pay','POST',{id:currentOrder.id});announcePayment(r.order);document.getElementById('status').textContent='✅ รับชำระแล้ว '+money(r.order.total);cart={};currentOrder=null;document.getElementById('createBtn').textContent='สร้างออเดอร์';document.getElementById('createBtn').onclick=createOrder;renderCart()}catch(e){alert(e.message)}finally{btn.disabled=false}}
-function enableVoice(){voiceEnabled=true;const u=new SpeechSynthesisUtterance('เปิดระบบประกาศยอดชำระเงินแล้ว');u.lang='th-TH';speechSynthesis.cancel();speechSynthesis.speak(u);const b=document.getElementById('voiceBtn');b.textContent='🔊 เสียงประกาศเปิดอยู่';b.className='smallbtn voice-on'}
-function announcePayment(o){if(!voiceEnabled||!o)return;const text=o.order_source==='pos'?'ได้รับชำระจากหน้าร้าน '+Number(o.total).toLocaleString('th-TH')+' บาท':'ได้รับชำระจากลูกค้า '+(o.customer_name||'ออนไลน์')+' ยอดเงิน '+Number(o.total).toLocaleString('th-TH')+' บาท';const u=new SpeechSynthesisUtterance(text);u.lang='th-TH';speechSynthesis.cancel();speechSynthesis.speak(u)}
-async function checkPaidFeed(){if(!posToken())return;try{const r=await posRequest('paid-feed&since='+encodeURIComponent(lastFeedTime));for(const o of r.orders||[]){if(!announced.has(o.id)){announced.add(o.id);announcePayment(o)}if(o.paid_at&&o.paid_at>lastFeedTime)lastFeedTime=o.paid_at}if(r.server_time&&r.server_time>lastFeedTime)lastFeedTime=r.server_time}catch(e){console.error('paid feed',e)}}
+function renderCart(){const items=cartItems();cartList.innerHTML=items.length?items.map(i=>'<div class="cartrow"><div class="cartname">'+esc(i.name)+'</div><div style="text-align:center">'+money(i.price)+'</div><div class="qty"><button onclick="changeQty(\''+i.id+'\',-1)">−</button><b>'+i.quantity+'</b><button onclick="changeQty(\''+i.id+'\',1)">+</button></div><div style="text-align:right;font-weight:900">'+money(Number(i.price)*i.quantity)+'</div></div>').join(''):'<div class="empty">ยังไม่มีสินค้าในบิล</div>';const t=items.reduce((s,i)=>s+Number(i.price)*i.quantity,0);total.textContent=money(t);actionBtn.disabled=!items.length&&!currentOrder}
+async function createOrder(){const items=cartItems();if(!items.length)return;actionBtn.disabled=true;try{const pay=document.querySelector('input[name="pay"]:checked').value;const r=await request('order','POST',{items:items.map(i=>({product_id:i.id,quantity:i.quantity})),payment_method:pay,customer_name:customerName.value.trim(),note:note.value.trim()});currentOrder=r.order;currentOrderItems=items.map(i=>({name:i.name,price:Number(i.price),quantity:i.quantity,line_total:Number(i.price)*i.quantity}));billNo.textContent='#'+r.order.order_no;if(pay==='promptpay'){status.textContent='กำลังรอ PromptPay';showPromptPay(r.order);actionBtn.textContent='กำลังรอชำระ';actionBtn.onclick=()=>showPromptPay(currentOrder)}else{status.textContent='รับเงินสดแล้วกด “ยืนยันรับชำระ”';actionBtn.textContent='ยืนยันรับชำระ '+money(r.order.total);actionBtn.onclick=confirmPaid}}catch(e){alert(e.message)}finally{actionBtn.disabled=false}}
+async function confirmPaid(){if(!currentOrder)return;actionBtn.disabled=true;try{const r=await request('pay','POST',{id:currentOrder.id});afterPaid(r.order,false)}catch(e){alert(e.message)}finally{actionBtn.disabled=false}}
+const PROMPTPAY_BASE='00020101021229370016A000000677010111021331021000251245303764';
+function crc16(text){let crc=0xFFFF;for(let i=0;i<text.length;i++){crc^=text.charCodeAt(i)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?((crc<<1)^0x1021):(crc<<1),crc&=0xFFFF}return crc.toString(16).toUpperCase().padStart(4,'0')}
+function buildPromptPayPayload(amount){const amt=Number(amount||0).toFixed(2);const amountField='54'+String(amt.length).padStart(2,'0')+amt;const body=PROMPTPAY_BASE+amountField+'5802TH6304';return body+crc16(body)}
+function showPromptPay(order){if(!order)return;payWaiting.classList.remove('hidden');paySuccess.classList.add('hidden');qrOrder.textContent='ออเดอร์ '+order.order_no;qrAmount.textContent=money(order.total);qrCode.innerHTML='';paymentMask.classList.remove('hidden');const payload=buildPromptPayPayload(order.total);if(window.QRCode){new QRCode(qrCode,{text:payload,width:260,height:260,correctLevel:QRCode.CorrectLevel.M})}else{qrCode.innerHTML='<b>โหลดตัวสร้าง QR ไม่สำเร็จ</b>'}}
+function closePayment(){paymentMask.classList.add('hidden')}
+async function simulateBankPaid(){if(!currentOrder)return;const btn=document.querySelector('#payWaiting .simulate');btn.disabled=true;btn.textContent='กำลังยืนยัน...';try{const r=await request('pay','POST',{id:currentOrder.id});afterPaid(r.order,true)}catch(e){alert(e.message);btn.disabled=false;btn.textContent='🧪 จำลองธนาคารยืนยันเงินเข้า'}}
+function afterPaid(order,fromPromptPay){announce(order);status.textContent='✅ รับชำระแล้ว '+money(order.total);successOrder.textContent='ออเดอร์ '+order.order_no;successAmount.textContent=money(order.total);stepPaid.classList.add('done');stepDrawer.classList.add('done');stepDrawer.textContent='✓ ลิ้นชัก (ทดสอบ)';stepReceipt.classList.add('done');stepReceipt.textContent='พร้อมพิมพ์ใบเสร็จ';stepKitchen.classList.add('done');stepKitchen.textContent='✓ ส่งเข้าครัว';if(fromPromptPay){payWaiting.classList.add('hidden');paySuccess.classList.remove('hidden')}billNo.textContent='#'+order.order_no;window.dispatchEvent(new CustomEvent('bakebite:drawer-open',{detail:{order_no:order.order_no,total:order.total}}))}
+function finishPayment(){paymentMask.classList.add('hidden');cart={};currentOrder=null;currentOrderItems=[];billNo.textContent='ยังไม่สร้างบิล';customerName.value='';note.value='';status.textContent='พร้อมรับออเดอร์';actionBtn.textContent='สร้างออเดอร์';actionBtn.onclick=createOrder;renderCart()}
+function printHtml(kind){if(!currentOrder)return;const isKitchen=kind==='kitchen';const rows=currentOrderItems.map(i=>'<tr><td>'+esc(i.name)+'</td><td style="text-align:center">× '+i.quantity+'</td><td style="text-align:right">'+(isKitchen?'':money(i.line_total))+'</td></tr>').join('');const title=isKitchen?'ใบครัว':'ใบเสร็จรับเงิน';const html='<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+title+'</title><style>@page{size:80mm auto;margin:4mm}body{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;margin:0;color:#000;font-size:13px}.c{text-align:center}.big{font-size:20px;font-weight:900}.dash{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top}</style></head><body><div class="c big">BAKE & BITE</div><div class="c">'+title+'</div><div class="dash"></div><b>'+esc(currentOrder.order_no)+'</b><div>'+new Date().toLocaleString('th-TH')+'</div><div class="dash"></div><table>'+rows+'</table>'+(isKitchen?'':'<div class="dash"></div><div class="big" style="text-align:right">รวม '+money(currentOrder.total)+'</div>')+'<div class="dash"></div><div class="c">'+(isKitchen?'Kitchen Copy':'ขอบคุณที่ใช้บริการ')+'</div></body></html>';const w=window.open('','_blank','width=430,height=720');if(!w){alert('เบราว์เซอร์บล็อกหน้าต่างพิมพ์');return}w.document.open();w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),250)}
+function printReceipt(){printHtml('receipt');stepReceipt.textContent='✓ ส่งพิมพ์ใบเสร็จ';stepReceipt.classList.add('done')}
+function printKitchen(){printHtml('kitchen');stepKitchen.textContent='✓ ส่งพิมพ์ใบครัว';stepKitchen.classList.add('done')}
+function clearCart(){cart={};currentOrder=null;currentOrderItems=[];paymentMask.classList.add('hidden');billNo.textContent='ยังไม่สร้างบิล';status.textContent='พร้อมรับออเดอร์';actionBtn.textContent='สร้างออเดอร์';actionBtn.onclick=createOrder;renderCart()}
+function enableVoice(){voiceEnabled=true;const u=new SpeechSynthesisUtterance('เปิดระบบประกาศยอดชำระเงินแล้ว');u.lang='th-TH';speechSynthesis.cancel();speechSynthesis.speak(u);voiceBtn.textContent='🔊 เสียงเปิด';voiceBtn.classList.add('voice-on')}
+function announce(o){if(!o)return;const txt='ได้รับชำระเงิน ออเดอร์เลขที่ '+String(o.order_no||'').replace(/^POS/i,'พี โอ เอส ')+' ยอดเงิน '+Number(o.total).toLocaleString('th-TH')+' บาท';if(!voiceEnabled){voiceEnabled=true;voiceBtn.textContent='🔊 เสียงเปิด';voiceBtn.classList.add('voice-on')}const u=new SpeechSynthesisUtterance(txt);u.lang='th-TH';u.rate=.92;speechSynthesis.cancel();speechSynthesis.speak(u)}
+async function checkPaidFeed(){if(!token())return;try{const r=await request('paid-feed&since='+encodeURIComponent(lastFeedTime));for(const o of r.orders||[]){if(!announced.has(o.id)){announced.add(o.id);announce(o)}if(o.paid_at&&o.paid_at>lastFeedTime)lastFeedTime=o.paid_at}if(r.server_time&&r.server_time>lastFeedTime)lastFeedTime=r.server_time}catch(e){}}
+function goAdmin(){if(role()!=='admin'){alert('บัญชี USER ไม่มีสิทธิ์เข้าสู่ระบบ Admin');return}location.href=sessionStorage.getItem(AT)?'admin-main.html':'admin-login.html'}
+function openHistory(){if(role()!=='admin'){alert('ประวัติการขายสำหรับ ADMIN');return}location.href='admin-orders.html'}
+async function logout(){try{await request('logout','POST')}catch(e){}sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);sessionStorage.removeItem(AT);location.reload()}
 boot();
-</script></body></html>
+</script>
+</body></html>
