@@ -104,6 +104,7 @@ button,select{font:inherit}
     <option value="oldest">เรียงตามเวลา เก่าก่อน</option>
     <option value="newest">ใหม่ก่อน</option>
   </select>
+  <button class="ghost" id="soundButton">🔊 เสียงแจ้งเตือน: เปิด</button>
   <span class="ghost" id="printerStatus">🟢 Printer พร้อมใช้งาน</span>
   <button class="ghost" id="refreshButton">↻ โหลดล่าสุด</button>
   <button class="ghost" id="fullscreenButton">⛶ เต็มจอ</button>
@@ -131,6 +132,55 @@ button,select{font:inherit}
 let orders=[];
 let activeFilter='all';
 let lastSignature='';
+let knownOrderIds=null;
+let kitchenSoundEnabled=localStorage.getItem('bake_bite_kitchen_sound')!=='off';
+let kitchenAudioCtx=null;
+
+function syncSoundButton(){
+  if(!window.soundButton)return;
+  soundButton.textContent=kitchenSoundEnabled?'🔊 เสียงแจ้งเตือน: เปิด':'🔇 เสียงแจ้งเตือน: ปิด';
+}
+function unlockKitchenSound(){
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(Ctx&&!kitchenAudioCtx)kitchenAudioCtx=new Ctx();
+    if(kitchenAudioCtx?.state==='suspended')kitchenAudioCtx.resume();
+  }catch(e){}
+}
+function chime(){
+  if(!kitchenSoundEnabled)return;
+  try{
+    unlockKitchenSound();
+    if(!kitchenAudioCtx)return;
+    const now=kitchenAudioCtx.currentTime;
+    [0,0.16].forEach((delay,i)=>{
+      const osc=kitchenAudioCtx.createOscillator();
+      const gain=kitchenAudioCtx.createGain();
+      osc.type='sine';osc.frequency.value=i?880:660;
+      gain.gain.setValueAtTime(0.0001,now+delay);
+      gain.gain.exponentialRampToValueAtTime(0.18,now+delay+0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+delay+0.22);
+      osc.connect(gain);gain.connect(kitchenAudioCtx.destination);
+      osc.start(now+delay);osc.stop(now+delay+0.24);
+    });
+  }catch(e){}
+}
+function announceNewOrders(count){
+  if(!kitchenSoundEnabled||count<1)return;
+  chime();
+  try{
+    if('speechSynthesis' in window){
+      speechSynthesis.cancel();
+      const text=count===1?'มีออเดอร์ใหม่ กรุณารับออเดอร์':'มีออเดอร์ใหม่ '+count+' ออเดอร์ กรุณารับออเดอร์';
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang='th-TH';u.rate=0.92;u.pitch=1;u.volume=1;
+      const voices=speechSynthesis.getVoices();
+      const thai=voices.find(v=>/^th(-|_)/i.test(v.lang));
+      if(thai)u.voice=thai;
+      setTimeout(()=>speechSynthesis.speak(u),420);
+    }
+  }catch(e){}
+}
 const FOOD_WORDS=/สลัด|โรล|แซนด์วิช|sandwich|salad|ขนมปัง|ไส้กรอก|โบโลน่า|แฮม|ทูน่า|ไข่/i;
 const DESSERT_WORDS=/แยม|เบเกอรี่|ครัวซอง|เค้ก|คุกกี้|บราวนี่|ของหวาน|dessert|sweet|bakery/i;
 const DRINK_WORDS=/น้ำ|ชา|กาแฟ|drink|coffee|tea|เก๊กฮวย|รากบัว/i;
@@ -217,6 +267,13 @@ async function loadOrders(silent=false){
   try{
     const result=await posRequest('kitchen-orders');
     const incoming=result.orders||[];
+    const activeIds=new Set(incoming.map(o=>String(o.id)));
+    const newOrders=knownOrderIds===null?[]:incoming.filter(o=>!knownOrderIds.has(String(o.id))&&['pending','confirmed'].includes(o.status));
+    knownOrderIds=activeIds;
+    if(newOrders.length){
+      announceNewOrders(newOrders.length);
+      showToast('🔔 มีออเดอร์ใหม่ '+newOrders.length+' ออเดอร์');
+    }
     const sig=incoming.map(o=>o.id+':'+o.status+':'+o.updated_at).join('|');
     const changed=lastSignature && sig!==lastSignature;
     orders=incoming;lastSignature=sig;render();
@@ -240,6 +297,15 @@ document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{
 });
 sortSelect.onchange=render;
 refreshButton.onclick=()=>loadOrders(false);
+syncSoundButton();
+soundButton.onclick=()=>{
+  kitchenSoundEnabled=!kitchenSoundEnabled;
+  localStorage.setItem('bake_bite_kitchen_sound',kitchenSoundEnabled?'on':'off');
+  if(kitchenSoundEnabled){unlockKitchenSound();chime();showToast('เปิดเสียงแจ้งเตือนแล้ว');}
+  else{try{speechSynthesis.cancel()}catch(e){}showToast('ปิดเสียงแจ้งเตือนแล้ว');}
+  syncSoundButton();
+};
+document.addEventListener('pointerdown',()=>{if(kitchenSoundEnabled)unlockKitchenSound()},{once:true});
 fullscreenButton.onclick=async()=>{
   try{
     if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
