@@ -160,7 +160,7 @@ const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
 const token=()=>sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
 async function request(action,method='GET',body){const r=await fetch(POS_API+'?action='+action,{method,headers:{authorization:'Bearer '+token(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'เชื่อมต่อ POS ไม่สำเร็จ');return j}
 async function validate(){if(!token())return false;try{const s=await request('session');sessionStorage.setItem(PR,s.role);return true}catch(e){sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);return false}}
-async function start(){roleBadge.textContent=(role()||'user').toUpperCase();syncVoiceButton();await loadCatalog();renderAll();setInterval(checkPaidFeed,4000)}
+async function start(){roleBadge.textContent=(role()||'user').toUpperCase();syncVoiceButton();await loadCatalog();renderAll();setChannelPending('shopee',1);setInterval(checkPaidFeed,4000)}
 async function boot(){tick();setInterval(tick,1000);if(await validate()){await start()}else{location.replace('pos-login.html')}}
 async function loadCatalog(){const r=await fetch(STORE_API+'?action=catalog');const j=await r.json();if(!r.ok||!j.ok)throw new Error('โหลดเมนูไม่สำเร็จ');catalog=j}
 function tick(){const d=new Date();clock.textContent=d.toLocaleTimeString('th-TH',{hour12:false});today.textContent=d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
@@ -195,6 +195,10 @@ function renderChannelView(channel){
   const meta=CHANNEL_META[channel]||CHANNEL_META.lineman;
   document.getElementById('channelTitle').textContent=meta.name;
   document.getElementById('channelSubtitle').textContent='รายการออเดอร์จาก '+meta.name;
+  if(channel==='shopee'){
+    document.getElementById('channelOrders').innerHTML='<div class="channel-order"><div class="channel-order-top"><div><div style="font-size:12px;font-weight:900;color:#ee4d2d">ShopeeFood · ออเดอร์ทดสอบ</div><div class="channel-order-no">SP-T001</div><div style="font-size:12px;color:#8b776b;margin-top:3px">เข้ามาเมื่อสักครู่</div></div><span class="channel-status">🔔 รอรับออเดอร์</span></div><div class="channel-items"><div>สลัดโรลไส้ปูอัด <b>× 2</b></div><div>แซนด์วิชโบโลน่า + ไข่ดาว <b>× 1</b></div><div>น้ำเก๊กฮวย <b>× 1</b></div></div><div class="channel-total"><span>รวม</span><span>150 บาท</span></div><div class="integration-note" style="display:block;text-align:center;margin-top:12px">รายการนี้เป็นข้อมูลจำลองสำหรับทดสอบไฟแจ้งเตือน ยังไม่ได้ส่งเข้าครัวหรือบันทึกยอดขาย</div></div>';
+    return;
+  }
   document.getElementById('channelOrders').innerHTML='<div class="integration-empty" style="grid-column:1/-1"><div class="bigicon">'+meta.icon+'</div><h3>'+meta.name+'</h3><div>หน้ารายการออเดอร์พร้อมใช้งานแล้ว</div><div class="integration-note">ขณะนี้ยังไม่ได้เชื่อม API รับออเดอร์จาก '+meta.name+' จึงยังไม่มีรายการจริงแสดงในหน้านี้</div></div>';
 }
 function renderCats(){let html='<button class="cat '+(activeCategory==='all'?'active':'')+'" onclick="activeCategory=\'all\';renderAll()">🍽️ ทั้งหมด</button>';html+=catalog.categories.map(c=>'<button class="cat '+(c.id===activeCategory?'active':'')+'" onclick="activeCategory=\''+c.id+'\';renderAll()">'+(c.icon_url?'<img src="'+esc(c.icon_url)+'">':'🥪')+'<span>'+esc(c.name)+'</span></button>').join('');categories.innerHTML=html}
