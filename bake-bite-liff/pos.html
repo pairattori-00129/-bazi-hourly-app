@@ -261,10 +261,7 @@ function renderChannelView(channel){
   const meta=CHANNEL_META[channel]||CHANNEL_META.lineman;
   document.getElementById('channelTitle').textContent=meta.name;
   document.getElementById('channelSubtitle').textContent='รายการออเดอร์จาก '+meta.name;
-  document.getElementById('channelOrders').innerHTML='<div class="channel-order"><div class="channel-order-top"><div><div style="font-size:12px;font-weight:900;color:#ee4d2d">ShopeeFood · ออเดอร์ทดสอบ</div><div class="channel-order-no">SP-T001</div><div style="font-size:12px;color:#8b776b;margin-top:3px">เข้ามาเมื่อสักครู่</div></div><span class="channel-status">🔔 รอรับออเดอร์</span></div><div class="channel-items"><div>สลัดโรลไส้ปูอัด <b>× 2</b></div><div>แซนด์วิชโบโลน่า + ไข่ดาว <b>× 1</b></div><div>น้ำเก๊กฮวย <b>× 1</b></div></div><div class="channel-total"><span>รวม</span><span>150 บาท</span></div><div class="integration-note" style="display:block;text-align:center;margin-top:12px">รายการนี้เป็นข้อมูลจำลองสำหรับทดสอบไฟแจ้งเตือน ยังไม่ได้ส่งเข้าครัวหรือบันทึกยอดขาย</div></div>';
-    return;
-  }
-  document.getElementById('channelOrders').innerHTML='<div class="integration-empty" style="grid-column:1/-1"><div class="bigicon">'+meta.icon+'</div><h3>'+meta.name+'</h3><div>หน้ารายการออเดอร์พร้อมใช้งานแล้ว</div><div class="integration-note">ขณะนี้ยังไม่ได้เชื่อม API รับออเดอร์จาก '+meta.name+' จึงยังไม่มีรายการจริงแสดงในหน้านี้</div></div>';
+  document.getElementById('channelOrders').innerHTML='<div class="integration-empty" style="grid-column:1/-1"><div class="bigicon">'+meta.icon+'</div><h3>'+meta.name+'</h3><div>ขณะนี้ไม่มีออเดอร์ค้าง</div><div class="integration-note">เมื่อเชื่อม API ของ '+meta.name+' แล้ว ออเดอร์จริงจะมาแสดงในหน้านี้อัตโนมัติ</div></div>';
 }
 function renderCats(){let html='<button class="cat '+(activeCategory==='all'?'active':'')+'" onclick="activeCategory=\'all\';renderAll()">🍽️ ทั้งหมด</button>';html+=catalog.categories.map(c=>'<button class="cat '+(c.id===activeCategory?'active':'')+'" onclick="activeCategory=\''+c.id+'\';renderAll()">'+(c.icon_url?'<img src="'+esc(c.icon_url)+'">':'🥪')+'<span>'+esc(c.name)+'</span></button>').join('');categories.innerHTML=html}
 function filtered(){const q=search.value.trim().toLowerCase();return catalog.products.filter(p=>(activeCategory==='all'||p.category_id===activeCategory)&&(!q||String(p.name).toLowerCase().includes(q)))}
