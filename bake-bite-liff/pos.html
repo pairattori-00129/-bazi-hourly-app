@@ -225,7 +225,8 @@ function switchChannel(channel){
   document.querySelectorAll('.topchannel').forEach(b=>b.classList.toggle('active',b.dataset.channel===channel));
   const external=channel!=='store';
   document.querySelector('.layout').classList.toggle('channel-mode',external);
-  document.getElementById('categorySection').classList.toggle('hidden',external);
+  // Keep the product categories visible on the left for every order platform.
+  document.getElementById('categorySection').classList.remove('hidden');
   document.getElementById('storeView').classList.toggle('hidden',external);
   document.getElementById('channelView').classList.toggle('hidden',!external);
   if(external){
