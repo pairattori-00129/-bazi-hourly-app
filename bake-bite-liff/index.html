@@ -614,7 +614,7 @@ function useCurrentLocation(){
 function renderPaymentPage(orderData){
   if(!orderData)return;
   currentPaymentOrder=orderData;
-  document.getElementById('paymentOrderNo').textContent=orderData.order_no||'—';
+  document.getElementById('paymentOrderNo').textContent=orderData.display_order_no||orderData.order_no||'—';
   document.getElementById('paymentTotal').textContent=money(orderData.total||0);
   document.getElementById('paymentItems').innerHTML=(orderData.items||[]).map(i=>
     '<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0"><span>'+escapeHtml(i.name)+' × '+Number(i.quantity)+'</span><strong>'+money(i.line_total)+'</strong></div>'
@@ -710,7 +710,7 @@ async function submitOrder(){
     const result=await r.json();if(!r.ok||!result.ok)throw new Error(result.error||"ส่งออเดอร์ไม่สำเร็จ");
     const order=result.order;
     const paymentData={
-      id:order.id,order_no:order.order_no,total:Number(order.total||0),
+      id:order.id,order_no:(order.display_order_no||order.order_no),total:Number(order.total||0),
       payment_method:body.payment_method,fulfillment_method:fulfillment,
       items:items.map(i=>({name:i.name,quantity:i.quantity,line_total:Number(i.price)*Number(i.quantity)}))
     };
