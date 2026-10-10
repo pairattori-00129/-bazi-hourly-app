@@ -123,26 +123,18 @@
     </div>
   </div>
 </div>
-<div id="loginMask" class="loginmask">
-  <div class="loginbox"><div style="font-size:12px;font-weight:900;color:#8b6a56">BAKE & BITE · POS PREVIEW</div><h2>เข้าสู่ระบบหน้าทดลอง</h2>
-  <div class="loginroles"><button class="loginrole active" data-role="user">USER</button><button class="loginrole" data-role="admin">ADMIN</button></div>
-  <input id="loginPassword" type="password" placeholder="รหัสผ่าน">
-  <button class="submit" onclick="login()">เข้าสู่ POS ทดลอง</button><div id="loginMsg" class="loginmsg"></div></div>
-</div>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 const POS_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/pos-api';
 const STORE_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
 const PT='bake_bite_pos_session',PR='bake_bite_pos_role',AT='bake_bite_admin_session';
-let loginRole='user',catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=localStorage.getItem('bake_bite_pos_voice')==='on',lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
+let catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=localStorage.getItem('bake_bite_pos_voice')==='on',lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
 const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
 const token=()=>sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
-document.querySelectorAll('.loginrole').forEach(b=>b.onclick=()=>{loginRole=b.dataset.role;document.querySelectorAll('.loginrole').forEach(x=>x.classList.toggle('active',x===b));loginMsg.textContent='';loginPassword.focus()});
 async function request(action,method='GET',body){const r=await fetch(POS_API+'?action='+action,{method,headers:{authorization:'Bearer '+token(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'เชื่อมต่อ POS ไม่สำเร็จ');return j}
-async function login(){loginMsg.textContent='';try{const password=loginPassword.value;const r=await fetch(POS_API+'?action=login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role:loginRole,password})});const j=await r.json();if(!r.ok||!j.ok)throw new Error('รหัสไม่ถูกต้อง');sessionStorage.setItem(PT,j.token);sessionStorage.setItem(PR,j.role);if(j.role==='admin'){const ar=await fetch(STORE_API+'?action=admin-login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});const aj=await ar.json();if(ar.ok&&aj.ok)sessionStorage.setItem(AT,aj.token)}else sessionStorage.removeItem(AT);loginMask.classList.add('hidden');await start()}catch(e){loginMsg.textContent=e.message}}
 async function validate(){if(!token())return false;try{const s=await request('session');sessionStorage.setItem(PR,s.role);return true}catch(e){sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);return false}}
 async function start(){roleBadge.textContent=(role()||'user').toUpperCase();syncVoiceButton();await loadCatalog();renderAll();setInterval(checkPaidFeed,4000)}
-async function boot(){tick();setInterval(tick,1000);if(await validate()){loginMask.classList.add('hidden');await start()}}
+async function boot(){tick();setInterval(tick,1000);if(await validate()){await start()}else{location.replace('pos-login.html')}}
 async function loadCatalog(){const r=await fetch(STORE_API+'?action=catalog');const j=await r.json();if(!r.ok||!j.ok)throw new Error('โหลดเมนูไม่สำเร็จ');catalog=j}
 function tick(){const d=new Date();clock.textContent=d.toLocaleTimeString('th-TH',{hour12:false});today.textContent=d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -175,7 +167,7 @@ function announce(o){if(!o||!voiceEnabled)return;const txt='ได้รับ�
 async function checkPaidFeed(){if(!token())return;try{const r=await request('paid-feed&since='+encodeURIComponent(lastFeedTime));for(const o of r.orders||[]){if(!announced.has(o.id)){announced.add(o.id);announce(o)}if(o.paid_at&&o.paid_at>lastFeedTime)lastFeedTime=o.paid_at}if(r.server_time&&r.server_time>lastFeedTime)lastFeedTime=r.server_time}catch(e){}}
 function goAdmin(){if(role()!=='admin'){alert('บัญชี USER ไม่มีสิทธิ์เข้าสู่ระบบ Admin');return}location.href=sessionStorage.getItem(AT)?'admin-main.html':'admin-login.html'}
 function openHistory(){if(role()!=='admin'){alert('ประวัติการขายสำหรับ ADMIN');return}location.href='admin-orders.html'}
-async function logout(){try{await request('logout','POST')}catch(e){}sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);sessionStorage.removeItem(AT);location.reload()}
+async function logout(){try{await request('logout','POST')}catch(e){}sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);sessionStorage.removeItem(AT);location.replace('pos-login.html')}
 boot();
 </script>
 </body></html>
