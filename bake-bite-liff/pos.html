@@ -21,6 +21,7 @@
 .sidebar{background:#fffaf4;border-right:1px solid var(--line);padding:14px;overflow:auto}.side-title{font-size:13px;font-weight:900;color:#947767;margin:4px 4px 12px}
 .cat{width:100%;border:0;border-radius:14px;padding:13px 14px;margin-bottom:9px;background:#f6eadf;color:#5a2f1f;font-weight:900;text-align:left;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:10px}.cat.active{background:#6c351d;color:#fff}.cat img{width:28px;height:28px;border-radius:8px;object-fit:cover}
 .history{margin-top:18px;border-top:1px solid #eadfd5;padding-top:14px}.history button{width:100%;border:0;border-radius:14px;padding:12px;background:#fff;border:1px solid #e6d8ca;font-weight:900;color:#694334;cursor:pointer}
+.channel-list{display:grid;gap:8px;margin-bottom:16px}.channel-btn{width:100%;border:2px solid transparent;border-radius:14px;padding:11px 10px;background:#fff;display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:8px;text-align:left;font:inherit;font-weight:900;color:#4d382e;cursor:pointer;box-shadow:0 2px 8px #5b2d1b0a}.channel-btn.active{border-color:#6c351d;background:#fff3e8;color:#6c351d}.channel-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:950}.channel-store{background:#7a3d20}.channel-line{background:#08a94f}.channel-grab{background:#00a86b}.channel-shopee{background:#f45b2b}.channel-badge{min-width:25px;height:25px;border-radius:999px;background:#f4e6d8;display:grid;place-items:center;padding:0 7px;font-size:12px}.channel-btn.active .channel-badge{background:#6c351d;color:#fff}.sidebar-divider{height:1px;background:#eadfd5;margin:14px 0}.layout.channel-mode{grid-template-columns:220px minmax(900px,1fr)}.layout.channel-mode .center{grid-column:2}.layout.channel-mode .cartpanel{display:none}.channel-view{min-height:100%}.channel-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}.channel-head h2{margin:0;color:#5b2d1b;font-size:27px}.channel-head p{margin:4px 0 0;color:#887266;font-weight:700}.order-tabs{display:flex;gap:8px;flex-wrap:wrap}.order-tab{border:1px solid #e2d4c7;background:#fff;border-radius:999px;padding:9px 14px;font-weight:900;color:#725446}.order-tab.active{background:#6c351d;color:#fff;border-color:#6c351d}.channel-orders{display:grid;grid-template-columns:repeat(2,minmax(300px,1fr));gap:12px}.channel-order{background:#fff;border:1px solid #eaded3;border-radius:18px;padding:16px;box-shadow:0 5px 18px #70451b0b}.channel-order-top{display:flex;justify-content:space-between;gap:12px}.channel-order-no{font-size:22px;font-weight:950;color:#6c351d}.channel-status{border-radius:999px;padding:6px 10px;background:#fff2dc;color:#87571f;font-size:12px;font-weight:900}.channel-items{margin:12px 0;border-top:1px solid #eee4da;border-bottom:1px solid #eee4da;padding:10px 0;line-height:1.8}.channel-total{display:flex;justify-content:space-between;font-weight:950;font-size:18px}.integration-empty{background:#fff;border:1px dashed #d9c4b2;border-radius:22px;padding:46px 28px;text-align:center;color:#806c60}.integration-empty .bigicon{font-size:48px}.integration-empty h3{font-size:24px;color:#5b2d1b;margin:10px 0 6px}.integration-note{margin-top:14px;background:#fff8e9;border-radius:13px;padding:11px 14px;font-size:13px;color:#80623c;display:inline-block}
 .center{padding:14px 16px;overflow:auto;background:#fbf5ee}.toolbar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}.search{background:#fff;border:1px solid #e6d7c9;border-radius:15px;padding:0 15px;display:flex;align-items:center;gap:10px}.search input{width:100%;border:0;outline:0;font:inherit;padding:13px 0;font-size:16px}.viewtog{display:flex;background:#fff;border:1px solid #e6d7c9;border-radius:15px;overflow:hidden}.viewtog button{border:0;background:#fff;padding:0 16px;font-size:21px;cursor:pointer}.viewtog button.active{background:#6c351d;color:#fff}
 .products{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.product{background:#fff;border:1px solid #eaded3;border-radius:17px;padding:9px;box-shadow:0 4px 14px #70451b0a;cursor:pointer}.product img,.ph{width:100%;height:165px;object-fit:contain;object-position:center;border-radius:12px;background:#fffaf4;display:grid;place-items:center;font-size:42px}.product h3{font-size:15px;line-height:1.3;min-height:39px;margin:8px 2px 4px}.prodfoot{display:flex;align-items:center;justify-content:space-between}.price{font-size:20px;font-weight:900;color:#9c3f1d}.add{width:35px;height:35px;border:0;border-radius:50%;background:#5f964c;color:#fff;font-size:25px;line-height:1;cursor:pointer}
 .products.list{grid-template-columns:1fr}.products.list .product{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:12px}.products.list .product img,.products.list .ph{height:92px;object-fit:contain;background:#fffaf4}.products.list .product h3{min-height:auto}
@@ -63,14 +64,33 @@
 </div>
 <div class="layout">
   <aside class="sidebar">
-    <div class="side-title">หมวดสินค้า</div>
-    <div id="categories"></div>
+    <div class="side-title">ช่องทางออเดอร์</div>
+    <div class="channel-list">
+      <button class="channel-btn active" data-channel="store" onclick="switchChannel('store')"><span class="channel-icon channel-store">🏪</span><span>หน้าร้าน</span><span class="channel-badge" id="badgeStore">POS</span></button>
+      <button class="channel-btn" data-channel="lineman" onclick="switchChannel('lineman')"><span class="channel-icon channel-line">M</span><span>LINE MAN</span><span class="channel-badge" id="badgeLineman">0</span></button>
+      <button class="channel-btn" data-channel="grab" onclick="switchChannel('grab')"><span class="channel-icon channel-grab">G</span><span>GrabFood</span><span class="channel-badge" id="badgeGrab">0</span></button>
+      <button class="channel-btn" data-channel="shopee" onclick="switchChannel('shopee')"><span class="channel-icon channel-shopee">S</span><span>ShopeeFood</span><span class="channel-badge" id="badgeShopee">0</span></button>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div id="categorySection">
+      <div class="side-title">หมวดสินค้า</div>
+      <div id="categories"></div>
+    </div>
     <div class="history"><button onclick="openHistory()">📄 ประวัติการขาย</button></div>
   </aside>
   <main class="center">
-    <div class="toolbar"><div class="search">🔎 <input id="search" placeholder="ค้นหาสินค้า..." oninput="renderProducts()"></div>
-    <div class="viewtog"><button id="gridBtn" class="active" onclick="setView('grid')">▦</button><button id="listBtn" onclick="setView('list')">☷</button></div></div>
-    <div id="products" class="products"></div>
+    <div id="storeView">
+      <div class="toolbar"><div class="search">🔎 <input id="search" placeholder="ค้นหาสินค้า..." oninput="renderProducts()"></div>
+      <div class="viewtog"><button id="gridBtn" class="active" onclick="setView('grid')">▦</button><button id="listBtn" onclick="setView('list')">☷</button></div></div>
+      <div id="products" class="products"></div>
+    </div>
+    <div id="channelView" class="channel-view hidden">
+      <div class="channel-head">
+        <div><h2 id="channelTitle">LINE MAN</h2><p id="channelSubtitle">รายการออเดอร์จากช่องทางออนไลน์</p></div>
+        <div class="order-tabs"><button class="order-tab active">ใหม่</button><button class="order-tab">กำลังทำ</button><button class="order-tab">พร้อมรับ</button></div>
+      </div>
+      <div id="channelOrders" class="channel-orders"></div>
+    </div>
   </main>
   <aside class="cartpanel">
     <div class="billtop"><div class="billno"><small>หมายเลขบิล</small><strong id="billNo">ยังไม่สร้างบิล</strong></div><span style="font-size:24px">🧾</span></div>
@@ -128,7 +148,7 @@
 const POS_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/pos-api';
 const STORE_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api';
 const PT='bake_bite_pos_session',PR='bake_bite_pos_role',AT='bake_bite_admin_session';
-let catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=localStorage.getItem('bake_bite_pos_voice')==='on',lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
+let activeChannel='store',catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=localStorage.getItem('bake_bite_pos_voice')==='on',lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
 const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
 const token=()=>sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
 async function request(action,method='GET',body){const r=await fetch(POS_API+'?action='+action,{method,headers:{authorization:'Bearer '+token(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'เชื่อมต่อ POS ไม่สำเร็จ');return j}
@@ -139,6 +159,28 @@ async function loadCatalog(){const r=await fetch(STORE_API+'?action=catalog');co
 function tick(){const d=new Date();clock.textContent=d.toLocaleTimeString('th-TH',{hour12:false});today.textContent=d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderAll(){renderCats();renderProducts();renderCart()}
+const CHANNEL_META={
+  store:{name:'หน้าร้าน',icon:'🏪'},
+  lineman:{name:'LINE MAN',icon:'🟢'},
+  grab:{name:'GrabFood',icon:'🟩'},
+  shopee:{name:'ShopeeFood',icon:'🟠'}
+};
+function switchChannel(channel){
+  activeChannel=channel;
+  document.querySelectorAll('.channel-btn').forEach(b=>b.classList.toggle('active',b.dataset.channel===channel));
+  const external=channel!=='store';
+  document.querySelector('.layout').classList.toggle('channel-mode',external);
+  document.getElementById('categorySection').classList.toggle('hidden',external);
+  document.getElementById('storeView').classList.toggle('hidden',external);
+  document.getElementById('channelView').classList.toggle('hidden',!external);
+  if(external)renderChannelView(channel);
+}
+function renderChannelView(channel){
+  const meta=CHANNEL_META[channel]||CHANNEL_META.lineman;
+  document.getElementById('channelTitle').textContent=meta.name;
+  document.getElementById('channelSubtitle').textContent='รายการออเดอร์จาก '+meta.name;
+  document.getElementById('channelOrders').innerHTML='<div class="integration-empty" style="grid-column:1/-1"><div class="bigicon">'+meta.icon+'</div><h3>'+meta.name+'</h3><div>หน้ารายการออเดอร์พร้อมใช้งานแล้ว</div><div class="integration-note">ขณะนี้ยังไม่ได้เชื่อม API รับออเดอร์จาก '+meta.name+' จึงยังไม่มีรายการจริงแสดงในหน้านี้</div></div>';
+}
 function renderCats(){let html='<button class="cat '+(activeCategory==='all'?'active':'')+'" onclick="activeCategory=\'all\';renderAll()">🍽️ ทั้งหมด</button>';html+=catalog.categories.map(c=>'<button class="cat '+(c.id===activeCategory?'active':'')+'" onclick="activeCategory=\''+c.id+'\';renderAll()">'+(c.icon_url?'<img src="'+esc(c.icon_url)+'">':'🥪')+'<span>'+esc(c.name)+'</span></button>').join('');categories.innerHTML=html}
 function filtered(){const q=search.value.trim().toLowerCase();return catalog.products.filter(p=>(activeCategory==='all'||p.category_id===activeCategory)&&(!q||String(p.name).toLowerCase().includes(q)))}
 function renderProducts(){products.className='products'+(view==='list'?' list':'');products.innerHTML=filtered().map(p=>'<div class="product" onclick="addItem(\''+p.id+'\')">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<div class="ph">🥪</div>')+'<h3>'+esc(p.name)+'</h3><div class="prodfoot"><span class="price">'+money(p.price)+'</span><button class="add" onclick="event.stopPropagation();addItem(\''+p.id+'\')">+</button></div></div>').join('')||'<div class="empty">ไม่พบสินค้า</div>'}
