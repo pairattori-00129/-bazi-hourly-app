@@ -106,6 +106,8 @@ body{min-height:100vh}
 .navin.order-active{--notch-left:10%}.navin.snack-active{--notch-left:30%}.navin.points-active{--notch-left:50%}.navin.redeem-active{--notch-left:70%}.navin.contact-active{--notch-left:90%}
 @media(max-width:380px){.navin{width:calc(100% - 18px);padding-left:4px;padding-right:4px}.navin:before{width:72px;height:35px}.nav button{font-size:10.5px}.nav button b{width:37px;height:37px;font-size:19px}.nav button.active b{width:52px;height:52px;font-size:23px;margin-top:-26px}}
 @media (min-width:700px){.shell{border-radius:26px;margin-top:14px;margin-bottom:14px;min-height:calc(100vh - 28px)}}
+
+.courier-options{display:grid;gap:10px;margin-top:12px}.courier-choice{display:flex;align-items:center;gap:12px;border:2px solid #e5dacd;border-radius:18px;padding:10px;background:white;cursor:pointer}.courier-choice:has(input:checked){border-color:#659348;background:#f5faef}.courier-choice img{width:80px;height:80px;object-fit:contain;border-radius:12px;background:white}.courier-choice strong{display:block;font-size:18px}.courier-choice small{display:block;color:#826956;font-size:12px;margin-top:4px}.courier-choice input{margin-left:auto}.location-tools{display:flex;gap:8px;flex-wrap:wrap}.location-tools a{display:inline-block;padding:9px 12px;background:#659348;color:white;border-radius:12px;text-decoration:none}.delivery-step{margin:18px 0 8px;font-size:20px;color:#5b2d1b}.map-pending{padding:15px;border:1px dashed #bbac91;border-radius:15px;background:#fffaf0;line-height:1.6}.coord-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.coord-fields label{font-size:12px} 
 </style>
 </head>
 <body>
@@ -172,9 +174,9 @@ body{min-height:100vh}
     <div class="card" style="margin-top:12px;background:#fff8ef">
       <strong>วิธีรับสินค้า</strong>
       <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="radio" name="fulfillment" value="pickup" checked onchange="toggleDelivery()"> รับเองที่ร้าน</label>
-      <label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="radio" name="fulfillment" value="lineman" onchange="toggleDelivery()"> จัดส่งด้วย LINE MAN</label>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="radio" name="fulfillment" value="courier" onchange="toggleDelivery()"> ให้ไรเดอร์มารับ / ลูกค้าเรียกบริการเอง</label>
     </div>
-    <div id="deliveryFields" style="display:none">
+    <div id="deliveryFields" style="display:none"><h2 class="delivery-step">1. ระบุที่อยู่จัดส่ง</h2>
       <div class="card" style="margin-top:12px;background:#f7fbf2">
         <strong>ที่อยู่ที่บันทึกไว้</strong>
         <select class="field" id="savedAddress" onchange="selectSavedAddress()"><option value="">กรอกที่อยู่ใหม่</option></select>
@@ -185,18 +187,18 @@ body{min-height:100vh}
       <textarea class="field" id="deliveryAddress" rows="3" placeholder="ที่อยู่จัดส่ง"></textarea>
       <div class="card" style="margin-top:10px;background:#f7fbf2">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-          <div><strong>ตำแหน่งบนแผนที่</strong><div class="sub">เก็บพิกัดไว้สำหรับเชื่อม LINE MAN ภายหลัง</div></div>
+          <div><strong>ตำแหน่งบนแผนที่</strong><div class="sub">ใช้พิกัดจริงจากอุปกรณ์ หรือระบุพิกัดจุดส่ง</div></div>
           <button class="btn" style="width:auto;margin:0;padding:9px 12px;background:#6f8f5d" onclick="useCurrentLocation()">ใช้ตำแหน่งปัจจุบัน</button>
         </div>
-        <div id="locationText" class="sub" style="margin-top:8px">ยังไม่ได้ระบุตำแหน่ง</div>
+        <div id="locationText" class="sub" style="margin-top:8px">ยังไม่ได้ระบุตำแหน่ง</div><div class="coord-fields"><label>Latitude<input class="field" id="destinationLat" type="number" step="any" min="-90" max="90" onchange="setDestinationCoordinates()"></label><label>Longitude<input class="field" id="destinationLng" type="number" step="any" min="-180" max="180" onchange="setDestinationCoordinates()"></label></div><div class="location-tools"><a id="destinationMapLink" href="https://www.google.com/maps" target="_blank" rel="noopener">เปิด Google Maps ↗</a></div><p class="map-pending">📍 แผนที่ค้นหาที่อยู่และลากหมุดภายในหน้านี้: รอเปิดใช้ Google Maps API<br>ตอนนี้ใช้ตำแหน่งปัจจุบันหรือกรอกพิกัดได้ ปุ่มเปิดแผนที่จะแสดงพิกัดที่เลือก</p>
       </div>
       <input class="field" id="deliveryNote" placeholder="จุดสังเกต / หมายเหตุการจัดส่ง">
       <label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="saveAddressCheck" onchange="toggleSaveAddress()"> บันทึกที่อยู่นี้ไว้ใช้ครั้งต่อไป</label>
       <select class="field" id="addressLabel" style="display:none"><option value="home">บ้าน</option><option value="work">ที่ทำงาน</option><option value="other">อื่น ๆ</option></select>
     </div>
-    <input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
+    <div id="courierFields" style="display:none"><h2 class="delivery-step">2. เลือกบริการส่ง</h2><div class="courier-options"><label class="courier-choice"><img src="courier-assets/grabexpress.jpg" alt="GrabExpress"><span><strong>GrabExpress</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="grabexpress" checked onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lalamove.jpg" alt="Lalamove"><span><strong>Lalamove</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lalamove"  onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lineman.jpg" alt="LINE MAN"><span><strong>LINE MAN</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lineman"  onchange="updateCourierSummary()"></label></div><p class="map-pending">ยังไม่ได้จองไรเดอร์ผ่านระบบ • ร้านแจ้งเวลาพร้อมรับก่อนลูกค้าจอง<br>ค่าส่งชำระกับผู้ให้บริการ ไม่รวมในค่าอาหาร และยังไม่ได้ตรวจสอบพื้นที่บริการ</p><p id="courierSummary" class="note"></p></div><h2 class="delivery-step">3. สรุปค่าอาหารและชำระเงิน</h2><input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
     <select class="field" id="paymentMethod"><option value="transfer">โอนเงิน / QR</option><option value="cash">เงินสดที่ร้าน (เฉพาะรับเอง)</option></select>
-    <div class="note" style="margin-top:10px">ถ้าเลือก LINE MAN ระบบจะรอให้ร้านยืนยันการชำระเงินก่อน แล้วจึงเข้าสถานะ “รอเรียก LINE MAN”</div>
+    <div class="note" style="margin-top:10px">ยอดชำระในระบบนี้เป็นค่าอาหารเท่านั้น หากเลือกไรเดอร์ ลูกค้าจองและจ่ายค่าส่งในแอปผู้ให้บริการหลังร้านแจ้งพร้อมรับ</div>
     <button class="btn" id="submitOrderButton" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
     <button class="btn" style="background:#8f8178" onclick="showPage('order')">กลับไปแก้ไขรายการ</button>
   </div>
@@ -460,14 +462,14 @@ function selectSavedAddress(){
   const chosen=savedAddresses.find(a=>a.id===document.getElementById("savedAddress").value);
   if(!chosen){
     ["recipientName","recipientPhone","deliveryAddress","deliveryNote"].forEach(id=>document.getElementById(id).value="");
-    deliveryLat=deliveryLng=null;document.getElementById("locationText").textContent="ยังไม่ได้ระบุตำแหน่ง";
+    deliveryLat=deliveryLng=null;syncDestinationCoordinates();document.getElementById("locationText").textContent="ยังไม่ได้ระบุตำแหน่ง";
     return;
   }
   document.getElementById("recipientName").value=chosen.recipient_name;
   document.getElementById("recipientPhone").value=chosen.phone;
   document.getElementById("deliveryAddress").value=chosen.address_text;
   document.getElementById("deliveryNote").value=chosen.delivery_note||"";
-  deliveryLat=chosen.latitude;deliveryLng=chosen.longitude;
+  deliveryLat=chosen.latitude;deliveryLng=chosen.longitude;syncDestinationCoordinates();
   document.getElementById("locationText").textContent=deliveryLat!=null?"พิกัดที่บันทึกไว้: "+Number(deliveryLat).toFixed(6)+", "+Number(deliveryLng).toFixed(6):"ยังไม่ได้ระบุตำแหน่ง";
   document.getElementById("saveAddressCheck").checked=false;toggleSaveAddress();
 }
@@ -597,16 +599,21 @@ function changeQty(id,delta){cart[id]=Math.max(0,(cart[id]||0)+delta);if(cart[id
 function cartItems(){return Object.entries(cart).map(([id,quantity])=>{const p=catalog.products.find(x=>x.id===id);return p?{...p,quantity}:null}).filter(Boolean)}
 function updateCart(){const items=cartItems();document.getElementById("cartCount").textContent=items.reduce((a,b)=>a+b.quantity,0)+" รายการ";document.getElementById("cartTotal").textContent=money(items.reduce((a,b)=>a+Number(b.price)*b.quantity,0))}
 function openCheckout(){const items=cartItems();if(!items.length){alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");return}document.getElementById("checkoutItems").innerHTML=items.map(i=>'<div class="checkout-row"><div><strong>'+i.name+'</strong><div style="font-size:13px;color:#7b6a60">'+money(i.price)+' × '+i.quantity+'</div></div><strong>'+money(Number(i.price)*i.quantity)+'</strong></div>').join("");document.getElementById("checkoutTotal").textContent=money(items.reduce((a,b)=>a+Number(b.price)*b.quantity,0));showPage("checkout")}
+const courierNames={grabexpress:'GrabExpress',lalamove:'Lalamove',lineman:'LINE MAN'};
+function updateCourierSummary(){const selected=document.querySelector('input[name="courierProvider"]:checked');document.getElementById('courierSummary').textContent='บริการที่เลือก: '+courierNames[selected.value]+' • ยังไม่ได้จองไรเดอร์'}
+function syncDestinationCoordinates(){document.getElementById('destinationLat').value=deliveryLat??'';document.getElementById('destinationLng').value=deliveryLng??'';const link=document.getElementById('destinationMapLink');link.href=deliveryLat!=null&&deliveryLng!=null?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(deliveryLat+','+deliveryLng):'https://www.google.com/maps'}
+function setDestinationCoordinates(){const lat=document.getElementById('destinationLat').value,lng=document.getElementById('destinationLng').value;if(lat===''||lng===''){deliveryLat=deliveryLng=null;document.getElementById('destinationMapLink').href='https://www.google.com/maps';document.getElementById('locationText').textContent='กรอกพิกัด Latitude และ Longitude ให้ครบ';return}if(!Number.isFinite(Number(lat))||!Number.isFinite(Number(lng))||Math.abs(Number(lat))>90||Math.abs(Number(lng))>180){deliveryLat=deliveryLng=null;document.getElementById('destinationMapLink').href='https://www.google.com/maps';alert('พิกัดไม่ถูกต้อง');return}deliveryLat=Number(lat);deliveryLng=Number(lng);syncDestinationCoordinates();document.getElementById('locationText').textContent='พิกัดจุดส่ง: '+deliveryLat.toFixed(6)+', '+deliveryLng.toFixed(6)}
 function toggleDelivery(){
   const v=document.querySelector('input[name="fulfillment"]:checked').value;
-  document.getElementById("deliveryFields").style.display=v==="lineman"?"block":"none";
-  if(v==="lineman" && document.getElementById("paymentMethod").value==="cash") document.getElementById("paymentMethod").value="transfer";
+  document.getElementById("courierFields").style.display=v==="courier"?"block":"none";updateCourierSummary();syncDestinationCoordinates();
+  document.getElementById("deliveryFields").style.display=["lineman","courier"].includes(v)?"block":"none";
+  if(["lineman","courier"].includes(v) && document.getElementById("paymentMethod").value==="cash") document.getElementById("paymentMethod").value="transfer";
 }
 function useCurrentLocation(){
   if(!navigator.geolocation){alert("อุปกรณ์นี้ไม่รองรับการระบุตำแหน่ง");return}
   const el=document.getElementById("locationText"); el.textContent="กำลังค้นหาตำแหน่ง...";
   navigator.geolocation.getCurrentPosition(
-    p=>{deliveryLat=p.coords.latitude;deliveryLng=p.coords.longitude;el.textContent="พิกัด: "+deliveryLat.toFixed(6)+", "+deliveryLng.toFixed(6);},
+    p=>{deliveryLat=p.coords.latitude;deliveryLng=p.coords.longitude;syncDestinationCoordinates();el.textContent="พิกัด: "+deliveryLat.toFixed(6)+", "+deliveryLng.toFixed(6);},
     ()=>{el.textContent="ไม่สามารถอ่านตำแหน่งได้";alert("กรุณาอนุญาตการเข้าถึงตำแหน่ง หรือกรอกที่อยู่จัดส่งแทน");},
     {enableHighAccuracy:true,timeout:10000,maximumAge:60000}
   );
@@ -665,18 +672,18 @@ async function submitOrder(){
   const recipientPhone=document.getElementById("recipientPhone").value.trim();
   const deliveryAddress=document.getElementById("deliveryAddress").value.trim();
   const deliveryNote=document.getElementById("deliveryNote").value.trim();
-  if(fulfillment==="lineman" && (!recipientName||!recipientPhone||!deliveryAddress)){
+  if(["lineman","courier"].includes(fulfillment) && (!recipientName||!recipientPhone||!deliveryAddress)){
     alert("กรุณากรอกชื่อผู้รับ เบอร์โทร และที่อยู่จัดส่งให้ครบ"); return;
   }
-  if(fulfillment==="lineman" && document.getElementById("paymentMethod").value==="cash"){
-    alert("การจัดส่งด้วย LINE MAN กรุณาเลือกโอนเงิน / QR"); return;
+  if(["lineman","courier"].includes(fulfillment) && document.getElementById("paymentMethod").value==="cash"){
+    alert("การจัดส่งด้วยไรเดอร์ กรุณาเลือกโอนเงิน / QR"); return;
   }
   const button=document.getElementById("submitOrderButton");
   button.disabled=true;
   try{
     const token=lineToken();
     let addressId=null;
-    if(fulfillment==="lineman"){
+    if(["lineman","courier"].includes(fulfillment)){
       const chosen=savedAddresses.find(a=>a.id===document.getElementById("savedAddress").value);
       const unchanged=chosen&&chosen.recipient_name===recipientName&&chosen.phone===recipientPhone&&
         chosen.address_text===deliveryAddress&&(chosen.delivery_note||"")===deliveryNote&&
@@ -696,7 +703,7 @@ async function submitOrder(){
       customer_name:lineDisplayName||null,
       payment_method:document.getElementById("paymentMethod").value,
       note:document.getElementById("customerNote").value,
-      fulfillment_method:fulfillment,
+      fulfillment_method:fulfillment,courier_provider:fulfillment==="courier"?document.querySelector('input[name="courierProvider"]:checked').value:null,
       member_address_id:addressId,
       recipient_name:recipientName,recipient_phone:recipientPhone,
       delivery_address:deliveryAddress,delivery_note:deliveryNote,
@@ -711,7 +718,7 @@ async function submitOrder(){
     const order=result.order;
     const paymentData={
       id:order.id,order_no:(order.display_order_no||order.order_no),total:Number(order.total||0),
-      payment_method:body.payment_method,fulfillment_method:fulfillment,
+      payment_method:body.payment_method,fulfillment_method:fulfillment,courier_provider:fulfillment==="courier"?document.querySelector('input[name="courierProvider"]:checked').value:null,
       items:items.map(i=>({name:i.name,quantity:i.quantity,line_total:Number(i.price)*Number(i.quantity)}))
     };
     sessionStorage.setItem('bakeBiteLastPaymentOrder',JSON.stringify(paymentData));
