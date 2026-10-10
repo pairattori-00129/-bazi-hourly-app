@@ -13,7 +13,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:#fff;min-height:100%}
 body{visibility:hidden}
-body.admin-verified{visibility:visible}
+body.pos-verified{visibility:visible}
 button,select{font:inherit}
 .topbar{
   position:sticky;top:0;z-index:20;background:#fffaf2;color:#43281d;
@@ -107,7 +107,7 @@ button,select{font:inherit}
   <span class="ghost" id="printerStatus">🟢 Printer พร้อมใช้งาน</span>
   <button class="ghost" id="refreshButton">↻ โหลดล่าสุด</button>
   <button class="ghost" id="fullscreenButton">⛶ เต็มจอ</button>
-  <a class="ghost" href="admin-main.html" style="text-decoration:none">⚙ Admin</a>
+  <button class="ghost" id="logoutButton">ออกจากระบบ</button>
 </div>
 
 <main class="board">
@@ -126,7 +126,7 @@ button,select{font:inherit}
 </main>
 <div class="footerMsg" id="toast"></div>
 
-<script src="admin-session.js"></script>
+<script src="pos-session.js"></script>
 <script>
 let orders=[];
 let activeFilter='all';
@@ -215,7 +215,7 @@ function render(){
 }
 async function loadOrders(silent=false){
   try{
-    const result=await adminRequest('admin-orders');
+    const result=await posRequest('kitchen-orders');
     const incoming=result.orders||[];
     const sig=incoming.map(o=>o.id+':'+o.status+':'+o.updated_at).join('|');
     const changed=lastSignature && sig!==lastSignature;
@@ -228,7 +228,7 @@ async function updateOrder(id,status,button){
   button.disabled=true;
   try{
     const current=orders.find(o=>String(o.id)===String(id));
-    await adminRequest('admin-update-order','POST',{id,status,payment_status:current?.payment_status||'pending'});
+    await posRequest('kitchen-update-order','POST',{id,status});
     await loadOrders(true);
     showToast(status==='preparing'?'ย้ายไปกำลังทำแล้ว':status==='ready'?'ย้ายไปพร้อมรับแล้ว':'ปิดออเดอร์แล้ว');
   }catch(e){showToast('อัปเดตสถานะไม่สำเร็จ')}
@@ -279,7 +279,8 @@ document.querySelector('.board').onclick=e=>{
   const card=b.closest('[data-order]');updateOrder(card.dataset.order,b.dataset.next,b);
 };
 
-requireAdmin().then(async ok=>{
+logoutButton.onclick=logoutPos;
+requirePos().then(async ok=>{
   if(!ok)return;
   await loadOrders(false);
   setInterval(()=>loadOrders(true),10000);
