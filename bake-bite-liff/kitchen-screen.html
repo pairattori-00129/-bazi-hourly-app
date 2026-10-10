@@ -242,7 +242,7 @@ function ticketHtml(o){
   const created=new Date(o.created_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false});
   const note=o.note||o.delivery_note||'';
   return '<article class="ticket '+(snack?'snack':'')+'" data-order="'+safe(o.id)+'">'+
-    '<div class="ticketTop"><span class="orderNo">'+safe(o.order_no||o.id)+'</span><span class="time">🕒 '+safe(created)+'</span><span class="age '+ageClass(mins)+'">⏱ '+mins+' นาที</span></div>'+
+    '<div class="ticketTop"><span class="orderNo">'+safe(o.display_order_no||o.order_no||o.id)+'</span><span class="time">🕒 '+safe(created)+'</span><span class="age '+ageClass(mins)+'">⏱ '+mins+' นาที</span></div>'+
     '<div class="badges"><span class="badge '+fulfillmentClass+'">'+(fulfillmentClass?'🛵 ':'🏪 ')+fulfillment+'</span>'+(snack?'<span class="badge snack">🎁 Snack Box</span>':'')+'</div>'+
     '<div class="items">'+(items.length?items.map(i=>'<div class="line"><span class="name">'+safe(i.product_name)+'</span><span class="qty">× '+Number(i.quantity||0)+'</span></div>').join(''):'<div class="line"><span class="name">ไม่มีรายการในตัวกรองนี้</span><span></span></div>')+'</div>'+
     (note?'<div class="note">📝 หมายเหตุ: <strong>'+safe(note)+'</strong></div>':'')+
@@ -317,10 +317,10 @@ function printOrder(id){
   if(!o)return;
   const items=(o.order_items||[]).map(i=>'<tr><td>'+safe(i.product_name)+'</td><td style="text-align:right">× '+Number(i.quantity||0)+'</td></tr>').join('');
   const note=safe(o.note||o.delivery_note||'');
-  const html='<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+safe(o.order_no||'Order')+'</title>'+
+  const html='<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+safe(o.display_order_no||o.order_no||'Order')+'</title>'+
   '<style>@page{size:80mm auto;margin:4mm}body{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#000;margin:0;font-size:13px}.center{text-align:center}.big{font-size:20px;font-weight:900}.line{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top}.note{font-weight:800;margin-top:8px}.muted{font-size:11px}</style></head><body>'+
   '<div class="center big">BAKE & BITE</div><div class="center">ใบครัว</div><div class="line"></div>'+
-  '<div class="big">'+safe(o.order_no||o.id)+'</div>'+
+  '<div class="big">'+safe(o.display_order_no||o.order_no||o.id)+'</div>'+
   '<div class="muted">'+new Date(o.created_at).toLocaleString('th-TH')+'</div>'+
   '<div class="muted">'+(o.fulfillment_method==='lineman'?'เดลิเวอรี่':'รับที่ร้าน')+'</div>'+
   '<div class="line"></div><table>'+items+'</table>'+
