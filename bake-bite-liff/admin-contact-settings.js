@@ -1,0 +1,7 @@
+const endpoint='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/contact-settings';
+const fields=['store_name', 'phone', 'line_url', 'facebook_url', 'email', 'hours', 'address', 'map_url', 'notes'];
+const el=id=>document.getElementById(id);
+function notice(s,error=false){el('message').textContent=s;el('message').classList.toggle('error',error)}
+async function request(config){const r=await fetch(endpoint,{method:config?'POST':'GET',headers:{authorization:'Bearer '+adminToken(),...(config?{'content-type':'application/json'}:{})},...(config?{body:JSON.stringify({config})}:{})});const j=await r.json();if(r.status===401){clearAdminToken();location.replace('admin-login.html');throw Error('กรุณาเข้าสู่ระบบใหม่')}if(!r.ok||!j.ok)throw Error(j.error||'บันทึกไม่สำเร็จ');return j}
+(async()=>{if(!await requireAdmin())return;try{const j=await request();for(const k of fields)el(k).value=j.config[k]||({store_name:'Bake & Bite'}[k]||'');el('status').textContent=j.updated_at?'มีข้อมูลตั้งค่าที่บันทึกแล้ว':'ยังไม่ได้ตั้งค่า ข้อมูลติดต่อ';el('save').disabled=false}catch(e){notice(e.message,true)}})();
+el('settings').onsubmit=async e=>{e.preventDefault();el('save').disabled=true;try{await request(Object.fromEntries(fields.map(k=>[k,el(k).value.trim()])));el('status').textContent='บันทึกค่าตั้งต้นแล้ว';notice('บันทึกแล้ว ข้อมูลจะปรากฏในหน้าติดต่อร้านเมื่อเปิดหรือรีเฟรชหน้า')}catch(e){notice(e.message,true)}finally{el('save').disabled=false}};
