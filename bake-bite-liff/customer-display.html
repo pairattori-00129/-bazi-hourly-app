@@ -55,6 +55,7 @@ function render(s){
 }
 function load(){try{render(JSON.parse(localStorage.getItem(KEY)||'null'))}catch(e){render(null)}}
 window.addEventListener('storage',e=>{if(e.key===KEY)load()});
+try{const bc=new BroadcastChannel('bake_bite_customer_display_channel');bc.onmessage=e=>{if(e.data&&typeof e.data==='object')render(e.data)}}catch(e){}
 setInterval(load,1200);load();
 </script>
 </body>
