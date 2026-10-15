@@ -80,7 +80,7 @@ button,select{font:inherit}
   .toolbar{top:64px;padding:8px}.filter{padding:9px 11px}.board{padding:8px}
 }
 </style>
-</head>
+<script src="hardware-profile.js?v=1"></script></head>
 <body>
 <header class="topbar">
   <div class="brand">
@@ -105,7 +105,7 @@ button,select{font:inherit}
     <option value="newest">ใหม่ก่อน</option>
   </select>
   <button class="ghost" id="soundButton">🔊 เสียงแจ้งเตือน: เปิด</button>
-  <span class="ghost" id="printerStatus">🟢 Printer พร้อมใช้งาน</span>
+  <span class="ghost" id="printerStatus">🖨 พิมพ์ผ่านหน้าต่าง Windows</span>
   <button class="ghost" id="refreshButton">↻ โหลดล่าสุด</button>
   <button class="ghost" id="fullscreenButton">⛶ เต็มจอ</button>
   <button class="ghost" id="logoutButton">ออกจากระบบ</button>
@@ -312,13 +312,13 @@ fullscreenButton.onclick=async()=>{
     else await document.exitFullscreen();
   }catch(e){showToast('อุปกรณ์นี้ไม่รองรับเต็มจอ')}
 };
-function printOrder(id){
+function printOrder(id){if(!hardwarePrintEnabled('kitchen')){alert('ปิดเครื่องพิมพ์ใบครัวไว้ใน Display and Printer Settings');return}
   const o=orders.find(x=>String(x.id)===String(id));
   if(!o)return;
   const items=(o.order_items||[]).map(i=>'<tr><td>'+safe(i.product_name)+'</td><td style="text-align:right">× '+Number(i.quantity||0)+'</td></tr>').join('');
   const note=safe(o.note||o.delivery_note||'');
   const html='<!doctype html><html lang="th"><head><meta charset="utf-8"><title>'+safe(o.display_order_no||o.order_no||'Order')+'</title>'+
-  '<style>@page{size:80mm auto;margin:4mm}body{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#000;margin:0;font-size:13px}.center{text-align:center}.big{font-size:20px;font-weight:900}.line{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top}.note{font-weight:800;margin-top:8px}.muted{font-size:11px}</style></head><body>'+
+  '<style>@page{size:'+hardwarePaper('kitchen')+'mm auto;margin:4mm}body{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#000;margin:0;font-size:13px}.center{text-align:center}.big{font-size:20px;font-weight:900}.line{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td{padding:4px 0;vertical-align:top}.note{font-weight:800;margin-top:8px}.muted{font-size:11px}</style></head><body>'+
   '<div class="center big">BAKE & BITE</div><div class="center">ใบครัว</div><div class="line"></div>'+
   '<div class="big">'+safe(o.display_order_no||o.order_no||o.id)+'</div>'+
   '<div class="muted">'+new Date(o.created_at).toLocaleString('th-TH')+'</div>'+
