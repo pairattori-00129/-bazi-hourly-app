@@ -102,6 +102,11 @@ Deno.serve(async req=>{
       const {data:existing,error:ee}=await supabase.from("orders")
         .select("id,paid_at,status,payment_status,member_id,line_user_id,total,order_no,display_order_no,points_prompt_sent_at").eq("id",p.id).maybeSingle();
       if(ee)throw ee;if(!existing)return json({ok:false,error:"order_not_found"},404);
+      const {data:prep,error:prepError}=await supabase.from("prep_tickets").select("station_id,status").eq("order_id",p.id);
+      if(prepError)throw prepError;
+      if((prep||[]).length>1&&["ready","completed"].includes(p.status)&&(prep||[]).some(t=>t.status!=="ready"))return json({ok:false,error:"ยังมีสถานีที่ทำไม่เสร็จ กรุณาอัปเดตจากคิวแยกสถานี"},409);
+      if((prep||[]).length===1&&["preparing","ready"].includes(p.status)){const {error:te}=await supabase.from("prep_tickets").update({status:p.status,updated_at:new Date().toISOString()}).eq("order_id",p.id);if(te)throw te}
+
       const {data,error}=await supabase.from("orders").update({status:p.status,updated_at:new Date().toISOString()})
         .eq("id",p.id).select("id,status,payment_status,member_id,line_user_id,total,order_no,display_order_no,points_prompt_sent_at").single();
       if(error)throw error;
