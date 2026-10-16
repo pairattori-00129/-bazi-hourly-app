@@ -74,77 +74,105 @@ function Get-Login{
     $f.AcceptButton=$login;$result=$f.ShowDialog();$f.Dispose()
     return ($result -eq [Windows.Forms.DialogResult]::OK)
 }
-function Printer-Box($Form,$Printers,[int]$Y,[string]$Preferred){
-    $c=New-Object Windows.Forms.ComboBox;$c.DropDownStyle='DropDownList'
-    $c.Location=New-Object Drawing.Point(20,$Y);$c.Width=550
-    foreach($p in $Printers){[void]$c.Items.Add([string]$p)}
-    $c.SelectedItem=$Preferred;if($c.SelectedIndex -lt 0){$c.SelectedIndex=0}
-    $Form.Controls.Add($c);return $c
+function Get-WebConfig{
+    $response=Api-Get 'action=bridge-config'
+    if($null -eq $response.config -or -not $response.revision){throw 'โหลดการตั้งค่าจาก Admin ไม่สำเร็จ'}
+    $response.config|Add-Member -NotePropertyName revision -NotePropertyValue ([string]$response.revision) -Force
+    return $response.config
+}
+function Assert-Targets($Config){
+    $installed=@([Drawing.Printing.PrinterSettings]::InstalledPrinters|ForEach-Object{[string]$_})
+    $targets=New-Object System.Collections.ArrayList
+    if($Config.counter.enabled){[void]$targets.Add(@{name=[string]$Config.counter.printer_name;station='เคาน์เตอร์'})}
+    foreach($station in @($Config.stations)){[void]$targets.Add(@{name=[string]$station.printer_name;station=[string]$station.name})}
+    if($targets.Count -eq 0){throw 'ยังไม่มีเครื่องพิมพ์เปิดใช้งานใน Admin'}
+    foreach($target in $targets){
+        if([string]::IsNullOrWhiteSpace($target.name)){throw ('กรุณาระบุชื่อเครื่องพิมพ์ใน Admin สำหรับ '+$target.station)}
+        if($installed -notcontains $target.name){throw ('ไม่พบเครื่องพิมพ์ "'+$target.name+'" ของ '+$target.station+' ใน Windows โปรดแก้ชื่อใน Admin หรือติดตั้งเครื่องก่อน')}
+    }
+}
+function Show-Targets($Config){
+    $text=New-Object System.Collections.ArrayList
+    if($Config.counter.enabled){[void]$text.Add('เคาน์เตอร์ -> '+$Config.counter.printer_name+' / '+$Config.counter.paper+' มม. (ใบเสร็จ + ใบจัดอาหารรวม)')}
+    else{[void]$text.Add('เคาน์เตอร์: ปิดการพิมพ์')}
+    foreach($station in @($Config.stations)){[void]$text.Add($station.name+' -> '+$station.printer_name+' / '+$station.paper+' มม.')}
+    [void]$text.Add('')
+    [void]$text.Add('เครื่องพิมพ์ที่ Windows พบ:')
+    foreach($printer in [Drawing.Printing.PrinterSettings]::InstalledPrinters){[void]$text.Add('  '+[string]$printer)}
+    return ($text -join [Environment]::NewLine)
 }
 function Get-Config{
-    $printers=@([Drawing.Printing.PrinterSettings]::InstalledPrinters|ForEach-Object{[string]$_})
-    if($printers.Count -eq 0){throw 'ไม่พบเครื่องพิมพ์ใน Windows'}
-    $old=@{};if(Test-Path $script:ConfigPath){$old=Convert-ToMap (Get-Content $script:ConfigPath -Raw|ConvertFrom-Json)}
-    $f=New-Object Windows.Forms.Form;$f.Text='Bake & Bite - จับคู่เครื่องพิมพ์'
-    $f.Size=New-Object Drawing.Size(610,530);$f.StartPosition='CenterScreen';$f.Font=New-Object Drawing.Font('Segoe UI',10)
-    Label-On $f 'เครื่องเคาน์เตอร์: ใบเสร็จ + ใบจัดอาหารรวม' 16
-    $preferred=if($old.counter){$old.counter}else{'XP-80C'}
-    $counter=Printer-Box $f $printers 45 $preferred
-    Label-On $f 'เครื่องห้องครัว: ใบงานตามสถานีที่เลือก' 85
-    $preferred=if($old.kitchen){$old.kitchen}else{'XP-C30'}
-    $kitchen=Printer-Box $f $printers 114 $preferred
-    Label-On $f 'สถานีที่ส่งเข้าเครื่องห้องครัว' 154
-    $station=New-Object Windows.Forms.ComboBox
-    $station.DropDownStyle='DropDownList';$station.Location=New-Object Drawing.Point(20,183);$station.Width=550
-    $r=Get-JsonUtf8 -Uri ($script:StationApi+'?action=config') -Headers @{Authorization=('Bearer '+$script:Token)}
-    if(-not $r.ok){throw 'โหลดสถานีไม่สำเร็จ'}
-    $stationRows=@($r.stations|Where-Object{$_.enabled -and $_.printer_enabled})
-    if($stationRows.Count -eq 0){throw 'เปิดใช้งานสถานีและเครื่องพิมพ์ในหน้า Display and Printer Settings ก่อน'}
-    foreach($row in $stationRows){[void]$station.Items.Add([string]$row.name)}
-    $station.SelectedIndex=0
-    for($i=0;$i -lt $stationRows.Count;$i++){
-        if(($old.station_id -and $stationRows[$i].id -eq $old.station_id) -or (-not $old.station_id -and $stationRows[$i].name -eq 'ครัวไทย')){$station.SelectedIndex=$i}
-    }
-    $f.Controls.Add($station)
-    Label-On $f 'กระดาษเคาน์เตอร์ / ห้องครัว (มม.)' 223
-    $counterPaper=New-Object Windows.Forms.ComboBox;$counterPaper.DropDownStyle='DropDownList'
-    $counterPaper.Location=New-Object Drawing.Point(20,252)
-    [void]$counterPaper.Items.Add('80');[void]$counterPaper.Items.Add('58')
-    $counterPaper.SelectedItem=if($old.counter_paper){[string]$old.counter_paper}else{'80'};$f.Controls.Add($counterPaper)
-    $kitchenPaper=New-Object Windows.Forms.ComboBox;$kitchenPaper.DropDownStyle='DropDownList'
-    $kitchenPaper.Location=New-Object Drawing.Point(180,252)
-    [void]$kitchenPaper.Items.Add('80');[void]$kitchenPaper.Items.Add('58')
-    $kitchenPaper.SelectedItem=if($old.kitchen_paper){[string]$old.kitchen_paper}else{'80'};$f.Controls.Add($kitchenPaper)
-    $help=New-Object Windows.Forms.Label;$help.Location=New-Object Drawing.Point(20,300);$help.Size=New-Object Drawing.Size(550,90)
-    $help.Text="ก่อนเริ่ม ให้ปิดตัวเลือก 'เปิดหน้าพิมพ์ใบเสร็จหลังยืนยันเงินสด' ในหน้า Settings แล้วบันทึก เพื่อไม่ให้พิมพ์ซ้ำจากเว็บ
-เปิด Bridge เพียงคอม POS หลักเครื่องเดียว"
+    $f=New-Object Windows.Forms.Form
+    $f.Text='Bake & Bite Print Bridge 0.2 - ใช้ค่าจาก Admin'
+    $f.Size=New-Object Drawing.Size(700,570);$f.StartPosition='CenterScreen';$f.Font=New-Object Drawing.Font('Segoe UI',10)
+    Label-On $f 'ตั้งชื่อเครื่องพิมพ์และสถานีจากหน้า Admin โปรแกรมนี้โหลดค่าตามเว็บ' 16
+    $view=New-Object Windows.Forms.TextBox
+    $view.Multiline=$true;$view.ReadOnly=$true;$view.ScrollBars='Vertical'
+    $view.Location=New-Object Drawing.Point(20,48);$view.Size=New-Object Drawing.Size(640,280);$f.Controls.Add($view)
+    $help=New-Object Windows.Forms.Label;$help.Location=New-Object Drawing.Point(20,340);$help.Size=New-Object Drawing.Size(640,70)
+    $help.Text="โหลดค่าประมาณทุก 3 วินาที เพิ่มหรือเปลี่ยนเครื่องใน Admin แล้วกดบันทึก ไม่ต้องแก้โค้ด
+ก่อนเริ่ม ปิดการเปิดหน้าพิมพ์ใบเสร็จหลังรับเงินสดในเว็บ แล้วบันทึกและรีเฟรช POS เพื่อไม่ให้ซ้ำ"
     $f.Controls.Add($help)
+    $reload=New-Object Windows.Forms.Button
+    $reload.Text='โหลดค่าล่าสุด';$reload.Location=New-Object Drawing.Point(20,430);$reload.Size=New-Object Drawing.Size(150,38);$f.Controls.Add($reload)
+    $test=New-Object Windows.Forms.Button
+    $test.Text='ทดสอบทุกเครื่อง';$test.Location=New-Object Drawing.Point(190,430);$test.Size=New-Object Drawing.Size(170,38);$f.Controls.Add($test)
     $ok=New-Object Windows.Forms.Button
-    $ok.Text='บันทึกและเริ่ม';$ok.Location=New-Object Drawing.Point(20,400);$ok.Size=New-Object Drawing.Size(160,38);$f.Controls.Add($ok)
-    $testButton=New-Object Windows.Forms.Button
-    $testButton.Text='ทดสอบ 3 ใบ';$testButton.Location=New-Object Drawing.Point(210,400);$testButton.Size=New-Object Drawing.Size(160,38);$f.Controls.Add($testButton)
-    $testButton.Add_Click({
-        $testButton.Enabled=$false
+    $ok.Text='เริ่มรับงาน';$ok.Location=New-Object Drawing.Point(380,430);$ok.Size=New-Object Drawing.Size(150,38);$f.Controls.Add($ok)
+    $refreshView={
+        $script:WebConfig=Get-WebConfig
+        $view.Text=Show-Targets $script:WebConfig
+    }
+    $reload.Add_Click({try{& $refreshView}catch{[Windows.Forms.MessageBox]::Show($_.Exception.Message)|Out-Null}})
+    $test.Add_Click({
+        $test.Enabled=$false
         try{
-            if([string]$counter.SelectedItem -eq [string]$kitchen.SelectedItem){throw 'เลือกเครื่องเคาน์เตอร์และเครื่องครัวคนละชื่อ'}
-            $row=$stationRows[$station.SelectedIndex]
-            $sample=[pscustomobject]@{order=[pscustomobject]@{id='TEST';order_no='TEST-001';display_order_no='TEST-001';created_at=[DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss');customer_name='ทดสอบ';total=100;payment_method='TEST';is_test=$true};points=[pscustomobject]@{earned=2;balance=12;pending=0;member_linked=$true};items=@([pscustomobject]@{name='อาหารทดสอบ';quantity=1;line_total=60;department=[string]$row.name;station_id=[string]$row.id},[pscustomobject]@{name='น้ำทดสอบ';quantity=1;line_total=40;department='เครื่องดื่ม';station_id='other'})}
-            Send-Print ([string]$counter.SelectedItem) ([int]$counterPaper.SelectedItem) (Get-Lines $sample 'receipt' @($sample.items))
-            Send-Print ([string]$counter.SelectedItem) ([int]$counterPaper.SelectedItem) (Get-Lines $sample 'packing' @($sample.items))
-            Send-Print ([string]$kitchen.SelectedItem) ([int]$kitchenPaper.SelectedItem) (Get-Lines $sample 'kitchen' @($sample.items[0]))
-            [Windows.Forms.MessageBox]::Show('ส่งงานทดสอบเข้า Windows แล้ว กรุณาตรวจว่ากระดาษออกครบ 3 ใบและออกถูกเครื่อง')|Out-Null
+            & $refreshView
+            Assert-Targets $script:WebConfig
+            $items=@()
+            foreach($station in @($script:WebConfig.stations)){$items += [pscustomobject]@{name=('อาหารทดสอบ '+$station.name);quantity=1;line_total=50;department=[string]$station.name;station_id=[string]$station.id}}
+            if($items.Count -eq 0){$items=@([pscustomobject]@{name='รายการทดสอบเคาน์เตอร์';quantity=1;line_total=50;department='เคาน์เตอร์';station_id=''})}
+            $sample=[pscustomobject]@{order=[pscustomobject]@{id='TEST';order_no='TEST-001';display_order_no='TEST-001';created_at=[DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss');customer_name='ทดสอบ';total=($items.Count*50);payment_method='TEST';is_test=$true};points=[pscustomobject]@{earned=$items.Count;balance=12;pending=0;member_linked=$true};items=$items}
+            if($script:WebConfig.counter.enabled){
+                Send-Print ([string]$script:WebConfig.counter.printer_name) ([int]$script:WebConfig.counter.paper) (Get-Lines $sample 'receipt' $items)
+                Send-Print ([string]$script:WebConfig.counter.printer_name) ([int]$script:WebConfig.counter.paper) (Get-Lines $sample 'packing' $items)
+            }
+            foreach($station in @($script:WebConfig.stations)){
+                $stationItems=@($items|Where-Object{[string]$_.station_id -eq [string]$station.id})
+                Send-Print ([string]$station.printer_name) ([int]$station.paper) (Get-Lines $sample 'station' $stationItems)
+            }
+            [Windows.Forms.MessageBox]::Show('ส่งงานทดสอบตามค่าจาก Admin เข้า Windows แล้ว กรุณาตรวจทุกเครื่อง ไม่มีการสร้างยอดขาย')|Out-Null
         }catch{[Windows.Forms.MessageBox]::Show($_.Exception.Message)|Out-Null}
-        finally{$testButton.Enabled=$true}
+        finally{$test.Enabled=$true}
     })
     $script:Chosen=$null
     $ok.Add_Click({
-        if([string]$counter.SelectedItem -eq [string]$kitchen.SelectedItem){[Windows.Forms.MessageBox]::Show('เลือกเครื่องเคาน์เตอร์กับเครื่องครัวคนละชื่อ')|Out-Null;return}
-        $row=$stationRows[$station.SelectedIndex]
-        $script:Chosen=@{counter=[string]$counter.SelectedItem;kitchen=[string]$kitchen.SelectedItem;station_id=[string]$row.id;station_name=[string]$row.name;counter_paper=[int]$counterPaper.SelectedItem;kitchen_paper=[int]$kitchenPaper.SelectedItem}
-        $f.DialogResult='OK';$f.Close()
+        try{
+            & $refreshView
+            Assert-Targets $script:WebConfig
+            $script:Chosen=$script:WebConfig;$f.DialogResult='OK';$f.Close()
+        }catch{[Windows.Forms.MessageBox]::Show($_.Exception.Message)|Out-Null}
     })
-    $result=$f.ShowDialog();$f.Dispose();if($result -ne [Windows.Forms.DialogResult]::OK){return $null}
-    Save-Json $script:ConfigPath $script:Chosen;return $script:Chosen
+    try{& $refreshView}catch{$view.Text=$_.Exception.Message}
+    $result=$f.ShowDialog();$f.Dispose()
+    if($result -ne [Windows.Forms.DialogResult]::OK){return $null}
+    return $script:Chosen
+}
+function Upgrade-State{
+    if([int]$script:State.version -ge 2){return}
+    $keys=@($script:State.jobs.Keys|Where-Object{[string]$_ -match '/kitchen$'})
+    if($keys.Count -gt 0){
+        if(-not (Test-Path $script:ConfigPath)){throw 'ต้องเก็บ config.json เดิมไว้เพื่อย้ายประวัติใบครัว โดยไม่พิมพ์ซ้ำ'}
+        $old=Convert-ToMap (Get-Content $script:ConfigPath -Raw|ConvertFrom-Json)
+        if(-not $old.station_id){throw 'ไม่พบ station_id ใน config.json เดิม หยุดเพื่อป้องกันพิมพ์ใบครัวซ้ำ'}
+        foreach($key in $keys){
+            $newKey=([string]$key -replace '/kitchen
+            $script:State.jobs[$newKey]=$script:State.jobs[$key]
+            [void]$script:State.jobs.Remove($key)
+        }
+    }
+    $script:State.version=2
+    Save-State
 }
 function Add-Line($List,[string]$Text,[bool]$Bold=$false){[void]$List.Add(@{text=$Text;bold=$Bold})}
 function Get-Lines($Data,[string]$Kind,$Items){
@@ -248,17 +276,32 @@ Cancel = หยุด Bridge"),
 try{
     if(-not (Get-Login)){exit}
     $config=Get-Config;if($null -eq $config){exit}
-    if(Test-Path $script:StatePath){$script:State=Convert-ToMap (Get-Content $script:StatePath -Raw|ConvertFrom-Json)}
-    else{
-        $script:State=@{version=1;since=[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ');after='00000000-0000-0000-0000-000000000000';jobs=@{}}
+    if(Test-Path $script:StatePath){
+        $script:State=Convert-ToMap (Get-Content $script:StatePath -Raw|ConvertFrom-Json)
+        if($null -eq $script:State.jobs -or -not $script:State.since){throw 'ประวัติงานพิมพ์ไม่สมบูรณ์ โปรดเก็บไฟล์เดิมไว้และแจ้งผู้ดูแล'}
+        if([int]$script:State.version -lt 2){
+            $backup=$script:StatePath+'.v1-backup'
+            if(-not (Test-Path $backup)){Copy-Item -LiteralPath $script:StatePath -Destination $backup}
+            Upgrade-State
+        }
+    }else{
+        $script:State=@{version=2;since=[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ');after='00000000-0000-0000-0000-000000000000';jobs=@{}}
         Save-State
     }
-    Write-Host 'Bake & Bite Print Bridge 0.1.1'
-    Write-Host ('เคาน์เตอร์: '+$config.counter+' / ครัว: '+$config.kitchen+' / สถานี: '+$config.station_name)
-    Write-Host 'เริ่มครั้งแรกจะรับเฉพาะบิลที่ชำระหลังเปิด Bridge ไม่ดึงบิลเก่ามาพิมพ์'
-    Write-Host 'รับงาน POS ที่ชำระแล้วทุก 3 วินาที / Ctrl+C เพื่อหยุด'
+    Write-Host 'Bake & Bite Print Bridge 0.2 - Auto Admin Config'
+    Write-Host (Show-Targets $config)
+    Write-Host 'เปิด Bridge เพียงคอมเดียว / Ctrl+C เพื่อหยุด'
+    $revision=[string]$config.revision;$lastError=''
     while($true){
         try{
+            $config=Get-WebConfig
+            Assert-Targets $config
+            if([string]$config.revision -ne $revision){
+                Write-Host 'โหลดค่าจาก Admin ใหม่แล้ว' -ForegroundColor Green
+                Write-Host (Show-Targets $config)
+                $revision=[string]$config.revision
+            }
+            if($lastError){Write-Host 'กลับมารับงานแล้ว' -ForegroundColor Green;$lastError=''}
             $since=[Uri]::EscapeDataString([string]$script:State.since)
             $after=[Uri]::EscapeDataString([string]$script:State.after)
             $feed=Api-Get ('action=bridge-orders&since='+$since+'&after='+$after)
@@ -267,17 +310,195 @@ try{
                 if($data.order.payment_status -ne 'paid' -or $data.order.status -eq 'cancelled'){
                     $script:State.since=[string]$entry.paid_at;$script:State.after=[string]$entry.id;Save-State;continue
                 }
-                Send-Tracked $data 'receipt' $config.counter $config.counter_paper @($data.items)
-                Send-Tracked $data 'packing' $config.counter $config.counter_paper @($data.items)
-                $kitchenItems=@($data.items|Where-Object{[string]$_.station_id -eq $config.station_id})
-                Send-Tracked $data 'kitchen' $config.kitchen $config.kitchen_paper $kitchenItems
+                if($config.counter.enabled){
+                    Send-Tracked $data 'receipt' ([string]$config.counter.printer_name) ([int]$config.counter.paper) @($data.items)
+                    Send-Tracked $data 'packing' ([string]$config.counter.printer_name) ([int]$config.counter.paper) @($data.items)
+                }
+                foreach($station in @($config.stations)){
+                    $stationItems=@($data.items|Where-Object{[string]$_.station_id -eq [string]$station.id})
+                    Send-Tracked $data ('station-'+[string]$station.id) ([string]$station.printer_name) ([int]$station.paper) $stationItems
+                }
                 $script:State.since=[string]$entry.paid_at;$script:State.after=[string]$entry.id;Save-State
             }
         }catch{
-            Write-Host 'หยุดรับงาน: ตรวจอินเทอร์เน็ต การเข้าสู่ระบบ และคิวเครื่องพิมพ์' -ForegroundColor Yellow
-            Write-Host $_.Exception.Message -ForegroundColor Yellow
-            [Windows.Forms.MessageBox]::Show('Bridge หยุดรับงานแล้ว ตรวจเครื่องพิมพ์และอินเทอร์เน็ต จากนั้นปิดและเปิดโปรแกรมใหม่ งานที่ส่งไปแล้วจะถูกจดจำไว้','Bake & Bite')|Out-Null
-            break
+            $message=[string]$_.Exception.Message
+            if($message -like '*หยุดเพื่อให้ตรวจงานพิมพ์ค้าง*'){break}
+            if($null -ne $_.Exception.Response -and [int]$_.Exception.Response.StatusCode -eq 401){
+                [Windows.Forms.MessageBox]::Show('สิทธิ์หมดอายุ กรุณาปิดและเปิด Bridge เพื่อเข้าสู่ระบบใหม่')|Out-Null;break
+            }
+            if($message -ne $lastError){
+                Write-Host ('พักงาน / จะลองใหม่: '+$message) -ForegroundColor Yellow
+                $lastError=$message
+            }
+        }
+        Start-Sleep -Seconds 3
+    }
+}catch{[Windows.Forms.MessageBox]::Show($_.Exception.Message,'Bake & Bite Print Bridge')|Out-Null}
+finally{$script:Token=$null;$mutex.ReleaseMutex();$mutex.Dispose()}
+,('/station-'+[string]$old.station_id))
+            $script:State.jobs[$newKey]=$script:State.jobs[$key]
+            [void]$script:State.jobs.Remove($key)
+        }
+    }
+    $script:State.version=2
+    Save-State
+}
+function Add-Line($List,[string]$Text,[bool]$Bold=$false){[void]$List.Add(@{text=$Text;bold=$Bold})}
+function Get-Lines($Data,[string]$Kind,$Items){
+    $lines=New-Object System.Collections.ArrayList;$o=$Data.order
+    Add-Line $lines 'BAKE & BITE' $true
+    $title=switch($Kind){'receipt'{'ใบเสร็จรับเงิน'}'packing'{'ใบจัดอาหารรวมทุกแผนก'}default{'ใบงานห้องครัว'}}
+    Add-Line $lines $title $true
+    if($o.is_test){Add-Line $lines 'ทดสอบ — ไม่ใช่ยอดขาย' $true}
+    $number=if($o.display_order_no){$o.display_order_no}else{$o.order_no}
+    Add-Line $lines ([string]$number) $true
+    Add-Line $lines ([string]$o.created_at);Add-Line $lines ('ลูกค้า: '+[string]$o.customer_name)
+    Add-Line $lines '-----------------------------'
+    $qty=0
+    foreach($item in $Items){
+        $qty += [int]$item.quantity
+        if($Kind -eq 'receipt'){Add-Line $lines (([string]$item.name)+' x '+$item.quantity+' = '+([decimal]$item.line_total).ToString('0.00')+' บาท')}
+        else{Add-Line $lines ('[  ] '+([string]$item.name)+' x '+$item.quantity) $true;Add-Line $lines ('แผนก: '+[string]$item.department)}
+    }
+    Add-Line $lines '-----------------------------'
+    if($Kind -eq 'receipt'){
+        Add-Line $lines ('รวม '+([decimal]$o.total).ToString('0.00')+' บาท') $true
+        Add-Line $lines ('ชำระ: '+[string]$o.payment_method)
+        Add-Line $lines ('คะแนนที่รับครั้งนี้: '+[string]$Data.points.earned+' แต้ม')
+        $balance=if($null -eq $Data.points.balance){'-'}else{[string]$Data.points.balance+' แต้ม'}
+        Add-Line $lines ('ยอดคะแนนสะสม: '+$balance)
+        if($Data.points.pending -gt 0){Add-Line $lines ('คะแนนรอรับผ่าน LINE: '+$Data.points.pending+' แต้ม')}
+        if(-not $Data.points.member_linked){Add-Line $lines 'ออเดอร์นี้ยังไม่ผูกสมาชิก'}
+        Add-Line $lines 'คะแนนสะสม ณ เวลาพิมพ์'
+    }else{
+        Add-Line $lines ('รวม '+$qty+' ชิ้น / '+@($Items).Count+' รายการ') $true
+        Add-Line $lines '[  ] ตรวจจำนวนครบแล้ว';Add-Line $lines 'ผู้จัด ________ ผู้ตรวจ ________'
+        Add-Line $lines 'ไม่ใช่ใบเสร็จรับเงิน'
+    }
+    if($o.note){Add-Line $lines ('หมายเหตุ: '+[string]$o.note)}
+    return ,$lines
+}
+function Send-Print([string]$Printer,[int]$Paper,$Lines){
+    $doc=New-Object Drawing.Printing.PrintDocument;$doc.PrinterSettings.PrinterName=$Printer
+    if(-not $doc.PrinterSettings.IsValid){$doc.Dispose();throw ('เครื่องพิมพ์ไม่พร้อม: '+$Printer)}
+    $doc.DocumentName='BakeBite - '+[string]$Lines[1].text
+    $doc.PrintController=New-Object Drawing.Printing.StandardPrintController
+    $width=[int][Math]::Round($Paper/25.4*100)
+    $font=New-Object Drawing.Font('Tahoma',9);$bold=New-Object Drawing.Font('Tahoma',10,[Drawing.FontStyle]::Bold)
+    $format=New-Object Drawing.StringFormat;$format.Trimming=[Drawing.StringTrimming]::None
+    $doc.DefaultPageSettings.Margins=New-Object Drawing.Printing.Margins(6,6,6,6)
+    $measure=$doc.PrinterSettings.CreateMeasurementGraphics()
+    $measure.PageUnit=[Drawing.GraphicsUnit]::Display
+    try{
+        $height=18
+        foreach($line in $Lines){
+            $useFont=if($line.bold){$bold}else{$font}
+            $size=$measure.MeasureString([string]$line.text,$useFont,($width-18),$format)
+            $height += [int][Math]::Ceiling($size.Height)+4
+        }
+    }finally{$measure.Dispose()}
+    $height=[Math]::Max(180,[Math]::Min(1100,$height))
+    $doc.DefaultPageSettings.PaperSize=New-Object Drawing.Printing.PaperSize('BakeBite Roll',$width,$height)
+    $position=@{index=0}
+    $printBlock={
+        param($sender,$e)
+        $e.Graphics.PageUnit=[Drawing.GraphicsUnit]::Display
+        $y=[single]$e.MarginBounds.Top;$printWidth=[single][Math]::Min($e.MarginBounds.Width,($width-18))
+        while($position.index -lt $Lines.Count){
+            $line=$Lines[$position.index];$useFont=if($line.bold){$bold}else{$font}
+            $size=$e.Graphics.MeasureString([string]$line.text,$useFont,$printWidth,$format)
+            $lineHeight=[single][Math]::Ceiling($size.Height)+4
+            if($y+$lineHeight -gt $e.MarginBounds.Bottom -and $y -gt $e.MarginBounds.Top){$e.HasMorePages=$true;return}
+            $rect=New-Object Drawing.RectangleF([single]$e.MarginBounds.Left,$y,$printWidth,$lineHeight)
+            $e.Graphics.DrawString([string]$line.text,$useFont,[Drawing.Brushes]::Black,$rect,$format)
+            $y += $lineHeight;$position.index++
+        }
+        $e.HasMorePages=$false
+    }.GetNewClosure()
+    $handler=[Drawing.Printing.PrintPageEventHandler]$printBlock
+    $doc.add_PrintPage($handler)
+    try{$doc.Print()}finally{$doc.Dispose();$font.Dispose();$bold.Dispose();$format.Dispose()}
+}
+function Save-State{Save-Json $script:StatePath $script:State}
+function Send-Tracked($Data,[string]$Kind,[string]$Printer,[int]$Paper,$Items){
+    $key=([string]$Data.order.id)+'/'+$Kind;$state=[string]$script:State.jobs[$key]
+    if($state -eq 'submitted' -or $state -eq 'skipped'){return}
+    if($state -eq 'sending' -or $state -eq 'attention'){
+        $answer=[Windows.Forms.MessageBox]::Show(
+            ("งาน "+$Data.order.order_no+" / "+$Kind+" เคยส่งแล้วแต่ยังยืนยันไม่ได้
+ตรวจคิว Windows และกระดาษก่อน
+Yes = พิมพ์ออกแล้ว ข้ามงานนี้
+No = ส่งพิมพ์ซ้ำ (อาจได้ใบซ้ำ)
+Cancel = หยุด Bridge"),
+            'ตรวจงานพิมพ์ค้าง',[Windows.Forms.MessageBoxButtons]::YesNoCancel)
+        if($answer -eq [Windows.Forms.DialogResult]::Yes){$script:State.jobs[$key]='submitted';Save-State;return}
+        if($answer -ne [Windows.Forms.DialogResult]::No){throw 'หยุดเพื่อให้ตรวจงานพิมพ์ค้าง'}
+    }
+    if(@($Items).Count -eq 0){$script:State.jobs[$key]='skipped';Save-State;return}
+    $script:State.jobs[$key]='sending';Save-State
+    try{
+        $lines=Get-Lines $Data $Kind $Items;Send-Print $Printer $Paper $lines
+        $script:State.jobs[$key]='submitted';Save-State
+        Write-Host ($Data.order.order_no+' / '+$Kind+' -> '+$Printer)
+    }catch{$script:State.jobs[$key]='attention';Save-State;throw}
+}
+try{
+    if(-not (Get-Login)){exit}
+    $config=Get-Config;if($null -eq $config){exit}
+    if(Test-Path $script:StatePath){
+        $script:State=Convert-ToMap (Get-Content $script:StatePath -Raw|ConvertFrom-Json)
+        if($null -eq $script:State.jobs -or -not $script:State.since){throw 'ประวัติงานพิมพ์ไม่สมบูรณ์ โปรดเก็บไฟล์เดิมไว้และแจ้งผู้ดูแล'}
+        if([int]$script:State.version -lt 2){
+            $backup=$script:StatePath+'.v1-backup'
+            if(-not (Test-Path $backup)){Copy-Item -LiteralPath $script:StatePath -Destination $backup}
+            Upgrade-State
+        }
+    }else{
+        $script:State=@{version=2;since=[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ');after='00000000-0000-0000-0000-000000000000';jobs=@{}}
+        Save-State
+    }
+    Write-Host 'Bake & Bite Print Bridge 0.2 - Auto Admin Config'
+    Write-Host (Show-Targets $config)
+    Write-Host 'เปิด Bridge เพียงคอมเดียว / Ctrl+C เพื่อหยุด'
+    $revision=[string]$config.revision;$lastError=''
+    while($true){
+        try{
+            $config=Get-WebConfig
+            Assert-Targets $config
+            if([string]$config.revision -ne $revision){
+                Write-Host 'โหลดค่าจาก Admin ใหม่แล้ว' -ForegroundColor Green
+                Write-Host (Show-Targets $config)
+                $revision=[string]$config.revision
+            }
+            if($lastError){Write-Host 'กลับมารับงานแล้ว' -ForegroundColor Green;$lastError=''}
+            $since=[Uri]::EscapeDataString([string]$script:State.since)
+            $after=[Uri]::EscapeDataString([string]$script:State.after)
+            $feed=Api-Get ('action=bridge-orders&since='+$since+'&after='+$after)
+            foreach($entry in $feed.orders){
+                $data=Api-Get ('action=print-order&id='+[Uri]::EscapeDataString([string]$entry.id))
+                if($data.order.payment_status -ne 'paid' -or $data.order.status -eq 'cancelled'){
+                    $script:State.since=[string]$entry.paid_at;$script:State.after=[string]$entry.id;Save-State;continue
+                }
+                if($config.counter.enabled){
+                    Send-Tracked $data 'receipt' ([string]$config.counter.printer_name) ([int]$config.counter.paper) @($data.items)
+                    Send-Tracked $data 'packing' ([string]$config.counter.printer_name) ([int]$config.counter.paper) @($data.items)
+                }
+                foreach($station in @($config.stations)){
+                    $stationItems=@($data.items|Where-Object{[string]$_.station_id -eq [string]$station.id})
+                    Send-Tracked $data ('station-'+[string]$station.id) ([string]$station.printer_name) ([int]$station.paper) $stationItems
+                }
+                $script:State.since=[string]$entry.paid_at;$script:State.after=[string]$entry.id;Save-State
+            }
+        }catch{
+            $message=[string]$_.Exception.Message
+            if($message -like '*หยุดเพื่อให้ตรวจงานพิมพ์ค้าง*'){break}
+            if($null -ne $_.Exception.Response -and [int]$_.Exception.Response.StatusCode -eq 401){
+                [Windows.Forms.MessageBox]::Show('สิทธิ์หมดอายุ กรุณาปิดและเปิด Bridge เพื่อเข้าสู่ระบบใหม่')|Out-Null;break
+            }
+            if($message -ne $lastError){
+                Write-Host ('พักงาน / จะลองใหม่: '+$message) -ForegroundColor Yellow
+                $lastError=$message
+            }
         }
         Start-Sleep -Seconds 3
     }
