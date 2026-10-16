@@ -26,8 +26,18 @@ function Convert-ToMap($Value){
     if($Value -is [System.Array]){return ,@($Value|ForEach-Object{Convert-ToMap $_})}
     return $Value
 }
+function Get-JsonUtf8{
+    param([string]$Uri,[string]$Method='Get',[hashtable]$Headers=@{},[byte[]]$Body)
+    $options=@{Uri=$Uri;Method=$Method;Headers=$Headers;UseBasicParsing=$true;TimeoutSec=20}
+    if($PSBoundParameters.ContainsKey('Body')){$options.Body=$Body;$options.ContentType='application/json; charset=utf-8'}
+    $response=Invoke-WebRequest @options
+    $stream=$response.RawContentStream
+    if($stream.CanSeek){$stream.Position=0}
+    $reader=New-Object System.IO.StreamReader($stream,[Text.Encoding]::UTF8,$true)
+    try{$json=$reader.ReadToEnd();return ($json|ConvertFrom-Json)}finally{$reader.Dispose()}
+}
 function Api-Get([string]$Query){
-    $r=Invoke-RestMethod -Method Get -Uri ($script:Api+'?'+$Query) -Headers @{Authorization=('Bearer '+$script:Token)} -TimeoutSec 20
+    $r=Get-JsonUtf8 -Method Get -Uri ($script:Api+'?'+$Query) -Headers @{Authorization=('Bearer '+$script:Token)}
     if(-not $r.ok){throw 'API rejected request'};return $r
 }
 function Label-On($Form,[string]$Text,[int]$Y){
@@ -56,7 +66,7 @@ function Get-Login{
         $login.Enabled=$false
         try{
             $body=@{role=[string]$role.SelectedItem;password=$password.Text}|ConvertTo-Json
-            $r=Invoke-RestMethod -Uri ($script:Api+'?action=login') -Method Post -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body)) -TimeoutSec 20
+            $r=Get-JsonUtf8 -Uri ($script:Api+'?action=login') -Method Post -Body ([Text.Encoding]::UTF8.GetBytes($body))
             if(-not $r.ok -or -not $r.token){throw 'Login failed'}
             $script:Token=[string]$r.token;$password.Clear();$f.DialogResult='OK';$f.Close()
         }catch{$password.Clear();$message.Text='เข้าสู่ระบบไม่สำเร็จ ตรวจรหัสและอินเทอร์เน็ต';$login.Enabled=$true}
@@ -86,7 +96,7 @@ function Get-Config{
     Label-On $f 'สถานีที่ส่งเข้าเครื่องห้องครัว' 154
     $station=New-Object Windows.Forms.ComboBox
     $station.DropDownStyle='DropDownList';$station.Location=New-Object Drawing.Point(20,183);$station.Width=550
-    $r=Invoke-RestMethod -Uri ($script:StationApi+'?action=config') -Headers @{Authorization=('Bearer '+$script:Token)} -TimeoutSec 20
+    $r=Get-JsonUtf8 -Uri ($script:StationApi+'?action=config') -Headers @{Authorization=('Bearer '+$script:Token)}
     if(-not $r.ok){throw 'โหลดสถานีไม่สำเร็จ'}
     $stationRows=@($r.stations|Where-Object{$_.enabled -and $_.printer_enabled})
     if($stationRows.Count -eq 0){throw 'เปิดใช้งานสถานีและเครื่องพิมพ์ในหน้า Display and Printer Settings ก่อน'}
@@ -243,7 +253,7 @@ try{
         $script:State=@{version=1;since=[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ');after='00000000-0000-0000-0000-000000000000';jobs=@{}}
         Save-State
     }
-    Write-Host 'Bake & Bite Print Bridge 0.1'
+    Write-Host 'Bake & Bite Print Bridge 0.1.1'
     Write-Host ('เคาน์เตอร์: '+$config.counter+' / ครัว: '+$config.kitchen+' / สถานี: '+$config.station_name)
     Write-Host 'เริ่มครั้งแรกจะรับเฉพาะบิลที่ชำระหลังเปิด Bridge ไม่ดึงบิลเก่ามาพิมพ์'
     Write-Host 'รับงาน POS ที่ชำระแล้วทุก 3 วินาที / Ctrl+C เพื่อหยุด'
