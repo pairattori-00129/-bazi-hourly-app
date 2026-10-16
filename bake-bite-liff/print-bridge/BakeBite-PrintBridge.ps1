@@ -1,4 +1,5 @@
 ﻿#requires -Version 5.1
+param([switch]$AutoStart)
 # Windows pilot: one cashier computer. Uses installed printer names, never changes drivers.
 $ErrorActionPreference='Stop'
 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
@@ -11,6 +12,8 @@ $script:Root=Join-Path $env:LOCALAPPDATA 'BakeBitePrintBridge'
 New-Item -ItemType Directory -Force -Path $script:Root|Out-Null
 $script:StatePath=Join-Path $script:Root 'state.json'
 $script:ConfigPath=Join-Path $script:Root 'config.json'
+$script:SessionPath=Join-Path $script:Root 'session.xml'
+$script:SourcePath=$PSCommandPath
 $mutex=New-Object System.Threading.Mutex($false,'Local\BakeBitePrintBridge')
 if(-not $mutex.WaitOne(0)){[Windows.Forms.MessageBox]::Show('Print Bridge เปิดอยู่แล้ว')|Out-Null;exit}
 function Save-Json($Path,$Value){
@@ -45,10 +48,36 @@ function Label-On($Form,[string]$Text,[int]$Y){
     $l.Text=$Text;$l.Location=New-Object Drawing.Point(20,$Y);$l.Size=New-Object Drawing.Size(550,26)
     $Form.Controls.Add($l)
 }
+
+function Save-StartupSession{
+    # DPAPI protects the session for this Windows account; never persist the password.
+    ConvertTo-SecureString $script:Token -AsPlainText -Force|Export-Clixml -LiteralPath $script:SessionPath
+    $installed=Join-Path $script:Root 'BakeBite-PrintBridge.ps1'
+    if($script:SourcePath -ne $installed){
+        $source=[IO.File]::ReadAllText($script:SourcePath,[Text.Encoding]::UTF8)
+        [IO.File]::WriteAllText($installed,$source,(New-Object Text.UTF8Encoding($true)))
+    }
+    $shell=New-Object -ComObject WScript.Shell
+    $shortcut=$shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Startup')) 'BakeBite Print Bridge.lnk'))
+    $shortcut.TargetPath=Join-Path $PSHOME 'powershell.exe'
+    $shortcut.Arguments='-NoProfile -STA -ExecutionPolicy RemoteSigned -File "'+$installed+'" -AutoStart'
+    $shortcut.WorkingDirectory=$script:Root
+    $shortcut.Save()
+}
+function Restore-Session{
+    if(-not (Test-Path $script:SessionPath)){return $false}
+    try{
+        $secure=Import-Clixml -LiteralPath $script:SessionPath
+        $credential=New-Object Management.Automation.PSCredential('bridge',$secure)
+        $script:Token=$credential.GetNetworkCredential().Password
+        return $true
+    }catch{return $false}
+}
+
 function Get-Login{
     $f=New-Object Windows.Forms.Form
     $f.Text='Bake & Bite Print Bridge - เข้าสู่ระบบ POS'
-    $f.Size=New-Object Drawing.Size(490,310);$f.StartPosition='CenterScreen'
+    $f.Size=New-Object Drawing.Size(490,360);$f.StartPosition='CenterScreen'
     $f.Font=New-Object Drawing.Font('Segoe UI',10)
     Label-On $f 'ใช้รหัส POS ของร้าน ไม่ใช่รหัสผ่าน Windows' 18
     $role=New-Object Windows.Forms.ComboBox
@@ -60,15 +89,17 @@ function Get-Login{
     $password.Width=420;$f.Controls.Add($password)
     $message=New-Object Windows.Forms.Label
     $message.Location=New-Object Drawing.Point(20,158);$message.Size=New-Object Drawing.Size(420,42);$f.Controls.Add($message)
+    $remember=New-Object Windows.Forms.CheckBox
+    $remember.Text='จำสิทธิ์บนคอมนี้และเริ่มอัตโนมัติเมื่อเข้า Windows';$remember.Location=New-Object Drawing.Point(20,205);$remember.Size=New-Object Drawing.Size(440,30);$f.Controls.Add($remember)
     $login=New-Object Windows.Forms.Button
-    $login.Text='เข้าสู่ระบบ';$login.Location=New-Object Drawing.Point(20,205);$login.Size=New-Object Drawing.Size(130,35);$f.Controls.Add($login)
+    $login.Text='เข้าสู่ระบบ';$login.Location=New-Object Drawing.Point(20,250);$login.Size=New-Object Drawing.Size(130,35);$f.Controls.Add($login)
     $login.Add_Click({
         $login.Enabled=$false
         try{
             $body=@{role=[string]$role.SelectedItem;password=$password.Text}|ConvertTo-Json
             $r=Get-JsonUtf8 -Uri ($script:Api+'?action=login') -Method Post -Body ([Text.Encoding]::UTF8.GetBytes($body))
             if(-not $r.ok -or -not $r.token){throw 'Login failed'}
-            $script:Token=[string]$r.token;$password.Clear();$f.DialogResult='OK';$f.Close()
+            $script:Token=[string]$r.token;$password.Clear();if($remember.Checked){Save-StartupSession;$script:AutoRun=$true};$f.DialogResult='OK';$f.Close()
         }catch{$password.Clear();$message.Text='เข้าสู่ระบบไม่สำเร็จ ตรวจรหัสและอินเทอร์เน็ต';$login.Enabled=$true}
     })
     $f.AcceptButton=$login;$result=$f.ShowDialog();$f.Dispose()
@@ -103,7 +134,7 @@ function Show-Targets($Config){
 }
 function Get-Config{
     $f=New-Object Windows.Forms.Form
-    $f.Text='Bake & Bite Print Bridge 0.2.1 - ใช้ค่าจาก Admin'
+    $f.Text='Bake & Bite Print Bridge 0.2.2 - ใช้ค่าจาก Admin'
     $f.Size=New-Object Drawing.Size(700,570);$f.StartPosition='CenterScreen';$f.Font=New-Object Drawing.Font('Segoe UI',10)
     Label-On $f 'ตั้งชื่อเครื่องพิมพ์และสถานีจากหน้า Admin โปรแกรมนี้โหลดค่าตามเว็บ' 16
     $view=New-Object Windows.Forms.TextBox
@@ -266,16 +297,32 @@ Cancel = หยุด Bridge"),
         if($answer -ne [Windows.Forms.DialogResult]::No){throw 'หยุดเพื่อให้ตรวจงานพิมพ์ค้าง'}
     }
     if(@($Items).Count -eq 0){$script:State.jobs[$key]='skipped';Save-State;return}
-    $script:State.jobs[$key]='sending';Save-State
     try{
-        $lines=Get-Lines $Data $Kind $Items;Send-Print $Printer $Paper $lines
+        # Re-resolve the destination immediately before each spool submission.
+        $latest=Get-WebConfig
+        if($Kind -eq 'receipt' -or $Kind -eq 'packing'){
+            if(-not $latest.counter.enabled){$script:State.jobs.Remove($key);Save-State;return}
+            $Printer=[string]$latest.counter.printer_name;$Paper=[int]$latest.counter.paper
+        }else{
+            $stationId=$Kind.Substring('station-'.Length)
+            $target=@($latest.stations|Where-Object{[string]$_.id -eq $stationId})
+            if($target.Count -eq 0){$script:State.jobs.Remove($key);Save-State;return}
+            $Printer=[string]$target[0].printer_name;$Paper=[int]$target[0].paper
+        }
+        if([string]::IsNullOrWhiteSpace($Printer)){throw 'ชื่อเครื่องพิมพ์ใน Admin ว่าง'}
+        $lines=Get-Lines $Data $Kind $Items
+        $script:State.jobs[$key]='sending';Save-State
+        Send-Print $Printer $Paper $lines
         $script:State.jobs[$key]='submitted';Save-State
         Write-Host ($Data.order.order_no+' / '+$Kind+' -> '+$Printer)
-    }catch{$script:State.jobs[$key]='attention';Save-State;throw}
+    }catch{if($script:State.jobs[$key] -eq 'sending'){$script:State.jobs[$key]='attention';Save-State};throw}
 }
 try{
-    if(-not (Get-Login)){exit}
-    $config=Get-Config;if($null -eq $config){exit}
+    $script:AutoRun=[bool]$AutoStart
+    $restored=$false
+    if($AutoStart){$restored=Restore-Session}
+    if(-not $restored){if(-not (Get-Login)){exit}}
+    if($script:AutoRun){$config=$null}else{$config=Get-Config;if($null -eq $config){exit}}
     if(Test-Path $script:StatePath){
         $script:State=Convert-ToMap (Get-Content $script:StatePath -Raw|ConvertFrom-Json)
         if($null -eq $script:State.jobs -or -not $script:State.since){throw 'ประวัติงานพิมพ์ไม่สมบูรณ์ โปรดเก็บไฟล์เดิมไว้และแจ้งผู้ดูแล'}
@@ -288,8 +335,8 @@ try{
         $script:State=@{version=2;since=[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ');after='00000000-0000-0000-0000-000000000000';jobs=@{}}
         Save-State
     }
-    Write-Host 'Bake & Bite Print Bridge 0.2.1 - Auto Admin Config'
-    Write-Host (Show-Targets $config)
+    Write-Host 'Bake & Bite Print Bridge 0.2.2 - Auto Admin Config'
+    if($null -ne $config){Write-Host (Show-Targets $config)}
     Write-Host 'เปิด Bridge เพียงคอมเดียว / Ctrl+C เพื่อหยุด'
     $revision=[string]$config.revision;$lastError=''
     while($true){
@@ -306,6 +353,8 @@ try{
             $after=[Uri]::EscapeDataString([string]$script:State.after)
             $feed=Api-Get ('action=bridge-orders&since='+$since+'&after='+$after)
             foreach($entry in $feed.orders){
+                $config=Get-WebConfig
+                Assert-Targets $config
                 $data=Api-Get ('action=print-order&id='+[Uri]::EscapeDataString([string]$entry.id))
                 if($data.order.payment_status -ne 'paid' -or $data.order.status -eq 'cancelled'){
                     $script:State.since=[string]$entry.paid_at;$script:State.after=[string]$entry.id;Save-State;continue
@@ -324,7 +373,9 @@ try{
             $message=[string]$_.Exception.Message
             if($message -like '*หยุดเพื่อให้ตรวจงานพิมพ์ค้าง*'){break}
             if($null -ne $_.Exception.Response -and [int]$_.Exception.Response.StatusCode -eq 401){
-                [Windows.Forms.MessageBox]::Show('สิทธิ์หมดอายุ กรุณาปิดและเปิด Bridge เพื่อเข้าสู่ระบบใหม่')|Out-Null;break
+                if(Test-Path $script:SessionPath){Remove-Item -LiteralPath $script:SessionPath}
+                $script:Token=$null
+                if(Get-Login){continue}else{break}
             }
             if($message -ne $lastError){
                 Write-Host ('พักงาน / จะลองใหม่: '+$message) -ForegroundColor Yellow
