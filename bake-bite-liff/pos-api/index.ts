@@ -133,6 +133,15 @@ Deno.serve(async req=>{
       const {member_id,order_items,...publicOrder}=order;
       return json({ok:true,order:publicOrder,items:(order_items||[]).map((i:any)=>({name:i.product_name,quantity:i.quantity,unit_price:i.unit_price,line_total:i.line_total,station_id:i.prep_station_id,department:names.get(i.prep_station_id)||"จุดรวม"})),points:{member_linked:!!member_id,member_name:memberName,earned,balance,pending:Math.max(0,potential-earned),as_of:new Date().toISOString()}});
     }
+    if(action==="bridge-config"&&req.method==="GET"){
+      if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);
+      const [h,s]=await Promise.all([supabase.from("hardware_settings").select("config,updated_at").eq("id",1).maybeSingle(),supabase.from("prep_stations").select("id,name,enabled,printer_enabled,printer_name,paper").order("id")]);
+      if(h.error||s.error)throw h.error||s.error;
+      const c=h.data?.config||{};
+      const config={counter:{enabled:c.receipt_enabled==="yes",printer_name:String(c.receipt_name||"").trim(),paper:c.receipt_paper==="58"?58:80},stations:(s.data||[]).filter((x:any)=>x.enabled&&x.printer_enabled).map((x:any)=>({id:x.id,name:x.name,printer_name:String(x.printer_name||"").trim(),paper:x.paper==="58"?58:80}))};
+      const revision=await sha256(JSON.stringify(config));
+      return json({ok:true,config,revision});
+    }
     if(action==="bridge-orders"&&req.method==="GET"){
       if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);
       const since=u.searchParams.get("since"),after=u.searchParams.get("after")||"00000000-0000-0000-0000-000000000000";
