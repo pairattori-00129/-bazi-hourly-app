@@ -11,7 +11,7 @@ async function passwordHash(password:string,salt:string){const key=await crypto.
 function sameHash(a:string,b:string){if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0}
 function tokenFrom(req:Request){return req.headers.get("authorization")?.match(/^Bearer ([a-f0-9]{64})$/i)?.[1]||""}
 async function createSession(role:"admin"|"user"){const token=randomHex(32);const {error}=await supabase.from("pos_sessions").insert({token_hash:await sha256(token),role,expires_at:new Date(Date.now()+12*60*60*1000).toISOString()});if(error)throw error;return {token,role,expires_in:12*60*60}}
-async function session(req:Request){const token=tokenFrom(req);if(!token)return null;const {data,error}=await supabase.from("pos_sessions").select("id,role").eq("token_hash",await sha256(token)).gt("expires_at",new Date().toISOString()).maybeSingle();if(error)throw error;return data}
+async function session(req:Request){const token=tokenFrom(req);if(!token)return null;const hash=await sha256(token);const now=new Date().toISOString();const {data,error}=await supabase.from("pos_sessions").select("id,role").eq("token_hash",hash).gt("expires_at",now).maybeSingle();if(error)throw error;if(data)return data;const {data:admin,error:ae}=await supabase.from("admin_sessions").select("id").eq("token_hash",hash).gt("expires_at",now).maybeSingle();if(ae)throw ae;return admin?{id:admin.id,role:"admin"}:null}
 async function requirePos(req:Request){const s=await session(req);return s&&["admin","user"].includes(s.role)?s:null}
 function shortText(v:any,max:number){return String(v??"").trim().slice(0,max)}
 async function nextOrderNumber(){
@@ -64,7 +64,7 @@ Deno.serve(async req=>{
       const s=await session(req);return s?json({ok:true,role:s.role}):json({ok:false,error:"unauthorized"},401);
     }
     if(action==="logout"&&req.method==="POST"){
-      const token=tokenFrom(req);if(token)await supabase.from("pos_sessions").delete().eq("token_hash",await sha256(token));return json({ok:true});
+      const token=tokenFrom(req);if(token){const hash=await sha256(token);await supabase.from("pos_sessions").delete().eq("token_hash",hash);await supabase.from("admin_sessions").delete().eq("token_hash",hash);}return json({ok:true});
     }
     if(action==="order"&&req.method==="POST"){
       if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);

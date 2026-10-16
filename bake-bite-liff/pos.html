@@ -199,9 +199,9 @@ const STORE_API='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/store-api
 const PT='bake_bite_pos_session',PR='bake_bite_pos_role',AT='bake_bite_admin_session';
 let activeChannel='store',catalog={categories:[],products:[]},cart={},activeCategory='all',currentOrder=null,currentOrderItems=[],voiceEnabled=localStorage.getItem('bake_bite_pos_voice')==='on',lastFeedTime=new Date().toISOString(),announced=new Set(),view='grid';
 const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
-const token=()=>sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
+const token=()=>sessionStorage.getItem(AT)||sessionStorage.getItem(PT)||'';const role=()=>sessionStorage.getItem(PR)||'';
 async function request(action,method='GET',body){const r=await fetch(POS_API+'?action='+action,{method,headers:{authorization:'Bearer '+token(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'เชื่อมต่อ POS ไม่สำเร็จ');return j}
-async function validate(){if(!token())return false;try{const s=await request('session');sessionStorage.setItem(PR,s.role);return true}catch(e){sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);return false}}
+async function validate(){if(!token())return false;try{const s=await request('session');sessionStorage.setItem(PR,s.role);return true}catch(e){if(sessionStorage.getItem(AT)){sessionStorage.removeItem(AT);if(sessionStorage.getItem(PT))return validate()}sessionStorage.removeItem(PT);sessionStorage.removeItem(PR);return false}}
 async function start(){roleBadge.textContent=(role()||'user').toUpperCase();syncVoiceButton();await loadCatalog();renderAll();loadLineOAOrders();setInterval(checkPaidFeed,4000);setInterval(()=>loadLineOAOrders(),10000)}
 async function boot(){tick();setInterval(tick,1000);if(await validate()){await start()}else{location.replace('pos-login.html')}}
 async function loadCatalog(){const r=await fetch(STORE_API+'?action=catalog');const j=await r.json();if(!r.ok||!j.ok)throw new Error('โหลดเมนูไม่สำเร็จ');catalog=j}
