@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabase=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type,authorization","Access-Control-Allow-Methods":"GET,POST,OPTIONS"};
-function json(data:any,status=200){return new Response(JSON.stringify(data),{status,headers:{...cors,"content-type":"application/json; charset=utf-8"}})}
+function json(data:any,status=200){return new Response(JSON.stringify(data),{status,headers:{...cors,"content-type":"application/json; charset=utf-8","cache-control":"no-store"}})}
 const encoder=new TextEncoder();
 function randomHex(bytes:number){return Array.from(crypto.getRandomValues(new Uint8Array(bytes)),v=>v.toString(16).padStart(2,"0")).join("")}
 async function sha256(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",encoder.encode(value))),v=>v.toString(16).padStart(2,"0")).join("")}
@@ -131,7 +131,15 @@ Deno.serve(async req=>{
       if(order.member_id){const [m,t]=await Promise.all([supabase.from("members").select("points,display_name").eq("id",order.member_id).maybeSingle(),supabase.from("point_transactions").select("points").eq("order_id",order.id).eq("member_id",order.member_id).eq("transaction_type","earn")]);if(m.error||t.error)throw m.error||t.error;balance=m.data?Number(m.data.points||0):null;memberName=m.data?.display_name||null;earned=(t.data||[]).reduce((sum:number,row:any)=>sum+Number(row.points||0),0);}
       const potential=order.member_id&&order.payment_status==="paid"&&order.status!=="cancelled"?Math.floor(Number(order.total||0)/50):0;
       const {member_id,order_items,...publicOrder}=order;
-      return json({ok:true,order:publicOrder,items:(order_items||[]).map((i:any)=>({name:i.product_name,quantity:i.quantity,unit_price:i.unit_price,line_total:i.line_total,department:names.get(i.prep_station_id)||"จุดรวม"})),points:{member_linked:!!member_id,member_name:memberName,earned,balance,pending:Math.max(0,potential-earned),as_of:new Date().toISOString()}});
+      return json({ok:true,order:publicOrder,items:(order_items||[]).map((i:any)=>({name:i.product_name,quantity:i.quantity,unit_price:i.unit_price,line_total:i.line_total,station_id:i.prep_station_id,department:names.get(i.prep_station_id)||"จุดรวม"})),points:{member_linked:!!member_id,member_name:memberName,earned,balance,pending:Math.max(0,potential-earned),as_of:new Date().toISOString()}});
+    }
+    if(action==="bridge-orders"&&req.method==="GET"){
+      if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);
+      const since=u.searchParams.get("since"),after=u.searchParams.get("after")||"00000000-0000-0000-0000-000000000000";
+      if(!since||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/.test(since)||!Number.isFinite(Date.parse(since))||!/^[a-f0-9-]{36}$/i.test(after))return json({ok:false,error:"invalid_cursor"},400);
+      const {data,error}=await supabase.from("orders").select("id,paid_at").eq("order_source","pos").eq("payment_status","paid").neq("status","cancelled").not("paid_at","is",null)
+        .or("paid_at.gt."+since+",and(paid_at.eq."+since+",id.gt."+after+")").order("paid_at",{ascending:true}).order("id",{ascending:true}).limit(25);
+      if(error)throw error;return json({ok:true,orders:data||[]});
     }
     if(action==="paid-feed"&&req.method==="GET"){
       if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);
