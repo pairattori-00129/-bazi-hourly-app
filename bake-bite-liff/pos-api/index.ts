@@ -120,6 +120,19 @@ Deno.serve(async req=>{
       }
       return json({ok:true,order:data});
     }
+    if(action==="print-order"&&req.method==="GET"){
+      if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);
+      const id=u.searchParams.get("id");if(!id||!/^[a-f0-9-]{36}$/i.test(id))return json({ok:false,error:"invalid_order"},400);
+      const {data:order,error}=await supabase.from("orders").select("id,member_id,order_no,display_order_no,customer_name,total,status,payment_status,payment_method,fulfillment_method,note,created_at,order_items(product_name,quantity,unit_price,line_total,prep_station_id)").eq("id",id).maybeSingle();
+      if(error)throw error;if(!order)return json({ok:false,error:"order_not_found"},404);
+      const stationIds=[...new Set((order.order_items||[]).map((i:any)=>i.prep_station_id).filter(Boolean))];
+      const names=new Map<string,string>();if(stationIds.length){const q=await supabase.from("prep_stations").select("id,name").in("id",stationIds);if(q.error)throw q.error;for(const s of q.data||[])names.set(s.id,s.name);}
+      let earned=0,balance:number|null=null,memberName:string|null=null;
+      if(order.member_id){const [m,t]=await Promise.all([supabase.from("members").select("points,display_name").eq("id",order.member_id).maybeSingle(),supabase.from("point_transactions").select("points").eq("order_id",order.id).eq("member_id",order.member_id).eq("transaction_type","earn")]);if(m.error||t.error)throw m.error||t.error;balance=m.data?Number(m.data.points||0):null;memberName=m.data?.display_name||null;earned=(t.data||[]).reduce((sum:number,row:any)=>sum+Number(row.points||0),0);}
+      const potential=order.member_id&&order.payment_status==="paid"&&order.status!=="cancelled"?Math.floor(Number(order.total||0)/50):0;
+      const {member_id,order_items,...publicOrder}=order;
+      return json({ok:true,order:publicOrder,items:(order_items||[]).map((i:any)=>({name:i.product_name,quantity:i.quantity,unit_price:i.unit_price,line_total:i.line_total,department:names.get(i.prep_station_id)||"จุดรวม"})),points:{member_linked:!!member_id,member_name:memberName,earned,balance,pending:Math.max(0,potential-earned),as_of:new Date().toISOString()}});
+    }
     if(action==="paid-feed"&&req.method==="GET"){
       if(!await requirePos(req))return json({ok:false,error:"unauthorized"},401);
       const since=u.searchParams.get("since");let q=supabase.from("orders").select("id,order_no,display_order_no,total,customer_name,order_source,payment_method,paid_at").eq("payment_status","paid").not("paid_at","is",null).order("paid_at",{ascending:true}).limit(30);if(since){const d=new Date(since);if(!Number.isNaN(d.getTime()))q=q.gt("paid_at",d.toISOString())}
