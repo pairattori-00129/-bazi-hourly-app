@@ -37,6 +37,7 @@ const actions=node('div');actions.className='station-actions';const save=node('b
 function sync(){const inactive=!enabled.checked;screen.disabled=printer.disabled=inactive;columns.style.opacity=inactive?'0.5':'1';details.hidden=inactive||!printer.checked;name.disabled=paper.disabled=test.disabled=inactive||!printer.checked;open.hidden=!screen.checked||inactive;for(const item of pairs)item.input.disabled=item.other||!item.output.checked||inactive}
 screen.onchange=printer.onchange=enabled.onchange=sync;sync();test.onclick=()=>testPrint(station.name,name.value,paper.value,feedback);
 save.onclick=async()=>{
+if(enabled.checked&&printer.checked&&!name.value.trim()){feedback.textContent='กรุณาระบุชื่อเครื่องพิมพ์ให้ตรงกับ Windows ก่อนบันทึก';details.open=true;name.focus();return}
 if(!screen.checked&&!printer.checked){feedback.textContent='เลือกจอหรือเครื่องพิมพ์อย่างน้อยหนึ่งอย่าง หากพักสถานี ให้ปิดรับรายการใหม่';return}
 save.disabled=true;feedback.textContent='กำลังบันทึก…';
 try{const categoryIds=Array.from(selected);await stationRequest('save',{id:station.id,name:station.name,enabled:enabled.checked,screen_enabled:screen.checked,printer_enabled:printer.checked,printer_name:name.value.trim(),paper:paper.value,category_ids:categoryIds});
@@ -52,6 +53,7 @@ byId('createStation').onclick=async()=>{
 const feedback=byId('createStationFeedback'),name=byId('newStationName').value.trim();
 if(!name){feedback.textContent='กรุณาระบุชื่อสถานี';byId('newStationName').focus();return}
 if(!byId('newStationScreen').checked&&!byId('newStationPrinter').checked){feedback.textContent='เลือกใช้หน้าจอหรือเครื่องพิมพ์อย่างน้อยหนึ่งอย่าง';return}
+if(byId('newStationEnabled').checked&&byId('newStationPrinter').checked&&!byId('newStationPrinterName').value.trim()){feedback.textContent='กรุณาระบุชื่อเครื่องพิมพ์ให้ตรงกับ Windows';byId('newStationPrinterName').focus();return}
 const button=byId('createStation');button.disabled=true;feedback.textContent='กำลังเพิ่มสถานี…';let created=false;
 try{const result=await stationRequest('save',{name,enabled:byId('newStationEnabled').checked,screen_enabled:byId('newStationScreen').checked,printer_enabled:byId('newStationPrinter').checked,printer_name:byId('newStationPrinterName').value.trim(),paper:byId('newStationPaper').value,category_ids:Array.from(byId('newStationCategories').querySelectorAll('input:checked')).map(i=>i.value)});created=true;
 const config=await stationRequest();render(config,result.id);newCategories(config);byId('newStationName').value='';feedback.textContent='เพิ่มสถานี '+name+' แล้ว ปรับเปิด–ปิดได้ในการ์ดด้านบน';}
