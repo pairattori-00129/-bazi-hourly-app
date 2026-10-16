@@ -1,27 +1,20 @@
-# Bake & Bite Print Bridge 0.1
+# Bake & Bite Print Bridge 0.2
 
-Windows pilot. Use one cashier computer only.
+Windows PowerShell 5.1/.NET Framework pilot, one cashier PC. Setup: ../print-bridge.html.
 
-Thai setup instructions: https://pairattori-00129.github.io/-bazi-hourly-app/bake-bite-liff/print-bridge.html
+## Admin configuration
+Authenticated read-only pos-api?action=bridge-config returns counter enabled/name/paper plus all enabled printer stations, with a SHA-256 revision. Counter is saved in hardware_settings; departments in prep_stations. No privileged database key is delivered to client. User POS sessions can read printer configuration, but cannot modify Admin configuration.
 
-## Files
-- BakeBite-PrintBridge.ps1: Windows PowerShell 5.1 / .NET Framework WinForms agent, UTF-8 with BOM.
-- Start-PrintBridge.cmd: launches script with STA; does not bypass execution policy.
+Agent refreshes configuration each poll (~3 seconds plus network/print time). Validate all enabled printer names against InstalledPrinters; suspend without advancing watermark on unknown/blank names. Never default to another queue. Station items are matched by order_items.prep_station_id snapshots, not live product categories.
 
-## Routing
-Choose two distinct installed printer queues. Counter receives receipt + all-department packing checklist. Kitchen receives items whose snapshot station_id matches the chosen enabled printer station. Port selection remains the responsibility of Windows.
+## Routing and idempotency
+Counter receipt and packing documents use per-order receipt/packing keys. Each department uses station-{uuid}, so two stations on one printer still produce distinct tickets. Keys do not include printer names: changing a destination does not resend jobs already submitted. Pending jobs use current configuration. Disabled outputs are not scheduled. Turning outputs back on does not backfill orders whose watermark has already advanced.
 
-## Test
-The configuration window offers a 3-document sample. No sales are created. Verify Thai shaping, wrapping, paper length/cut and correct device yourself.
+## Upgrade
+Close 0.1.1 first. Preserve LOCALAPPDATA/BakeBitePrintBridge/state.json and config.json. Version 1 ledger kitchen keys map to station UUID from the previous config.json; back up old state before migration. Fail closed if old kitchen history exists but old station mapping is missing. Do not delete state to repair a problem. No automatic reprints of history.
 
-## Operation
-Disable browser cash auto-print in Hardware Settings and reload POS before enabling the bridge to avoid duplicate receipts. The agent polls authenticated bridge-orders every 3 seconds, keyset-paginated by (paid_at,id), then fetches print-order. First start begins at current UTC time. Later starts resume from local state. Only paid POS orders are included. Do not run on a second computer.
-
-## Recovery
-Writes local state before spooling each document, then marks submitted after PrintDocument.Print returns. This means submitted to Windows, not paper-output confirmation. A crash/error in between requires operator confirmation; no claim of exactly-once physical printing. Don't delete local state. No cloud distributed lease or cross-computer deduplication in this pilot. Manual web printing is separate and can produce additional copies.
-
-## Credentials
-Password and token stay in process memory. No service-role key or printer-control HTTP listener. Session expires according to existing POS API policy. Restart and sign in again on expiry. Only config and job state are written under LOCALAPPDATA/BakeBitePrintBridge.
+## Testing
+Mock tests cover authorization, station filtering, config revision changes, keyed duplicate prevention and legacy key migration. Must validate 0.2 on actual Windows/printers; this environment cannot run WinForms/Windows spooler. Existing PrintDocument rendering logic retained. Test all devices sends synthetic documents only; no order writes.
 
 ## Limits
-Manual startup, one counter + one kitchen station, internet required. Not a production-certified Windows installer; Windows execution policy may prevent running unsigned scripts. Do not disable protections to work around this; have the script reviewed/signed or report the policy message. No automatic cash drawer command; driver settings can still open drawer on any counter print. Configure cashbox actions carefully.
+One computer, authenticated session lifetime, internet needed, manual startup, no cloud distributed lease, no exactly-once physical-paper guarantee. A submitted job means handed to Windows. Ambiguous submissions require operator decision. Do not run 0.1.1 and 0.2 together. Browser auto-cash print must be disabled to prevent independent browser copies. No execution-policy bypass in launcher; no password/token written to disk.
