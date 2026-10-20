@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>จัดส่ง Lalamove · Bake & Bite</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#432d22;background:#f7f1e9;--brown:#5b2d1b;--green:#668f4b;--orange:#f37532;--muted:#88766b;--line:#eaded2}
+*{box-sizing:border-box}body{margin:0;visibility:hidden}body.admin-verified{visibility:visible}
+header{background:#fffdf9;border-bottom:1px solid var(--line);padding:18px max(20px,calc((100vw - 1120px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{font-weight:950;color:var(--brown);letter-spacing:.02em}.brand small{display:block;color:#8a7567;font-size:12px;letter-spacing:.12em}
+.env{border:1px solid #c8ddba;background:#eff7e9;color:#476e37;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:900;white-space:nowrap}
+main{max-width:1120px;margin:26px auto;padding:0 18px 48px}
+.back{color:#735b4e;text-decoration:none;font-weight:800;font-size:14px}
+.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:10px 0 20px;flex-wrap:wrap}
+h1{margin:0;color:var(--brown);font-size:clamp(25px,4vw,34px)}.sub{margin:6px 0 0;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:#fffefa;border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 26px #542c170c}
+.orders{padding:16px}.panel-title{font-size:17px;font-weight:950;margin:0 0 12px}
+.order-list{display:grid;gap:9px;max-height:68vh;overflow:auto}
+.order{border:1px solid #eee3d8;background:#fff;border-radius:15px;padding:13px;cursor:pointer;text-align:left;color:inherit;width:100%;font:inherit}
+.order:hover{border-color:#c7a78c}.order.selected{border:2px solid var(--brown);background:#fff8f0;padding:12px}
+.order-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.order-no{font-weight:950;color:var(--brown)}.amount{font-weight:950}
+.meta{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.45}.chip{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;background:#f2ece6;color:#745e50;margin-top:7px}
+.chip.paid{background:#eaf5e4;color:#4b7739}.chip.wait{background:#fff1d9;color:#99662f}
+.detail{padding:22px;min-height:520px}.empty{padding:64px 20px;text-align:center;color:var(--muted)}
+.section-label{font-size:12px;letter-spacing:.08em;color:#9b8577;font-weight:950}
+.order-title{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin:6px 0 14px}
+h2{font-size:23px;color:var(--brown);margin:0}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.info-card{background:#fcf8f2;border:1px solid #f0e6dc;border-radius:14px;padding:12px}
+.info-card strong{display:block;font-size:12px;color:#967e70;margin-bottom:4px}.info-card span{font-weight:800;line-height:1.5;overflow-wrap:anywhere}
+.items{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0;margin:14px 0;color:#614b3f}
+.notice{padding:12px 14px;border-radius:14px;background:#f5f8ed;color:#587342;font-size:14px;line-height:1.5;margin:14px 0}
+.notice.warn{background:#fff4e5;color:#98682e}.notice.error{background:#fff0ed;color:#a64032}
+.quote{margin:16px 0;background:linear-gradient(135deg,#fff8ef,#fffdf9);border:1px solid #f1dcc6;border-radius:17px;padding:16px}
+.quote-row{display:flex;justify-content:space-between;gap:10px;align-items:center}.quote-price{font-size:30px;font-weight:1000;color:#df6330}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+button{font:inherit;font-weight:900;border:0;border-radius:13px;padding:12px 16px;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+.primary{background:var(--green);color:white}.confirm{background:#e65d2e;color:white}.secondary{background:#f1e8de;color:#5b3d2e}
+.share{display:inline-block;margin-top:12px;color:#27765c;font-weight:900}
+#message{min-height:24px;margin:12px 0;font-weight:850;color:#70594b}.error-text{color:#b43e32!important}
+.state{font-weight:950;border-radius:999px;padding:6px 10px;background:#f3eee8;color:#715b4e;font-size:12px}
+@media(max-width:780px){header{padding:14px 18px}main{margin:18px auto}.layout{grid-template-columns:1fr}.order-list{max-height:40vh}.detail{min-height:300px}.info{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.detail{padding:16px}.info{grid-template-columns:1fr}.quote-price{font-size:25px}}
+</style>
+</head>
+<body>
+<header><div class="brand">BAKE & BITE<small>ORDER DELIVERY</small></div><div class="env">SANDBOX · โหมดทดสอบ</div></header>
+<main>
+<a class="back" href="admin-orders.html">← กลับหน้าจัดการออเดอร์</a>
+<div class="heading"><div><h1>จัดส่งด้วย Lalamove</h1><p class="sub">เลือกออเดอร์ที่ชำระแล้ว → ขอราคาส่ง → ยืนยันเรียกรถ</p></div><button class="secondary" id="reload">↻ โหลดรายการใหม่</button></div>
+<div class="layout">
+<section class="panel orders"><h3 class="panel-title">ออเดอร์จัดส่ง Lalamove</h3><div id="orderList" class="order-list"><div class="empty">กำลังโหลดออเดอร์…</div></div></section>
+<section class="panel detail" id="detail"><div class="empty">เลือกออเดอร์จากรายการทางซ้าย<br>เพื่อดูข้อมูลผู้รับและค่าส่ง</div></section>
+</div>
+<p id="message" role="status" aria-live="polite"></p>
+</main>
+<script src="admin-session.js"></script>
+<script>
+const ENDPOINT='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/lalamove-dispatch';
+let orders=[], selectedId=new URLSearchParams(location.search).get('order')||'', busy=false;
+const $=id=>document.getElementById(id);
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=(v,c='THB')=>v==null?'—':new Intl.NumberFormat('th-TH',{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(v));
+function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error-text',error)}
+async function api(action,method='GET',payload){
+ const response=await fetch(ENDPOINT+'?action='+encodeURIComponent(action),{method,headers:{authorization:'Bearer '+adminToken(),...(payload?{'content-type':'application/json'}:{})},...(payload?{body:JSON.stringify(payload)}:{})});
+ let data={};try{data=await response.json()}catch{}
+ if(response.status===401){clearAdminToken();location.replace('admin-login.html');throw new Error('หมดเวลาเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่')}
+ if(!response.ok||!data.ok)throw new Error(data.error||'เชื่อมต่อไม่สำเร็จ');
+ return data;
+}
+function statusName(value){
+ const map={QUOTED:'ได้ราคาแล้ว',PLACING:'กำลังส่งคำขอ',ASSIGNING_DRIVER:'กำลังหาไรเดอร์',ON_GOING:'ไรเดอร์รับงานแล้ว',PICKED_UP:'รับอาหารแล้ว',COMPLETED:'ส่งสำเร็จ',CANCELED:'ยกเลิก',REJECTED:'ไรเดอร์ปฏิเสธ',EXPIRED:'หมดเวลา',UNKNOWN:'ยังไม่ทราบสถานะ'};
+ return map[value]||value||'ยังไม่เรียกรถ';
+}
+function orderCard(o){
+ const active=o.id===selectedId;
+ const paid=o.payment_status==='paid';
+ const no=o.display_order_no||o.order_no||'ออเดอร์';
+ const created=new Date(o.created_at).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
+ return '<button type="button" class="order '+(active?'selected':'')+'" data-id="'+safe(o.id)+'"><div class="order-top"><span class="order-no">'+safe(no)+'</span><span class="amount">'+money(o.total,'THB')+'</span></div><div class="meta">'+safe(o.customer_name||'ลูกค้า')+' · '+safe(created)+'</div><span class="chip '+(paid?'paid':'wait')+'">'+(paid?'ชำระแล้ว':'รอชำระ')+'</span>'+(o.dispatch?'<span class="chip">'+safe(statusName(o.dispatch.lalamove_status))+'</span>':'')+'</button>';
+}
+function renderList(){
+ $('orderList').innerHTML=orders.length?orders.map(orderCard).join(''):'<div class="empty">ยังไม่มีออเดอร์ที่เลือก Lalamove<br>และส่งเข้าระบบ Bake & Bite</div>';
+}
+function renderDetail(){
+ const o=orders.find(x=>x.id===selectedId);if(!o){$('detail').innerHTML='<div class="empty">เลือกออเดอร์จากรายการทางซ้าย<br>เพื่อดูข้อมูลผู้รับและค่าส่ง</div>';return}
+ const d=o.dispatch, paid=o.payment_status==='paid';
+ const lines=(o.order_items||[]).map(i=>safe(i.product_name)+' × '+Number(i.quantity)).join(' · ')||'ไม่มีรายการสินค้า';
+ const items='<div class="items"><strong>รายการอาหาร</strong><br>'+lines+'</div>';
+ let dispatchBlock='';
+ if(d?.lalamove_order_id){
+  dispatchBlock='<div class="quote"><div class="section-label">งาน LALAMOVE</div><div class="quote-row"><strong>สถานะ</strong><span class="state">'+safe(statusName(d.lalamove_status))+'</span></div><div class="quote-row" style="margin-top:12px"><strong>หมายเลขงาน</strong><span>'+safe(d.lalamove_order_id)+'</span></div><div class="quote-row" style="margin-top:8px"><strong>ค่าจัดส่ง</strong><span class="quote-price">'+money(d.amount,d.currency||'THB')+'</span></div>'+(d.share_link?'<a class="share" target="_blank" rel="noopener" href="'+safe(d.share_link)+'">เปิดลิงก์ติดตามงาน ↗</a>':'')+'<div class="actions"><button class="secondary" id="refreshStatus">↻ ตรวจสถานะล่าสุด</button></div></div>';
+ }else if(d?.quotation_id){
+  const expires=d.quotation_expires_at?new Date(d.quotation_expires_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}):'';
+  dispatchBlock='<div class="quote"><div class="section-label">ราคาจาก LALAMOVE SANDBOX</div><div class="quote-row"><span>ค่าส่งโดยประมาณ</span><span class="quote-price">'+money(d.amount,d.currency||'THB')+'</span></div><div class="meta">ราคามีอายุประมาณ 5 นาที '+(expires?'· หมดอายุ '+safe(expires)+' น.':'')+'</div><div class="notice warn">ตรวจสอบราคาและที่อยู่ก่อนกดยืนยัน ระบบจะส่งคำขอเรียกรถ Sandbox และใช้เครดิตทดสอบของบัญชี</div><div class="actions"><button class="confirm" id="placeOrder" '+(!paid?'disabled':'')+'>ยืนยันเรียกรถ Sandbox</button><button class="secondary" id="getQuote">ขอราคาใหม่</button></div></div>';
+ }else{
+  dispatchBlock='<div class="notice '+(!paid?'warn':'')+'">'+(!paid?'ยังรอชำระเงิน ระบบจะเปิดขอราคาและเรียกรถหลังยืนยันชำระแล้ว':'ระบบจะคำนวณราคาจากพิกัดร้านและที่อยู่ลูกค้า เมื่อขอราคาแล้วยังไม่เรียกรถจนกว่าจะกดยืนยัน')+'</div><div class="actions"><button class="primary" id="getQuote" '+(!paid?'disabled':'')+'>คำนวณค่าส่งจาก Lalamove</button></div>';
+ }
+ const statusHtml=d?.lalamove_order_id?'':('<span class="state">'+(paid?'ชำระแล้ว':'รอชำระ')+'</span>');
+ $('detail').innerHTML='<div class="section-label">BAKE & BITE · ออเดอร์จัดส่ง</div><div class="order-title"><div><h2>'+safe(o.display_order_no||o.order_no||'ออเดอร์')+'</h2><div class="meta">'+safe(new Date(o.created_at).toLocaleString('th-TH'))+'</div></div>'+statusHtml+'</div><div class="info"><div class="info-card"><strong>ผู้รับ</strong><span>'+safe(o.recipient_name||o.customer_name||'ไม่ระบุ')+'</span></div><div class="info-card"><strong>โทรศัพท์</strong><span>'+safe(o.recipient_phone||'ไม่ระบุ')+'</span></div><div class="info-card" style="grid-column:1/-1"><strong>ที่อยู่จัดส่ง</strong><span>'+safe(o.delivery_address||'ยังไม่มีที่อยู่')+'</span>'+(o.delivery_note?'<div class="meta">หมายเหตุ: '+safe(o.delivery_note)+'</div>':'')+'</div></div>'+items+dispatchBlock;
+ $('detail').querySelector('#getQuote')?.addEventListener('click',()=>runAction('quote'));
+ $('detail').querySelector('#placeOrder')?.addEventListener('click',()=>confirmPlace());
+ $('detail').querySelector('#refreshStatus')?.addEventListener('click',()=>runAction('refresh'));
+}
+async function load(){
+ $('reload').disabled=true;
+ try{
+  const data=await api('orders');orders=data.orders||[];
+  renderList();
+  if(selectedId&&!orders.some(o=>o.id===selectedId))selectedId='';
+  if(!selectedId&&orders.length)selectedId=orders[0].id;
+  renderList();renderDetail();
+  notice('โหลดออเดอร์ Lalamove '+orders.length+' รายการ');
+ }catch(e){notice(e.message,true);$('orderList').innerHTML='<div class="empty">โหลดรายการไม่สำเร็จ</div>'}
+ finally{$('reload').disabled=false}
+}
+async function runAction(action){
+ if(busy||!selectedId)return;busy=true;notice(action==='quote'?'กำลังขอราคาจาก Lalamove Sandbox…':action==='refresh'?'กำลังตรวจสถานะงาน…':'กำลังส่งคำขอ…');
+ try{await api(action,'POST',{order_id:selectedId});await load();notice(action==='quote'?'ได้ราคาจาก Sandbox แล้ว ตรวจสอบราคาและกดยืนยันเมื่อพร้อม':action==='refresh'?'อัปเดตสถานะล่าสุดแล้ว':'ดำเนินการสำเร็จ')}
+ catch(e){notice(e.message,true)}
+ finally{busy=false;renderDetail()}
+}
+function confirmPlace(){
+ const o=orders.find(x=>x.id===selectedId),d=o?.dispatch;if(!d)return;
+ const ok=window.confirm('ยืนยันเรียกรถ Lalamove Sandbox สำหรับ '+(o.display_order_no||o.order_no)+' ราคา '+money(d.amount,d.currency||'THB')+'?\n\nจะส่งคำขอจองรถไปยังบัญชีทดสอบ');
+ if(ok)runAction('place');
+}
+$('orderList').addEventListener('click',event=>{const button=event.target.closest('[data-id]');if(!button)return;selectedId=button.dataset.id;history.replaceState(null,'','?order='+encodeURIComponent(selectedId));renderList();renderDetail()});
+$('reload').onclick=load;
+requireAdmin().then(ok=>{if(ok)load()});
+</script>
+</body></html>
