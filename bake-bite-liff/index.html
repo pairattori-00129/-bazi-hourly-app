@@ -212,7 +212,7 @@ body{min-height:100vh}
       <strong id="paymentOrderNo" style="font-size:21px;color:#5b2d1b">—</strong>
     </div>
     <div id="paymentItems" style="padding:10px 0;border-top:1px solid #ead8c7;border-bottom:1px solid #ead8c7"></div>
-    <div id="paymentShippingRow" style="display:none;justify-content:space-between;margin-top:12px;color:#6f5c51"><span>ค่าส่ง Lalamove</span><strong id="paymentShipping">฿0</strong></div>
+    <div id="paymentShippingRow" style="display:none;justify-content:space-between;margin-top:12px;color:#6f5c51"><span>ค่าส่ง Lalamove (ราคาเสนอ)</span><strong id="paymentShipping">฿0</strong></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:22px">
       <strong>ยอดชำระ</strong><strong id="paymentTotal" style="color:#a8522e">฿0</strong>
     </div>
@@ -631,7 +631,7 @@ function renderPaymentPage(orderData){
   document.getElementById('paymentShipping').textContent=money(orderData.shipping_fee||0);
   const quoteStatus=document.getElementById('paymentQuoteStatus');
   quoteStatus.style.display=isLalamove?'block':'none';
-  quoteStatus.textContent=isLalamove?(orderData.quote_pending?'กำลังขอราคาจัดส่งจาก Lalamove…':orderData.quote_error?'ยังขอราคาไม่ได้: '+orderData.quote_error:(orderData.shipping_fee!=null?'ราคาค่าส่งยืนยันแล้ว':'กำลังเตรียมราคาค่าส่ง')):'';
+  quoteStatus.textContent=isLalamove?(orderData.quote_pending?'กำลังขอราคาจัดส่งจาก Lalamove…':orderData.quote_error?'ยังขอราคาไม่ได้: '+orderData.quote_error:(orderData.shipping_fee!=null?'ได้รับราคาเสนอจาก Lalamove แล้ว':'กำลังเตรียมราคาเสนอค่าส่ง')):'';
   const retryQuote=document.getElementById('retryLalamoveQuoteButton');
   retryQuote.style.display=isLalamove&&!!orderData.quote_error?'block':'none';
   const cash=orderData.payment_method==='cash';
