@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Bake & Bite Rewards</title>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <style>
 :root{
   --cream:#fff9ef;--paper:#fffdf8;--brown:#5a2f1f;--green:#718d5a;--greenSoft:#edf3e4;
@@ -114,9 +114,9 @@ body{min-height:100vh}
 <div class="shell"><main class="app">
 <header class="header"><img class="hero-bg" src="bake-bite-header-v2.png?v=20260927-0810" alt="Bake & Bite"></header>
 
-<section id="order" class="page">
+<section id="order" class="page active">
   <div class="title"><h1>สั่งอาหาร</h1><p>เลือกจำนวนสินค้า แล้วกดยืนยันการสั่งซื้อ</p></div>
-  <div id="catalogRoot"></div>
+  <div id="lineConnectionNotice" class="note" style="display:none;margin:12px"></div><div id="catalogRoot"></div>
   <div class="card" id="cartBar" style="margin:12px;position:sticky;bottom:112px;z-index:15">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <div><div style="font-size:13px;color:#7b6a60">ตะกร้าสินค้า</div><strong id="cartCount">0 รายการ</strong></div>
@@ -231,7 +231,7 @@ body{min-height:100vh}
   </div>
 </section>
 
-<section id="points" class="page active">
+<section id="points" class="page">
   <div class="title"><h1>สะสมแต้ม</h1><p>ทุก 50 บาท = 1 แต้ม และตัดเศษทุกครั้ง</p></div>
   <section class="member-card">
     <div class="member-top"><div class="avatar">👤</div><div><div class="member-name" id="memberName">สมาชิก Bake & Bite</div><div style="color:#89756a">สมาชิกสะสมแต้ม</div></div></div>
@@ -484,7 +484,7 @@ function showPage(id){
     navin.classList.remove('order-active','snack-active','points-active','redeem-active','contact-active');
     if(['order','points','redeem','contact'].includes(navPage)) navin.classList.add(navPage+'-active');
   }
-  history.replaceState({},'',location.pathname+'#'+id);
+  history.replaceState({},'',location.pathname+location.search+'#'+id);
   if(id==='redeem')loadRewards();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -571,13 +571,18 @@ function setCategoryColor(section,[red,green,blue]){
 function categoryIcon(c,idx){if(c.icon_url){const url=String(c.icon_url);if(/^https:\/\//i.test(url))return '<img src="'+url.replace(/[&"<>]/g,ch=>({"&":"&amp;",'"':"&quot;","<":"&lt;",">":"&gt;"}[ch]))+'" alt="" style="width:31px;height:31px;object-fit:contain">'}return /เบเกอรี่|bakery/i.test(c.name)?"🍞":(catIcon[idx+1]||"🍴")}
 function money(n){return "฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2})}
 async function loadCatalog(){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),12000);
   try{
-    const r=await fetch(STORE_API+"?action=catalog");
+    const r=await fetch(STORE_API+"?action=catalog",{signal:controller.signal});
     const j=await r.json();
     if(!j.ok) throw new Error(j.error||"catalog");
     catalog=j;
     renderCatalog();
-  }catch(e){console.error(e);document.getElementById("catalogRoot").innerHTML='<div class="card" style="margin:12px">โหลดเมนูไม่สำเร็จ กรุณาลองใหม่</div>'}
+  }catch(e){
+    console.error('catalog load error',e);
+    document.getElementById("catalogRoot").innerHTML='<div class="card" style="margin:12px">โหลดเมนูไม่สำเร็จ กรุณาลองใหม่เมื่ออินเทอร์เน็ตพร้อม</div>';
+  }finally{clearTimeout(timeout)}
 }
 function renderCatalog(){
   const root=document.getElementById("catalogRoot");
@@ -786,13 +791,50 @@ async function claimOrderPointsFromLink(){
   }
 }
 
+function lineAppUrl(page){
+  const params=new URLSearchParams();
+  const invite=new URLSearchParams(location.search).get('ref');
+  if(invite)params.set('ref',invite);
+  if(lalamoveSandboxTest)params.set('lalamove_test','1');
+  return LIFF_URL+(params.toString()?'?'+params.toString():'')+'#'+page;
+}
+function showLineConnectionNotice(message){
+  const box=document.getElementById('lineConnectionNotice');
+  if(box){box.textContent=message;box.style.display='block'}
+}
+function ensureLiffSdk(timeoutMs=10000){
+  if(window.liff)return Promise.resolve(window.liff);
+  return new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    let settled=false;
+    const timer=setTimeout(()=>finish(new Error('LINE SDK โหลดไม่ทัน กรุณาเปิดลิงก์ในแอป LINE')),timeoutMs);
+    function finish(error){
+      if(settled)return;
+      settled=true;clearTimeout(timer);
+      if(error)reject(error);
+      else if(window.liff)resolve(window.liff);
+      else reject(new Error('LINE SDK โหลดไม่สำเร็จ'));
+    }
+    script.src='https://static.line-scdn.net/liff/edge/2/sdk.js';
+    script.onload=()=>finish();
+    script.onerror=()=>finish(new Error('โหลด LINE SDK ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ต'));
+    document.head.appendChild(script);
+  });
+}
+function withTimeout(promise,timeoutMs){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('LINE ใช้เวลาเชื่อมต่อนานเกินไป กรุณาเปิดลิงก์ในแอป LINE อีกครั้ง')),timeoutMs);
+    promise.then(value=>{clearTimeout(timer);resolve(value)},error=>{clearTimeout(timer);reject(error)});
+  });
+}
 async function init(){
   const testBanner=document.getElementById('lalamoveTestBanner');
   if(testBanner)testBanner.style.display=lalamoveSandboxTest?'block':'none';
   const validPages=['order','points','redeem','contact','checkout','payment'];
   const previewMode=new URLSearchParams(location.search).get('preview')==='1';
   try{
-    await liff.init({liffId:LIFF_ID});
+    await ensureLiffSdk();
+    await withTimeout(liff.init({liffId:LIFF_ID}),12000);
     // LINE restores referral query parameters from liff.state during init.
     const invite=new URLSearchParams(location.search).get('ref');
 
@@ -802,13 +844,19 @@ async function init(){
 
     // ถ้าเปิด URL เว็บตรง ๆ จาก LINE in-app browser / Safari ให้พากลับเข้า LIFF browser
     // แทนการเรียก liff.login() ทันที ซึ่งเป็นสาเหตุที่ผู้ใช้ถูกส่งไปหน้า LINE Login
+    const redirectKey='bakeBiteLiffRedirectAttempted';
     if(!previewMode && !liff.isInClient() && !liff.isLoggedIn()){
-      const redirectParams=new URLSearchParams();
-      if(invite)redirectParams.set('ref',invite);
-      if(lalamoveSandboxTest)redirectParams.set('lalamove_test','1');
-      location.replace(LIFF_URL+(redirectParams.toString()?'?'+redirectParams.toString():'')+'#'+page);
+      if(sessionStorage.getItem(redirectKey)!=='1'){
+        sessionStorage.setItem(redirectKey,'1');
+        location.replace(lineAppUrl(page));
+        return;
+      }
+      sessionStorage.removeItem(redirectKey);
+      showPage('order');
+      showLineConnectionNotice('ยังเปิด LINE ไม่สำเร็จ กรุณาเปิดลิงก์นี้จากแชต LINE Official ของ Bake & Bite แล้วลองอีกครั้ง');
       return;
     }
+    sessionStorage.removeItem(redirectKey);
 
     if(page==='payment'){
       const savedPayment=sessionStorage.getItem('bakeBiteLastPaymentOrder');
@@ -910,14 +958,16 @@ async function init(){
     }
   }catch(e){
     console.error('LIFF init error',e);
-    // ถ้าเข้าจาก URL เว็บตรงและ LIFF init ไม่สำเร็จ ให้ลองเปิดผ่าน LIFF URL
-    if(!previewMode){
-      const page=(location.hash.replace('#','')||'order');
-      const invite=new URLSearchParams(location.search).get('ref');
-      location.replace(LIFF_URL+(invite?'?ref='+encodeURIComponent(invite):'')+'#'+page);
-    }else{
-      showPage('order');
+    const redirectKey='bakeBiteLiffRedirectAttempted';
+    const failedPage=(location.hash.replace('#','')||'order');
+    if(!previewMode && sessionStorage.getItem(redirectKey)!=='1'){
+      sessionStorage.setItem(redirectKey,'1');
+      location.replace(lineAppUrl(failedPage));
+      return;
     }
+    sessionStorage.removeItem(redirectKey);
+    showPage('order');
+    showLineConnectionNotice('เชื่อมต่อ LINE ไม่สำเร็จ: '+(e?.message||'กรุณาเปิดลิงก์ในแอป LINE แล้วลองใหม่'));
   }
 }
 async function requestPoints(){
