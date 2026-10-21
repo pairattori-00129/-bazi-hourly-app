@@ -196,7 +196,7 @@ body{min-height:100vh}
       <label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="saveAddressCheck" onchange="toggleSaveAddress()"> บันทึกที่อยู่นี้ไว้ใช้ครั้งต่อไป</label>
       <select class="field" id="addressLabel" style="display:none"><option value="home">บ้าน</option><option value="work">ที่ทำงาน</option><option value="other">อื่น ๆ</option></select>
     </div>
-    <div id="courierFields" style="display:none"><h2 class="delivery-step">2. เลือกบริการส่ง</h2><div class="courier-options"><label class="courier-choice"><img src="courier-assets/grabexpress.jpg" alt="GrabExpress"><span><strong>GrabExpress</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="grabexpress" checked onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lalamove.jpg" alt="Lalamove"><span><strong>Lalamove</strong><small>ระบบขอราคาก่อนชำระ • ร้านกดเรียกรถหลังยืนยันเงิน</small></span><input type="radio" name="courierProvider" value="lalamove"  onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lineman.jpg" alt="LINE MAN"><span><strong>LINE MAN</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lineman"  onchange="updateCourierSummary()"></label></div><p class="map-pending">ยังไม่ได้จองไรเดอร์ผ่านระบบ • ร้านแจ้งเวลาพร้อมรับก่อนลูกค้าจอง<br>ค่าส่งชำระกับผู้ให้บริการ ไม่รวมในค่าอาหาร และยังไม่ได้ตรวจสอบพื้นที่บริการ</p><p id="courierSummary" class="note"></p></div><h2 class="delivery-step">3. สรุปค่าอาหารและชำระเงิน</h2><input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
+    <div id="courierFields" style="display:none"><h2 class="delivery-step">2. เลือกบริการส่ง</h2><div class="courier-options"><label class="courier-choice"><img src="courier-assets/grabexpress.jpg" alt="GrabExpress"><span><strong>GrabExpress</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="grabexpress" checked onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lalamove.jpg" alt="Lalamove"><span><strong>Lalamove</strong><small>ระบบขอราคาก่อนชำระ • ร้านกดเรียกรถหลังยืนยันเงิน</small></span><input type="radio" name="courierProvider" value="lalamove"  onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lineman.jpg" alt="LINE MAN"><span><strong>LINE MAN</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lineman"  onchange="updateCourierSummary()"></label></div><p id="lalamoveTestBanner" class="note" style="display:none;background:#fff3d8;border-color:#d9a044">โหมดทดสอบ Lalamove Sandbox: ราคานี้เป็นราคาทดสอบ และการเรียกรถยังไม่ใช่งานจริง</p><p class="map-pending">ยังไม่ได้จองไรเดอร์ผ่านระบบ • ร้านแจ้งเวลาพร้อมรับก่อนลูกค้าจอง<br>ค่าส่งชำระกับผู้ให้บริการ ไม่รวมในค่าอาหาร และยังไม่ได้ตรวจสอบพื้นที่บริการ</p><p id="courierSummary" class="note"></p></div><h2 class="delivery-step">3. สรุปค่าอาหารและชำระเงิน</h2><input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
     <select class="field" id="paymentMethod"><option value="transfer">โอนเงิน / QR</option><option value="cash">เงินสดที่ร้าน (เฉพาะรับเอง)</option></select>
     <div class="note" style="margin-top:10px">เลือก Lalamove ระบบจะขอราคาค่าส่งก่อนชำระ และแสดงรวมกับค่าอาหาร ส่วน GrabExpress / LINE MAN ลูกค้าเรียกรถและชำระค่าส่งกับผู้ให้บริการเอง</div>
     <button class="btn" id="submitOrderButton" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
@@ -313,6 +313,7 @@ let referralSettings={share_points:1,first_purchase_points:5};
 let currentMemberPoints=0;
 let rewardCatalog=[];
 let currentPaymentOrder=null;
+const lalamoveSandboxTest=new URLSearchParams(location.search).get("lalamove_test")==="1";
 function renderReferralSettings(){
   document.getElementById('shareRewardText').textContent='รับ '+referralSettings.share_points+' แต้มต่อเพื่อนใหม่ 1 คน · ถ้าเพื่อนสั่งซื้อครั้งแรก รับเพิ่ม '+referralSettings.first_purchase_points+' แต้ม';
 }
@@ -631,7 +632,7 @@ function renderPaymentPage(orderData){
   document.getElementById('paymentShipping').textContent=money(orderData.shipping_fee||0);
   const quoteStatus=document.getElementById('paymentQuoteStatus');
   quoteStatus.style.display=isLalamove?'block':'none';
-  quoteStatus.textContent=isLalamove?(orderData.quote_pending?'กำลังขอราคาจัดส่งจาก Lalamove…':orderData.quote_error?'ยังขอราคาไม่ได้: '+orderData.quote_error:(orderData.shipping_fee!=null?'ได้รับราคาเสนอจาก Lalamove แล้ว':'กำลังเตรียมราคาเสนอค่าส่ง')):'';
+  quoteStatus.textContent=isLalamove?(orderData.quote_pending?'กำลังขอราคาจัดส่งจาก Lalamove…':orderData.quote_error?'ยังขอราคาไม่ได้: '+orderData.quote_error:(orderData.shipping_fee!=null?(lalamoveSandboxTest?'ได้รับราคาเสนอทดสอบจาก Lalamove Sandbox แล้ว':'ได้รับราคาเสนอจาก Lalamove แล้ว'):'กำลังเตรียมราคาเสนอค่าส่ง')):'';
   const retryQuote=document.getElementById('retryLalamoveQuoteButton');
   retryQuote.style.display=isLalamove&&!!orderData.quote_error?'block':'none';
   const cash=orderData.payment_method==='cash';
@@ -704,6 +705,9 @@ async function submitOrder(){
   const deliveryNote=document.getElementById("deliveryNote").value.trim();
   if(["lineman","courier"].includes(fulfillment) && (!recipientName||!recipientPhone||!deliveryAddress)){
     alert("กรุณากรอกชื่อผู้รับ เบอร์โทร และที่อยู่จัดส่งให้ครบ"); return;
+  }
+  if(fulfillment==="courier"&&document.querySelector('input[name="courierProvider"]:checked')?.value==="lalamove"&&!lalamoveSandboxTest){
+    alert("Lalamove ยังเชื่อมต่อ Sandbox สำหรับทดสอบเท่านั้น กรุณาใช้ลิงก์ทดสอบ หรือรอเปิด API จริงก่อนสั่งจัดส่ง");return;
   }
   if(["lineman","courier"].includes(fulfillment) && document.getElementById("paymentMethod").value==="cash"){
     alert("การจัดส่งด้วยไรเดอร์ กรุณาเลือกโอนเงิน / QR"); return;
@@ -783,6 +787,8 @@ async function claimOrderPointsFromLink(){
 }
 
 async function init(){
+  const testBanner=document.getElementById('lalamoveTestBanner');
+  if(testBanner)testBanner.style.display=lalamoveSandboxTest?'block':'none';
   const validPages=['order','points','redeem','contact','checkout','payment'];
   const previewMode=new URLSearchParams(location.search).get('preview')==='1';
   try{
