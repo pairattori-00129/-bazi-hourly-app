@@ -803,7 +803,10 @@ async function init(){
     // ถ้าเปิด URL เว็บตรง ๆ จาก LINE in-app browser / Safari ให้พากลับเข้า LIFF browser
     // แทนการเรียก liff.login() ทันที ซึ่งเป็นสาเหตุที่ผู้ใช้ถูกส่งไปหน้า LINE Login
     if(!previewMode && !liff.isInClient() && !liff.isLoggedIn()){
-      location.replace(LIFF_URL+(invite?'?ref='+encodeURIComponent(invite):'')+'#'+page);
+      const redirectParams=new URLSearchParams();
+      if(invite)redirectParams.set('ref',invite);
+      if(lalamoveSandboxTest)redirectParams.set('lalamove_test','1');
+      location.replace(LIFF_URL+(redirectParams.toString()?'?'+redirectParams.toString():'')+'#'+page);
       return;
     }
 
