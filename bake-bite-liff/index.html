@@ -196,9 +196,9 @@ body{min-height:100vh}
       <label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="saveAddressCheck" onchange="toggleSaveAddress()"> บันทึกที่อยู่นี้ไว้ใช้ครั้งต่อไป</label>
       <select class="field" id="addressLabel" style="display:none"><option value="home">บ้าน</option><option value="work">ที่ทำงาน</option><option value="other">อื่น ๆ</option></select>
     </div>
-    <div id="courierFields" style="display:none"><h2 class="delivery-step">2. เลือกบริการส่ง</h2><div class="courier-options"><label class="courier-choice"><img src="courier-assets/grabexpress.jpg" alt="GrabExpress"><span><strong>GrabExpress</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="grabexpress" checked onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lalamove.jpg" alt="Lalamove"><span><strong>Lalamove</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lalamove"  onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lineman.jpg" alt="LINE MAN"><span><strong>LINE MAN</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lineman"  onchange="updateCourierSummary()"></label></div><p class="map-pending">ยังไม่ได้จองไรเดอร์ผ่านระบบ • ร้านแจ้งเวลาพร้อมรับก่อนลูกค้าจอง<br>ค่าส่งชำระกับผู้ให้บริการ ไม่รวมในค่าอาหาร และยังไม่ได้ตรวจสอบพื้นที่บริการ</p><p id="courierSummary" class="note"></p></div><h2 class="delivery-step">3. สรุปค่าอาหารและชำระเงิน</h2><input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
+    <div id="courierFields" style="display:none"><h2 class="delivery-step">2. เลือกบริการส่ง</h2><div class="courier-options"><label class="courier-choice"><img src="courier-assets/grabexpress.jpg" alt="GrabExpress"><span><strong>GrabExpress</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="grabexpress" checked onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lalamove.jpg" alt="Lalamove"><span><strong>Lalamove</strong><small>ระบบขอราคาก่อนชำระ • ร้านกดเรียกรถหลังยืนยันเงิน</small></span><input type="radio" name="courierProvider" value="lalamove"  onchange="updateCourierSummary()"></label><label class="courier-choice"><img src="courier-assets/lineman.jpg" alt="LINE MAN"><span><strong>LINE MAN</strong><small>ลูกค้าเรียกเอง • ค่าส่งตามแอปผู้ให้บริการ</small></span><input type="radio" name="courierProvider" value="lineman"  onchange="updateCourierSummary()"></label></div><p class="map-pending">ยังไม่ได้จองไรเดอร์ผ่านระบบ • ร้านแจ้งเวลาพร้อมรับก่อนลูกค้าจอง<br>ค่าส่งชำระกับผู้ให้บริการ ไม่รวมในค่าอาหาร และยังไม่ได้ตรวจสอบพื้นที่บริการ</p><p id="courierSummary" class="note"></p></div><h2 class="delivery-step">3. สรุปค่าอาหารและชำระเงิน</h2><input class="field" id="customerNote" placeholder="หมายเหตุถึงร้าน (ถ้ามี)">
     <select class="field" id="paymentMethod"><option value="transfer">โอนเงิน / QR</option><option value="cash">เงินสดที่ร้าน (เฉพาะรับเอง)</option></select>
-    <div class="note" style="margin-top:10px">ยอดชำระในระบบนี้เป็นค่าอาหารเท่านั้น หากเลือกไรเดอร์ ลูกค้าจองและจ่ายค่าส่งในแอปผู้ให้บริการหลังร้านแจ้งพร้อมรับ</div>
+    <div class="note" style="margin-top:10px">เลือก Lalamove ระบบจะขอราคาค่าส่งก่อนชำระ และแสดงรวมกับค่าอาหาร ส่วน GrabExpress / LINE MAN ลูกค้าเรียกรถและชำระค่าส่งกับผู้ให้บริการเอง</div>
     <button class="btn" id="submitOrderButton" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
     <button class="btn" style="background:#8f8178" onclick="showPage('order')">กลับไปแก้ไขรายการ</button>
   </div>
@@ -212,6 +212,7 @@ body{min-height:100vh}
       <strong id="paymentOrderNo" style="font-size:21px;color:#5b2d1b">—</strong>
     </div>
     <div id="paymentItems" style="padding:10px 0;border-top:1px solid #ead8c7;border-bottom:1px solid #ead8c7"></div>
+    <div id="paymentShippingRow" style="display:none;justify-content:space-between;margin-top:12px;color:#6f5c51"><span>ค่าส่ง Lalamove</span><strong id="paymentShipping">฿0</strong></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:22px">
       <strong>ยอดชำระ</strong><strong id="paymentTotal" style="color:#a8522e">฿0</strong>
     </div>
@@ -220,6 +221,8 @@ body{min-height:100vh}
       <div id="paymentMethodText" style="margin-top:7px;font-size:17px">—</div>
       <div id="transferHelp" class="sub" style="margin-top:8px">โอนเงิน / QR แล้วกด “แจ้งชำระเงินแล้ว” จากนั้นร้านจะตรวจสอบและยืนยันการชำระ</div>
     </div>
+    <div id="paymentQuoteStatus" class="note" style="display:none;margin-top:12px"></div>
+    <button class="btn" id="retryLalamoveQuoteButton" type="button" style="display:none;background:#718d5a" onclick="retryLalamoveQuote()">ขอราคา Lalamove อีกครั้ง</button>
     <div id="paymentNotice" class="note" style="margin-top:12px">สถานะ: รอการแจ้งชำระเงิน</div>
     <div id="pointsLineNotice" class="note" style="display:none;margin-top:10px;background:#eef9ef;border-color:#b7dfba;font-weight:800">⭐ กรุณาเปิด LINE Official ของ Bake & Bite และกด “รับคะแนนสะสม” เพื่อรับแต้มจากออเดอร์นี้</div>
     <a id="openLineChatButton" class="btn" href="https://line.me/R/oaMessage/%40563txfft" style="display:none;text-decoration:none;text-align:center;background:#06c755">💬 เปิด LINE Official เพื่อรับแต้ม</a>
@@ -623,11 +626,20 @@ function renderPaymentPage(orderData){
   document.getElementById('paymentItems').innerHTML=(orderData.items||[]).map(i=>
     '<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0"><span>'+escapeHtml(i.name)+' × '+Number(i.quantity)+'</span><strong>'+money(i.line_total)+'</strong></div>'
   ).join('')||'<div class="sub">ไม่มีรายการสินค้า</div>';
+  const isLalamove=orderData.fulfillment_method==='courier'&&orderData.courier_provider==='lalamove';
+  document.getElementById('paymentShippingRow').style.display=isLalamove?'flex':'none';
+  document.getElementById('paymentShipping').textContent=money(orderData.shipping_fee||0);
+  const quoteStatus=document.getElementById('paymentQuoteStatus');
+  quoteStatus.style.display=isLalamove?'block':'none';
+  quoteStatus.textContent=isLalamove?(orderData.quote_pending?'กำลังขอราคาจัดส่งจาก Lalamove…':orderData.quote_error?'ยังขอราคาไม่ได้: '+orderData.quote_error:(orderData.shipping_fee!=null?'ราคาค่าส่งยืนยันแล้ว':'กำลังเตรียมราคาค่าส่ง')):'';
+  const retryQuote=document.getElementById('retryLalamoveQuoteButton');
+  retryQuote.style.display=isLalamove&&!!orderData.quote_error?'block':'none';
   const cash=orderData.payment_method==='cash';
   document.getElementById('paymentMethodText').textContent=cash?'เงินสดที่ร้าน':'โอนเงิน / QR';
   document.getElementById('transferHelp').style.display=cash?'none':'block';
   const btn=document.getElementById('notifyPaymentButton');
   btn.style.display=cash?'none':'block';
+  btn.disabled=!!(isLalamove&&(orderData.quote_pending||orderData.shipping_fee==null));
   const paymentNotified=orderData.payment_notified===true;
   document.getElementById('paymentNotice').textContent=cash?'สถานะ: ชำระเงินที่ร้านเมื่อรับสินค้า':(paymentNotified?'สถานะ: แจ้งชำระเงินแล้ว ✓':'สถานะ: รอการแจ้งชำระเงิน');
   const pointsNotice=document.getElementById('pointsLineNotice');
@@ -639,7 +651,28 @@ function renderPaymentPage(orderData){
     btn.disabled=true;
   }
 }
+async function retryLalamoveQuote(){
+  const order=currentPaymentOrder;if(!order?.id)return;
+  const button=document.getElementById('retryLalamoveQuoteButton');
+  button.disabled=true;button.textContent='กำลังขอราคา…';
+  order.quote_pending=true;order.quote_error=null;renderPaymentPage(order);
+  try{
+    const token=lineToken();
+    if(!token)throw new Error('กรุณาเปิดหน้านี้ใน LINE แล้วเข้าสู่ระบบอีกครั้ง');
+    const response=await fetch(SUPABASE_URL+'/functions/v1/lalamove-dispatch?action=customer-quote',{
+      method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},
+      body:JSON.stringify({order_id:order.id})
+    });
+    const result=await response.json();
+    if(!response.ok||!result.ok)throw new Error(result.error||'ขอราคาจัดส่งไม่สำเร็จ');
+    order.shipping_fee=Number(result.shipping_fee||0);order.total=Number(result.total||0);
+    order.quote_pending=false;order.quote_error=null;order.quote_id=result.quotation_id||null;
+  }catch(e){order.quote_pending=false;order.quote_error=e.message||'ขอราคาจัดส่งไม่สำเร็จ'}
+  sessionStorage.setItem('bakeBiteLastPaymentOrder',JSON.stringify(order));
+  renderPaymentPage(order);button.disabled=false;button.textContent='ขอราคา Lalamove อีกครั้ง';
+}
 async function notifyPayment(){
+  if(currentPaymentOrder?.fulfillment_method==='courier'&&currentPaymentOrder?.courier_provider==='lalamove'&&(currentPaymentOrder.quote_pending||currentPaymentOrder.shipping_fee==null)){alert('กรุณารอให้ระบบยืนยันราคาค่าส่ง Lalamove ก่อนชำระเงิน');return}
   if(!currentPaymentOrder?.id){alert('ไม่พบข้อมูลออเดอร์ กรุณาเปิดประวัติออเดอร์แล้วลองใหม่');return}
   const btn=document.getElementById('notifyPaymentButton');btn.disabled=true;
   try{
@@ -715,12 +748,16 @@ async function submitOrder(){
     const order=result.order;
     const paymentData={
       id:order.id,order_no:(order.display_order_no||order.order_no),total:Number(order.total||0),
+      subtotal:Number(order.total||0),shipping_fee:null,
       payment_method:body.payment_method,fulfillment_method:fulfillment,courier_provider:fulfillment==="courier"?document.querySelector('input[name="courierProvider"]:checked').value:null,
       items:items.map(i=>({name:i.name,quantity:i.quantity,line_total:Number(i.price)*Number(i.quantity)}))
     };
+    const needsLalamoveQuote=fulfillment==="courier"&&body.courier_provider==="lalamove";
+    if(needsLalamoveQuote){paymentData.shipping_fee=null;paymentData.quote_pending=true;paymentData.quote_error=null}
     sessionStorage.setItem('bakeBiteLastPaymentOrder',JSON.stringify(paymentData));
     renderPaymentPage(paymentData);
     cart={}; renderCatalog(); showPage("payment");
+    if(needsLalamoveQuote)await retryLalamoveQuote();
     loadMember();
   }catch(e){alert("ส่งคำสั่งซื้อไม่สำเร็จ: "+e.message)}
   finally{button.disabled=false}
