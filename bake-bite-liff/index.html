@@ -639,7 +639,9 @@ function renderPaymentPage(orderData){
   quoteStatus.style.display=isLalamove?'block':'none';
   quoteStatus.textContent=isLalamove?(orderData.quote_pending?'กำลังขอราคาจัดส่งจาก Lalamove…':orderData.quote_error?'ยังขอราคาไม่ได้: '+orderData.quote_error:(orderData.shipping_fee!=null?(lalamoveSandboxTest?'ได้รับราคาเสนอทดสอบจาก Lalamove Sandbox แล้ว':'ได้รับราคาเสนอจาก Lalamove แล้ว'):'กำลังเตรียมราคาเสนอค่าส่ง')):'';
   const retryQuote=document.getElementById('retryLalamoveQuoteButton');
-  retryQuote.style.display=isLalamove&&!!orderData.quote_error?'block':'none';
+  retryQuote.style.display=isLalamove&&orderData.shipping_fee==null?'block':'none';
+  retryQuote.disabled=!!orderData.quote_pending;
+  retryQuote.textContent=orderData.quote_pending?'กำลังขอราคา…':'ขอราคา Lalamove อีกครั้ง';
   const cash=orderData.payment_method==='cash';
   document.getElementById('paymentMethodText').textContent=cash?'เงินสดที่ร้าน':'โอนเงิน / QR';
   document.getElementById('transferHelp').style.display=cash?'none':'block';
@@ -661,7 +663,7 @@ async function retryLalamoveQuote(){
   const order=currentPaymentOrder;if(!order?.id)return;
   const button=document.getElementById('retryLalamoveQuoteButton');
   button.disabled=true;button.textContent='กำลังขอราคา…';
-  order.quote_pending=true;order.quote_error=null;renderPaymentPage(order);
+  order.quote_pending=true;order.quote_error=null;sessionStorage.setItem('bakeBiteLastPaymentOrder',JSON.stringify(order));renderPaymentPage(order);
   try{
     const token=lineToken();
     if(!token)throw new Error('กรุณาเปิดหน้านี้ใน LINE แล้วเข้าสู่ระบบอีกครั้ง');
