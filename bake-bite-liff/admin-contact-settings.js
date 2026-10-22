@@ -1,5 +1,5 @@
 const endpoint='https://oplwrlljqwgxnrqrdufp.supabase.co/functions/v1/contact-settings';
-const fields=['store_name', 'phone', 'line_url', 'facebook_url', 'tiktok_url', 'shopeefood_url', 'email', 'hours', 'address', 'map_url', 'notes', 'storefront_url', 'map_image_url'];
+const fields=['store_name', 'phone', 'line_url', 'facebook_url', 'tiktok_url', 'shopeefood_url', 'email', 'hours', 'address', 'map_url', 'store_latitude', 'store_longitude', 'notes', 'storefront_url', 'map_image_url'];
 const el=id=>document.getElementById(id);
 function notice(s,error=false){el('message').textContent=s;el('message').classList.toggle('error',error)}
 async function request(config){const r=await fetch(endpoint,{method:config?'POST':'GET',headers:{authorization:'Bearer '+adminToken(),...(config?{'content-type':'application/json'}:{})},...(config?{body:JSON.stringify({config})}:{})});const j=await r.json();if(r.status===401){clearAdminToken();location.replace('admin-login.html');throw Error('กรุณาเข้าสู่ระบบใหม่')}if(!r.ok||!j.ok)throw Error(j.error||'บันทึกไม่สำเร็จ');return j}
